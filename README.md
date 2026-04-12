@@ -22,6 +22,12 @@ A unified local AI workspace combining image generation and chat capabilities. P
 - **Model Switching** - Switch between downloaded models per session
 - **Persistent Chats** - Chat history saved to browser localStorage
 
+## Screenshot
+
+> **Note**: Replace this with an actual screenshot of your deployed app.
+
+![Nova Studio Interface](screenshot.png)
+
 ## Architecture
 
 ```
