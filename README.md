@@ -8,8 +8,8 @@ A unified local AI workspace combining image generation and chat capabilities. P
 - **AI Image Generation** - Create images using ComfyUI with the z-image-turbo model
 - **Prompt Enhancement** - Automatically enhance your prompts using local LLMs for better results
 - **Style Presets** - Choose from multiple visual styles:
-  - Casual (iPhone snapshot aesthetic)
-  - Professional (DSLR portrait)
+  - Realistic (iPhone snapshot aesthetic)
+  - Photography (DSLR portrait)
   - Cinematic (film still)
   - Anime (manga style)
   - CGI (3D render)
@@ -24,7 +24,7 @@ A unified local AI workspace combining image generation and chat capabilities. P
 
 ## Screenshot
 
-> **Image generation**: The UI of image generation, support multiple image style (casual, professional, cinematic, anime, cgi).
+> **Image generation**: The UI of image generation, support multiple image style (realistic, photography, cinematic, anime, cgi).
 
 ![Nova Studio Image Generation](examples/image.png)
 
@@ -127,7 +127,7 @@ npm run dev
 ### Image Generation Mode
 
 1. Select a LLM model from the dropdown (used for prompt enhancement)
-2. Choose a visual style (casual, professional, cinematic, anime, cgi)
+2. Choose a visual style (realistic, photography, cinematic, anime, cgi)
 3. Enter your image description in the text area
 4. Optionally click "Enhance Prompt" to improve your prompt using the LLM
 5. Press Enter or click "Generate" to create the image
