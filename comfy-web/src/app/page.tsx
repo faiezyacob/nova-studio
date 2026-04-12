@@ -4,11 +4,20 @@ import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEve
 import { Toaster, toast } from "sonner";
 
 function MessageContent({ content }: { content: string }) {
-  const formatInlineBold = (text: string) => {
-    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  const formatInline = (text: string) => {
+    const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|~~[^~]+~~)/g);
     return parts.map((part, i) => {
       if (part.startsWith("**") && part.endsWith("**")) {
         return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>;
+      }
+      if (part.startsWith("*") && part.endsWith("*")) {
+        return <em key={i}>{part.slice(1, -1)}</em>;
+      }
+      if (part.startsWith("`") && part.endsWith("`")) {
+        return <code key={i} className="rounded bg-[#1f1f1d] px-1.5 py-0.5 text-[#d8bb92] font-mono text-xs">{part.slice(1, -1)}</code>;
+      }
+      if (part.startsWith("~~") && part.endsWith("~~")) {
+        return <del key={i} className="text-[#9f988c]">{part.slice(2, -2)}</del>;
       }
       return part;
     });
@@ -19,13 +28,15 @@ function MessageContent({ content }: { content: string }) {
     const elements: React.ReactNode[] = [];
     let itemKey = 0;
 
+    let inCodeBlock = false;
+    let codeBlockLines: string[] = [];
     let liGroup: React.ReactNode[] = [];
     const flushLiGroup = () => {
       if (liGroup.length > 0) {
         elements.push(
           <ul key={`ul-${itemKey++}`} className="my-1 space-y-1">
             {liGroup.map((content, idx) => (
-              <li key={`li-${itemKey}-${idx}`} className="ml-4 list-disc">
+              <li key={`li-${itemKey}-${idx}`} className="ml-2 list-disc">
                 {content}
               </li>
             ))}
@@ -35,21 +46,68 @@ function MessageContent({ content }: { content: string }) {
       }
     };
 
+    const stripMarkdown = (text: string) => text.replace(/\*\*([^*]+)\*\*/g, "$1").replace(/\*([^*]+)\*/g, "$1").replace(/`([^`]+)`/g, "$1").replace(/~~([^~]+)~~/g, "$1");
+
+    const flushCodeBlock = () => {
+      if (codeBlockLines.length > 0) {
+        const codeText = stripMarkdown(codeBlockLines.join("\n")).replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+        elements.push(
+          <pre key={`code-${itemKey++}`} className="group relative my-2 rounded-lg bg-[#1f1f1d] p-3 text-xs text-[#d8bb92] font-mono overflow-x-auto">
+            <button
+              onClick={() => { navigator.clipboard.writeText(codeText); toast.success("Copied"); }}
+              className="absolute right-2 top-2 rounded bg-[#3a3936] px-2 py-1 text-[10px] text-[#bcb6aa] opacity-0 transition group-hover:opacity-100 hover:bg-[#4a463f] hover:text-[#f2dbc0]"
+            >
+              Copy
+            </button>
+            <code>{codeText}</code>
+          </pre>
+        );
+        codeBlockLines = [];
+      }
+    };
+
     lines.forEach((line, i) => {
       const trimmed = line.trim();
-      if (trimmed === "---") {
+      if (trimmed.startsWith("```")) {
+        if (inCodeBlock) {
+          flushCodeBlock();
+          inCodeBlock = false;
+        } else {
+          flushLiGroup();
+          inCodeBlock = true;
+        }
+      } else if (inCodeBlock) {
+        codeBlockLines.push(line);
+      } else if (trimmed.startsWith("> ") || trimmed.startsWith(">")) {
+        flushLiGroup();
+        const bqText = stripMarkdown(trimmed.slice(2));
+        elements.push(
+          <div key={`bq-${i}`} className="group relative my-2 rounded-r-lg border-l-2 border-[#c9a87a] bg-[#1f1f1d]/50 pl-3 pr-8 py-2">
+            <button
+              onClick={() => { navigator.clipboard.writeText(bqText); toast.success("Copied"); }}
+              className="absolute right-2 top-2 rounded bg-[#3a3936] px-2 py-1 text-[10px] text-[#bcb6aa] opacity-0 transition group-hover:opacity-100 hover:bg-[#4a463f] hover:text-[#f2dbc0]"
+            >
+              Copy
+            </button>
+            <span className="text-[#bcb6aa] italic">{formatInline(bqText)}</span>
+          </div>
+        );
+      } else if (trimmed.startsWith("### ")) {
+        flushLiGroup();
+        elements.push(<h3 key={`h3-${i}`} className="mt-3 mb-1 text-sm font-semibold text-[#c9a87a]">{trimmed.slice(4)}</h3>);
+      } else if (trimmed === "---") {
         flushLiGroup();
         elements.push(<hr key={`hr-${i}`} className="my-3 border-[#46443f]" />);
       } else if (/^[-*] /.test(trimmed)) {
-        liGroup.push(formatInlineBold(trimmed.replace(/^[-*] /, "")));
+        liGroup.push(formatInline(trimmed.replace(/^[-*] /, "")));
       } else if (/^\d+\. /.test(trimmed)) {
-        liGroup.push(formatInlineBold(trimmed.replace(/^\d+\. /, "")));
+        liGroup.push(formatInline(trimmed.replace(/^\d+\. /, "")));
       } else {
         flushLiGroup();
         if (trimmed !== "") {
           elements.push(
             <span key={`span-${i}`} className="block">
-              {formatInlineBold(line)}
+              {formatInline(line)}
             </span>
           );
         }
@@ -103,6 +161,7 @@ const STYLE_DESCRIPTIONS: Record<string, string> = {
 - keep it candid, unposed, slightly off-angle or tilted
 - mention the photo looks like it was taken quickly on an old or mid-range smartphone (Do not mention smartphone)
 - include imperfections: slight motion blur, overexposure, or lens flare if appropriate
+- avoid mentioning term that introduce color tint like warm, cool, etc.
 `,
   photography: `
 - ALWAYS describe as a high-resolution professional photograph
@@ -164,7 +223,16 @@ export default function App() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [chatInput, setChatInput] = useState("");
   const [isChatLoading, setIsChatLoading] = useState(false);
+  const chatInputRef = useRef<HTMLTextAreaElement>(null);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
+
+  const adjustChatHeight = () => {
+    const el = chatInputRef.current;
+    if (el) {
+      el.style.height = "auto";
+      el.style.height = Math.min(el.scrollHeight, 160) + "px";
+    }
+  };
 
   const [galleryFilter, setGalleryFilter] = useState("all");
 
@@ -323,10 +391,15 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (chatMessagesRef.current) {
-      chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
-    }
-  }, [activeSession?.messages]);
+    if (!chatMessagesRef.current) return;
+    const el = chatMessagesRef.current;
+    const id = setTimeout(() => {
+      requestAnimationFrame(() => {
+        el.scrollTop = el.scrollHeight;
+      });
+    }, 100);
+    return () => clearTimeout(id);
+  }, [activeSessionId, activeSession?.messages?.length]);
 
   const createNewSession = () => {
     const newSession: ChatSession = {
@@ -704,7 +777,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
       />
 
       <div className="flex min-h-screen w-full">
-        <aside className="w-72 border-r border-[#3a3936] bg-[#2b2b29]">
+        <aside className="sticky top-0 h-screen w-72 border-r border-[#3a3936] bg-[#2b2b29]">
           <div className="flex h-full flex-col">
             <div className="border-b border-[#3a3936] p-5">
               <div className="mb-5 flex items-center gap-3">
@@ -746,7 +819,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                   </button>
                 </div>
 
-                <div className="flex-1 space-y-1 overflow-y-auto px-2 pb-3">
+                <div className="p-3 flex-1 space-y-1 overflow-y-auto pb-3">
                   {chatSessions.length === 0 && (
                     <p className="px-3 py-8 text-center text-xs text-[#9f988c]">No chats yet</p>
                   )}
@@ -755,9 +828,9 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                     <div
                       key={session.id}
                       onClick={() => setActiveSessionId(session.id)}
-                      className={`group flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 transition ${activeSessionId === session.id
+                      className={`group flex cursor-pointer items-center gap-2 rounded-lg mb-2 border px-3 py-2 transition ${activeSessionId === session.id
                         ? "border-[#555149] bg-[#383733] text-[#f1ede4]"
-                        : "border-transparent text-[#bcb6aa] hover:border-[#4b4740] hover:bg-[#343330] hover:text-[#f1ede4]"
+                        : "border-[#3a3936] text-[#bcb6aa] hover:border-[#4b4740] hover:bg-[#343330] hover:text-[#f1ede4]"
                         }`}
                     >
                       <span className="truncate text-xs">{session.title}</span>
@@ -1088,22 +1161,29 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                   </div>
 
                   {activeSession && (
-                    <select
-                      value={activeSession.model}
-                      onChange={(e) => switchChatModel(e.target.value)}
-                      disabled={isChatLoading || availableModels.length === 0}
-                      className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d]"
-                    >
-                      {availableModels.length === 0 ? (
-                        <option value="">No models</option>
-                      ) : (
-                        availableModels.map((model) => (
-                          <option key={model} value={model}>
-                            {model}
-                          </option>
-                        ))
-                      )}
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={activeSession.model}
+                        onChange={(e) => switchChatModel(e.target.value)}
+                        disabled={isChatLoading || availableModels.length === 0}
+                        className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none"
+                      >
+                        {availableModels.length === 0 ? (
+                          <option value="">No models</option>
+                        ) : (
+                          availableModels.map((model) => (
+                            <option key={model} value={model}>
+                              {model}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                      <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9d988d]">
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
                   )}
                 </div>
               </header>
@@ -1116,7 +1196,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                         <p className="text-sm text-[#9f988c]">Start a new conversation.</p>
                       </div>
                     ) : (
-                      <div className="mx-auto w-full max-w-5xl space-y-3">
+                      <div className="mx-auto w-full max-w-5xl space-y-3 pb-4">
                         {activeSession.messages.map((message) => (
                           <div
                             key={message.id}
@@ -1151,11 +1231,12 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                     )}
                   </div>
 
-                  <div className="border-t border-[#3a3936] bg-[#2a2a28] px-8 py-5">
-                    <div className="mx-auto flex w-full max-w-5xl items-end gap-2 rounded-xl border border-[#46443f] bg-[#30302e] p-2">
+                  <div className="sticky bottom-0 border-t border-[#3a3936] bg-[#2a2a28] px-8 py-5">
+                    <div className="mx-auto flex w-full max-w-5xl items-center justify-center gap-2 rounded-xl border border-[#46443f] bg-[#30302e] p-2">
                       <textarea
+                        ref={chatInputRef}
                         value={chatInput}
-                        onChange={(e) => setChatInput(e.target.value)}
+                        onChange={(e) => { setChatInput(e.target.value); adjustChatHeight(); }}
                         onKeyDown={handleChatKeyDown}
                         placeholder="Ask anything..."
                         rows={1}
@@ -1166,7 +1247,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                       <button
                         onClick={sendMessage}
                         disabled={isChatLoading || !chatInput.trim()}
-                        className="rounded-lg bg-[#c9a87a] px-3 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="mx-auto self-center rounded-lg bg-[#c9a87a] px-3 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         Send
                       </button>
