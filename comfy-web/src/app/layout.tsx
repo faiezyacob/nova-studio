@@ -13,8 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Image Generator",
-  description: "Generate images with ComfyUI",
+  title: "Nova Studio",
+  description: "AI Image Generator",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
