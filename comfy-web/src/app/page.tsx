@@ -3,6 +3,65 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
 import { Toaster, toast } from "sonner";
 
+function MessageContent({ content }: { content: string }) {
+  const formatInlineBold = (text: string) => {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
+  };
+
+  const formatted = useMemo(() => {
+    const lines = content.split("\n");
+    const elements: React.ReactNode[] = [];
+    let itemKey = 0;
+    
+    let liGroup: React.ReactNode[] = [];
+    const flushLiGroup = () => {
+      if (liGroup.length > 0) {
+        elements.push(
+          <ul key={`ul-${itemKey++}`} className="my-1 space-y-1">
+            {liGroup.map((content, idx) => (
+              <li key={`li-${itemKey}-${idx}`} className="ml-4 list-disc">
+                {content}
+              </li>
+            ))}
+          </ul>
+        );
+        liGroup = [];
+      }
+    };
+
+    lines.forEach((line, i) => {
+      const trimmed = line.trim();
+      if (trimmed === "---") {
+        flushLiGroup();
+        elements.push(<hr key={`hr-${i}`} className="my-3 border-[#46443f]" />);
+      } else if (/^[-*] /.test(trimmed)) {
+        liGroup.push(formatInlineBold(trimmed.replace(/^[-*] /, "")));
+      } else if (/^\d+\. /.test(trimmed)) {
+        liGroup.push(formatInlineBold(trimmed.replace(/^\d+\. /, "")));
+      } else {
+        flushLiGroup();
+        if (trimmed !== "") {
+          elements.push(
+            <span key={`span-${i}`} className="block">
+              {formatInlineBold(line)}
+            </span>
+          );
+        }
+      }
+    });
+    flushLiGroup();
+    return elements;
+  }, [content]);
+
+  return <div className="whitespace-pre-wrap leading-relaxed">{formatted}</div>;
+}
+
 interface HistoryEntry {
   outputs: {
     [nodeId: string]: {
@@ -578,18 +637,6 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
             border: '1px solid #3f3e3a',
             color: '#edeae2',
           },
-          success: {
-            iconTheme: {
-              primary: '#c9a87a',
-              secondary: '#1f1f1d',
-            },
-          },
-          error: {
-            iconTheme: {
-              primary: '#e85d4c',
-              secondary: '#1f1f1d',
-            },
-          },
         }}
       />
 
@@ -939,7 +986,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                                 : "border border-[#46443f] bg-[#30302e] text-[#ece8df]"
                                 }`}
                             >
-                              <p>{message.content}</p>
+                              <MessageContent content={message.content} />
                               <p className={`mt-2 text-[11px] ${message.role === "user" ? "text-[#3b3327]" : "text-[#a39d91]"}`}>
                                 {formatTime(message.timestamp)}
                               </p>
