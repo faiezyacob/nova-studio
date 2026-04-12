@@ -26,11 +26,23 @@ A unified local AI workspace combining image generation and chat capabilities. P
 
 > **Image generation**: The UI of image generation, support multiple image style (casual, professional, cinematic, anime, cgi).
 
-![Nova Studio Image Generation](image.png)
+![Nova Studio Image Generation](examples/image.png)
 
 > **Chat**: The UI of chat, support multiple chat sessions and models.
 
-![Nova Studio Chat](chat.png)
+![Nova Studio Chat](examples/chat.png)
+
+> **Image style**: Difference style of image generation.
+
+![Nova Studio Casual Style](examples/casual.png)
+
+![Nova Studio Professional Style](examples/professional.png)
+
+![Nova Studio Cinematic Style](examples/cinematic.png)
+
+![Nova Studio Anime Style](examples/anime.png)
+
+![Nova Studio CGI Style](examples/cgi.png)
 
 ## Architecture
 
