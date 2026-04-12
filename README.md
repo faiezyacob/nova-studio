@@ -24,9 +24,13 @@ A unified local AI workspace combining image generation and chat capabilities. P
 
 ## Screenshot
 
-> **Note**: Replace this with an actual screenshot of your deployed app.
+> **Image generation**: The UI of image generation, support multiple image style (casual, professional, cinematic, anime, cgi).
 
-![Nova Studio Interface](screenshot.png)
+![Nova Studio Image Generation](image.png)
+
+> **Chat**: The UI of chat, support multiple chat sessions and models.
+
+![Nova Studio Chat](chat.png)
 
 ## Architecture
 
