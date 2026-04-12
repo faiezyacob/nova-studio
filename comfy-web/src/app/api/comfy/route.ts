@@ -118,24 +118,14 @@ function buildWorkflow(promptText: string, prefix: string): ComfyWorkflow {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { prompt, style } = body;
+    const { prompt } = body;
 
     if (!prompt) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
     }
 
-    const styleDescriptions: Record<string, string> = {
-      casual: 'iphone snapshot, grainy, noisy, natural lighting, candid',
-      professional: 'dslr portrait, high definition, professional studio lighting, centered composition, sharp',
-      cinematic: 'cinematic film, movie scene, dramatic lighting, anamorphic lens, film grain, moody',
-      anime: 'anime style, manga artwork, japanese animation, vibrant colors, clean lines',
-      cgi: '3d render, cgi, computer generated, unreal engine, photorealistic, detailed'
-    };
-
-    const stylePrefix = styleDescriptions[style] || '';
-    const fullPrompt = stylePrefix ? `${stylePrefix}, ${prompt}` : prompt;
     const prefix = `gen_${Math.floor(Date.now() / 1000)}`;
-    const workflow = buildWorkflow(fullPrompt, prefix);
+    const workflow = buildWorkflow(prompt, prefix);
     
     const response = await fetch(`${COMFYUI_URL}/prompt`, {
       method: 'POST',

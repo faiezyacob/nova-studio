@@ -34,11 +34,11 @@ A unified local AI workspace combining image generation and chat capabilities. P
 
 > **Image style**: Difference style of image generation.
 
-**Casual**
-![Nova Studio Casual Style](examples/casual.png)
+**Realistic**
+![Nova Studio Realistic Style](examples/realistic.png)
 
-**Professional**
-![Nova Studio Professional Style](examples/professional.png)
+**Photography**
+![Nova Studio Photography Style](examples/photography.png)
 
 **Cinematic**
 ![Nova Studio Cinematic Style](examples/cinematic.png)

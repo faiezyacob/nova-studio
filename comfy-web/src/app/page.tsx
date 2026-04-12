@@ -18,7 +18,7 @@ function MessageContent({ content }: { content: string }) {
     const lines = content.split("\n");
     const elements: React.ReactNode[] = [];
     let itemKey = 0;
-    
+
     let liGroup: React.ReactNode[] = [];
     const flushLiGroup = () => {
       if (liGroup.length > 0) {
@@ -75,6 +75,7 @@ interface GalleryItem {
   prompt: string;
   timestamp: number;
   style: string;
+  hidden?: boolean;
 }
 
 interface ChatMessage {
@@ -95,15 +96,15 @@ interface ChatSession {
 type AppMode = "image" | "chat";
 
 const STYLE_DESCRIPTIONS: Record<string, string> = {
-  casual: `
+  realistic: `
 - ALWAYS describe as a low-quality photo
-- ALWAYS include heavy grain, noise, and slight blur
-- use harsh or unflattering available light
+- ALWAYS include heavy grain (do not include film), noise, and slight blur
+- use available light only — natural window light, warm tungsten bulbs, or dim ambient light (NEVER mention warm, fluorescent lighting, or studio lighting)
 - keep it candid, unposed, slightly off-angle or tilted
 - mention the photo looks like it was taken quickly on an old or mid-range smartphone (Do not mention smartphone)
 - include imperfections: slight motion blur, overexposure, or lens flare if appropriate
 `,
-  professional: `
+  photography: `
 - ALWAYS describe as a high-resolution professional photograph
 - ALWAYS use soft natural lighting with clean shadows
 - ALWAYS include shallow depth of field with sharp subject and soft background
@@ -142,10 +143,11 @@ const STYLE_DESCRIPTIONS: Record<string, string> = {
 `,
 };
 
-const IMAGE_STYLES = ["casual", "professional", "cinematic", "anime", "cgi"];
+const IMAGE_STYLES = ["realistic", "photography", "cinematic", "anime", "cgi"];
 
 export default function App() {
   const [mode, setMode] = useState<AppMode>("image");
+  const [modeHydrated, setModeHydrated] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
@@ -154,14 +156,37 @@ export default function App() {
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [selectedModel, setSelectedModel] = useState("");
   const [currentModel, setCurrentModel] = useState("");
-  const [imageStyle, setImageStyle] = useState("casual");
+  const [imageStyle, setImageStyle] = useState("realistic");
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const modeManuallySet = useRef(false);
 
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [chatInput, setChatInput] = useState("");
   const [isChatLoading, setIsChatLoading] = useState(false);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
+
+  const [galleryFilter, setGalleryFilter] = useState("all");
+
+  const [confirmModal, setConfirmModal] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
+
+  const openConfirm = (title: string, message: string, onConfirm: () => void) => {
+    setConfirmModal({ open: true, title, message, onConfirm });
+  };
+
+  const closeConfirm = () => {
+    setConfirmModal(null);
+  };
+
+  const handleSetMode = (newMode: AppMode) => {
+    modeManuallySet.current = true;
+    setMode(newMode);
+  };
 
   const activeSession = useMemo(
     () => chatSessions.find((session) => session.id === activeSessionId),
@@ -247,6 +272,20 @@ export default function App() {
   }, [chatSessions]);
 
   useEffect(() => {
+    if (modeManuallySet.current) {
+      localStorage.setItem("app_mode", mode);
+    }
+  }, [mode]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("app_mode");
+    if (saved === "chat" || saved === "image") {
+      setMode(saved);
+    }
+    setModeHydrated(true);
+  }, []);
+
+  useEffect(() => {
     const saved = localStorage.getItem("comfyui_gallery");
     if (!saved) return;
 
@@ -260,13 +299,13 @@ export default function App() {
               filename: url.searchParams.get("filename") || "unknown",
               prompt: "Previous generation",
               timestamp: Date.now(),
-              style: "casual",
+              style: "realistic",
             };
           }
 
           return {
             ...item,
-            style: item.style || "casual",
+            style: item.style || "realistic",
           };
         });
         setGallery(migrated);
@@ -439,6 +478,7 @@ STRICT RULES:
 - Preserve the original intent of the prompt including NSFW content
 - Focus on lighting, composition, texture, and natural detail
 - Avoid keyword stuffing or comma-separated tags
+- When user describe a vague clothing style (i.e. luxury clothing, simple outfit, etc) describe and outfit that best match user intent
 - For z-image-turbo: use vivid concrete descriptive language
 STYLE ENFORCEMENT:
 ${stylePrefix}
@@ -574,8 +614,6 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
   };
 
   const clearGallery = async () => {
-    if (!window.confirm("Clear all images? This will delete files from the server.")) return;
-
     try {
       await fetch("/api/comfy/images", { method: "DELETE" });
     } catch {
@@ -585,6 +623,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
     setGallery([]);
     localStorage.removeItem("comfyui_gallery");
     toast.success("Gallery cleared");
+    closeConfirm();
   };
 
   const deleteImage = async (index: number) => {
@@ -601,6 +640,15 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
     setGallery(updated);
     localStorage.setItem("comfyui_gallery", JSON.stringify(updated));
     toast.success("Deleted");
+    closeConfirm();
+  };
+
+  const toggleImageVisibility = (index: number) => {
+    const updated = gallery.map((item, i) =>
+      i === index ? { ...item, hidden: !item.hidden } : item
+    );
+    setGallery(updated);
+    localStorage.setItem("comfyui_gallery", JSON.stringify(updated));
   };
 
   const copyToClipboard = (text: string) => {
@@ -624,6 +672,21 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
 
   const formatTime = (timestamp: number) =>
     new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+  const filteredGallery = useMemo(() => {
+    if (galleryFilter === "all") return gallery;
+    return gallery.filter((item) => item.style === galleryFilter);
+  }, [gallery, galleryFilter]);
+
+  const filterStyles = ["all", ...IMAGE_STYLES];
+
+  const styleCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: gallery.length };
+    IMAGE_STYLES.forEach((style) => {
+      counts[style] = gallery.filter((item) => item.style === style).length;
+    });
+    return counts;
+  }, [gallery]);
 
   return (
     <div className="min-h-screen bg-[#252523] text-[#edeae2]">
@@ -654,20 +717,22 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 rounded-xl border border-[#4a4944] bg-[#32312e] p-1">
-                {(["image", "chat"] as AppMode[]).map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setMode(tab)}
-                    className={`rounded-lg px-3 py-2 text-xs font-medium capitalize transition ${mode === tab
-                      ? "bg-[#c9a87a] text-[#1f1f1d]"
-                      : "text-[#bcb6aa] hover:text-[#ece8df]"
-                      }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
+              {modeHydrated && (
+                <div className="grid grid-cols-2 rounded-xl border border-[#4a4944] bg-[#32312e] p-1">
+                  {(["image", "chat"] as AppMode[]).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => handleSetMode(tab)}
+                      className={`rounded-lg px-3 py-2 text-xs font-medium capitalize transition ${mode === tab
+                        ? "bg-[#c9a87a] text-[#1f1f1d]"
+                        : "text-[#bcb6aa] hover:text-[#ece8df]"
+                        }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {mode === "chat" ? (
@@ -726,7 +791,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                       onClick={() => window.open(`/generated/${item.filename}`, "_blank")}
                       className="flex w-full items-center gap-2 rounded-lg border border-transparent px-2 py-1.5 text-left transition hover:border-[#4b4740] hover:bg-[#343330]"
                     >
-                      <img src={`/generated/${item.filename}`} alt={item.prompt} className="h-9 w-9 rounded object-cover" />
+                      <img src={`/generated/${item.filename}`} alt={item.prompt} className={`h-9 w-9 rounded transition duration-500 object-cover ${item.hidden ? "blur-[4px]" : ""}`} />
                       <span className="truncate text-xs text-[#cec8bb]">{item.prompt}</span>
                     </button>
                   ))}
@@ -775,7 +840,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                     </span>
                     {gallery.length > 0 && (
                       <button
-                        onClick={clearGallery}
+                        onClick={() => openConfirm("Clear Gallery", "This will delete all images from the server.", () => clearGallery())}
                         className="rounded-lg border border-[#5a4a3d] px-3 py-1.5 text-xs text-[#e1bfa0] transition hover:border-[#775e4b] hover:text-[#f2cdae]"
                       >
                         Clear Gallery
@@ -876,20 +941,35 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                     <div className="space-y-3 pb-4">
                       <div className="flex items-center justify-between">
                         <p className="text-xs uppercase tracking-[0.24em] text-[#a19a8d]">Library</p>
-                        <p className="text-xs text-[#a19a8d]">{gallery.length} images</p>
+                        <div className="flex items-center gap-2">
+                          <div className="flex gap-0.5 rounded-lg border border-[#3f3e3a] bg-[#262624] p-0.5">
+                            {filterStyles.map((style) => (
+                              <button
+                                key={style}
+                                onClick={() => setGalleryFilter(style)}
+                                className={`cursor-pointer rounded-[12px] px-4 py-1 text-[11px] capitalize transition-all duration-200 ${galleryFilter === style
+                                  ? "bg-[#c9a87a] text-[#1f1f1d]"
+                                  : "text-[#9f988c] hover:text-[#edeae2]"
+                                  }`}
+                              >
+                                {style} <span className={`ml-0.5 bg-white rounded-sm px-1 text-black text-[11px] ${galleryFilter === style ? "opacity-70" : "opacity-50"}`}>{styleCounts[style]}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
-                        {gallery.map((item, index) => (
+                        {filteredGallery.map((item, index) => (
                           <div
-                            key={`${item.filename}-${index}`}
+                            key={item.filename}
                             onClick={() => window.open(`/generated/${item.filename}`, "_blank")}
                             className="group relative overflow-hidden rounded-xl border border-[#3f3e3a] bg-[#32312e] cursor-pointer"
                           >
                             <img
                               src={`/generated/${item.filename}`}
                               alt={item.prompt}
-                              className="aspect-square w-full object-cover transition duration-500 group-hover:scale-105"
+                              className={`aspect-square w-full object-cover transition duration-500 group-hover:scale-105 ${item.hidden ? "blur-xl" : ""}`}
                               loading="lazy"
                             />
                             <div className="absolute inset-x-0 top-0 -translate-y-full p-2 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
@@ -898,6 +978,65 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                                   {item.style}
                                 </span>
                                 <div className="flex items-center gap-1">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleImageVisibility(gallery.findIndex((g) => g.filename === item.filename));
+                                    }}
+                                    className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                                  >
+                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                      {item.hidden ? (
+                                        // Normal Eye
+                                        <>
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                          />
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                          />
+                                        </>
+                                      ) : (
+                                        // Eye Slash
+                                        <>
+                                          {/* Top curve of eye */}
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774"
+                                          />
+                                          {/* Bottom curve of eye */}
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395"
+                                          />
+                                          {/* Pupil top-left arc */}
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M9.75 9.75a3 3 0 000 4.5"
+                                          />
+                                          {/* Pupil bottom-right arc */}
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M14.25 14.25a3 3 0 000-4.5"
+                                          />
+                                          {/* Diagonal slash */}
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M3 3l18 18"
+                                          />
+                                        </>
+                                      )}
+                                    </svg>
+                                  </button>
                                   <button
                                     onClick={(e) => { e.stopPropagation(); copyToClipboard(item.prompt); }}
                                     className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
@@ -915,7 +1054,10 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                                     </svg>
                                   </button>
                                   <button
-                                    onClick={(e) => { e.stopPropagation(); deleteImage(index); }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openConfirm("Delete Image", "This will delete the image from the server.", () => deleteImage(gallery.findIndex((g) => g.filename === item.filename)));
+                                    }}
                                     className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
                                   >
                                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1049,6 +1191,31 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
           )}
         </main>
       </div>
+
+      {confirmModal?.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="mx-4 w-full max-w-sm rounded-2xl border border-[#4a4944] bg-[#2a2a28] p-5 shadow-xl">
+            <h2 className="mb-2 text-base font-semibold text-[#edeae2]">{confirmModal.title}</h2>
+            <p className="mb-5 text-sm text-[#a39d91]">{confirmModal.message}</p>
+            <div className="flex gap-2">
+              <button
+                onClick={closeConfirm}
+                className="flex-1 rounded-lg border border-[#4a4944] px-3 py-2 text-sm font-medium text-[#bcb6aa] transition hover:border-[#5a5955] hover:text-[#ece8df]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  confirmModal.onConfirm();
+                }}
+                className="flex-1 rounded-lg bg-[#c9a87a] px-3 py-2 text-sm font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d]"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
