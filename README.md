@@ -70,7 +70,7 @@ A unified local AI workspace combining image generation and chat capabilities. P
 - Windows (tested on Windows 11)
 - Node.js 18+ and npm
 - Python 3.11+
-- NVIDIA GPU with 8GB+ VRAM (recommended for image generation)
+- NVIDIA GPU with 12GB+ VRAM (recommended for image generation)
 
 ## Setup
 
