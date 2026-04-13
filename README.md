@@ -70,7 +70,7 @@ A unified local AI workspace combining image generation and chat capabilities. P
 - Windows (tested on Windows 11)
 - Node.js 18+ and npm
 - Python 3.11+
-- NVIDIA GPU with 8GB+ VRAM (recommended for image generation)
+- NVIDIA GPU with 12GB+ VRAM (recommended for image generation)
 
 ## Setup
 
@@ -85,18 +85,15 @@ npm install
 # If not, follow ComfyUI documentation
 ```
 
-### 2. Download Models
+### 2. ComfyUI and LMStudio setup
 
 #### For Image Generation (ComfyUI)
-Place these files in your ComfyUI models folder:
-- `z-image-turbo-fp8-e4m3fn.safetensors` - Main model
-- `Qwen3-4B-Q4_K_S.gguf` - CLIP model
-- `ae.safetensors` - VAE
+1. Place ComfyUI on web-app root directory
 
 #### For LLM Chat (LM Studio)
 1. Download [LM Studio](https://lmstudio.ai/)
 2. Download GGUF/GGML models through the LM Studio app
-3. Load a model on port 1234 (default)
+3. Web-app will list all downloaded models 
 
 ### 3. Start the Application
 
