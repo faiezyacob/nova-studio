@@ -123,6 +123,16 @@ function MessageContent({ content }: { content: string }) {
   return <div className="leading-relaxed">{formatted}</div>;
 }
 
+function ChevronIcon() {
+  return (
+    <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6b6560]">
+      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+      </svg>
+    </div>
+  );
+}
+
 interface HistoryEntry {
   outputs: {
     [nodeId: string]: {
@@ -155,6 +165,24 @@ interface ChatSession {
 }
 
 type AppMode = "image" | "chat";
+
+interface Lora {
+  name: string;
+  strength_model: number;
+  strength_clip: number;
+}
+
+const AVAILABLE_LORAS = [
+  "pixel_art_style_z_image_turbo.safetensors",
+  "zimage_alexandradaddario_v1.safetensors",
+  "zimage_anadearmas_v1.safetensors",
+  "zimage_angelinajolie_v1.safetensors",
+  "zimage_billieeilish_v3.safetensors",
+  "zimage_elizabetholsen_v1.safetensors",
+  "zimage_jenniferlawrence_v2.safetensors",
+  "zimage_madisonbeer_v2.safetensors",
+  "zimage_sydneysweeney_v1.safetensors",
+];
 
 const STYLE_DESCRIPTIONS: Record<string, string> = {
   realistic: `
@@ -239,6 +267,7 @@ export default function App() {
   };
 
   const [galleryFilter, setGalleryFilter] = useState("all");
+  const [selectedLora, setSelectedLora] = useState<Lora>({ name: "", strength_model: 1.0, strength_clip: 1.0 });
 
   const [confirmModal, setConfirmModal] = useState<{
     open: boolean;
@@ -663,7 +692,11 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
       const response = await fetch("/api/comfy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: prompt.trim(), ratio: imageRatio }),
+        body: JSON.stringify({
+          prompt: prompt.trim(),
+          ratio: imageRatio,
+          loras: selectedLora.name ? [selectedLora] : []
+        }),
       });
 
       if (!response.ok) throw new Error("Failed to start generation");
@@ -920,99 +953,198 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
               <section className="flex-1 overflow-y-auto px-8 py-8">
                 <div className="mx-auto w-full max-w-6xl space-y-7">
                   <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] p-4 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
-                    <div className="mb-3 flex flex-wrap items-center gap-2">
-                      <div className="relative">
-                        <select
-                          value={selectedModel}
-                          onChange={(e) => switchModel(e.target.value)}
-                          disabled={isEnhancing || isGenerating || availableModels.length === 0}
-                          className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none"
-                        >
-                          {availableModels.length === 0 ? (
-                            <option value="">No models available</option>
-                          ) : (
-                            availableModels.map((model) => (
-                              <option key={model} value={model}>
-                                {model}
+
+                    {/* Row 1: Model + Action Controls */}
+                    <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+
+                      {/* Model Select */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] uppercase tracking-widest text-[#6b6560] whitespace-nowrap">Model:</span>
+                        <div className="relative min-w-[140px] max-w-[200px]">
+                          <select
+                            value={selectedModel}
+                            onChange={(e) => switchModel(e.target.value)}
+                            disabled={isEnhancing || isGenerating || availableModels.length === 0}
+                            className="w-full rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none truncate disabled:opacity-50"
+                          >
+                            {availableModels.length === 0 ? (
+                              <option value="">No models available</option>
+                            ) : (
+                              availableModels.map((model) => (
+                                <option key={model} value={model}>{model}</option>
+                              ))
+                            )}
+                          </select>
+                          <ChevronIcon />
+                        </div>
+                      </div>
+
+                      {/* Style Select */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] uppercase tracking-widest text-[#6b6560] whitespace-nowrap">Style:</span>
+                        <div className="relative">
+                          <select
+                            value={imageStyle}
+                            onChange={(e) => setImageStyle(e.target.value)}
+                            disabled={isGenerating}
+                            className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none disabled:opacity-50"
+                          >
+                            {IMAGE_STYLES.map((style) => (
+                              <option key={style} value={style}>
+                                {style.charAt(0).toUpperCase() + style.slice(1)}
                               </option>
-                            ))
-                          )}
-                        </select>
-                        <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9d988d]">
-                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                          </svg>
+                            ))}
+                          </select>
+                          <ChevronIcon />
                         </div>
                       </div>
 
-                      <div className="relative">
-                        <select
-                          value={imageStyle}
-                          onChange={(e) => setImageStyle(e.target.value)}
-                          disabled={isGenerating}
-                          className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none"
-                        >
-                          {IMAGE_STYLES.map((style) => (
-                            <option key={style} value={style}>
-                              {style.charAt(0).toUpperCase() + style.slice(1)}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9d988d]">
-                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                          </svg>
+                      {/* Ratio Select */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] uppercase tracking-widest text-[#6b6560] whitespace-nowrap">Ratio:</span>
+                        <div className="relative">
+                          <select
+                            value={imageRatio}
+                            onChange={(e) => setImageRatio(e.target.value)}
+                            disabled={isGenerating}
+                            className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none disabled:opacity-50"
+                          >
+                            <option value="1:1">1:1</option>
+                            <option value="9:16">9:16</option>
+                            <option value="16:9">16:9</option>
+                          </select>
+                          <ChevronIcon />
                         </div>
                       </div>
 
-                      <div className="relative">
-                        <select
-                          value={imageRatio}
-                          onChange={(e) => setImageRatio(e.target.value)}
-                          disabled={isGenerating}
-                          className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none"
-                        >
-                          <option value="1:1">1:1 (1024×1024)</option>
-                          <option value="9:16">9:16 (576×1024)</option>
-                          <option value="16:9">16:9 (1024×576)</option>
-                        </select>
-                        <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9d988d]">
-                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </div>
-                      </div>
-
+                      {/* Enhance Prompt — pushed to far right */}
                       <button
                         onClick={enhancePrompt}
                         disabled={isEnhancing || !prompt.trim() || !selectedModel || availableModels.length === 0}
-                        className="rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-2 text-xs font-medium text-[#f2dbc0] transition hover:bg-[#4a433a] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="ml-auto rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-2 text-xs font-medium text-[#f2dbc0] transition hover:bg-[#4a433a] disabled:cursor-not-allowed disabled:opacity-40"
                       >
-                        {isEnhancing ? "Enhancing..." : "Enhance Prompt"}
+                        {isEnhancing ? (
+                          <span className="flex items-center gap-1.5">
+                            <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                            </svg>
+                            Enhancing…
+                          </span>
+                        ) : (
+                          "✦ Enhance"
+                        )}
                       </button>
                     </div>
 
+                    {/* Divider */}
+                    <div className="mb-3 h-px bg-[#3a3835]" />
+
+                    {/* Row 2: LoRA Controls */}
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                      <span className="text-[10px] uppercase tracking-widest text-[#6b6560] whitespace-nowrap">LoRA:</span>
+
+                      {/* LoRA Name */}
+                      <div className="relative">
+                        <select
+                          value={selectedLora.name}
+                          onChange={(e) => setSelectedLora({ ...selectedLora, name: e.target.value })}
+                          disabled={isGenerating}
+                          className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-1.5 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none max-w-[180px] truncate disabled:opacity-50"
+                        >
+                          <option value="">None</option>
+                          {AVAILABLE_LORAS.map((loraName) => (
+                            <option key={loraName} value={loraName}>
+                              {loraName.replace('.safetensors', '')}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronIcon />
+                      </div>
+
+                      {/* LoRA Strength Slider */}
+                      {selectedLora.name && (
+                        <div className="flex items-center gap-2 flex-1 min-w-[160px]">
+                          <span className="text-[10px] text-[#6b6560]">Strength:</span>
+                          <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.1"
+                            value={selectedLora.strength_model}
+                            onChange={(e) =>
+                              setSelectedLora({ ...selectedLora, strength_model: parseFloat(e.target.value) })
+                            }
+                            disabled={isGenerating}
+                            className="
+            flex-1 h-1.5 appearance-none rounded-full outline-none
+            bg-[#494741] disabled:opacity-50 cursor-pointer
+            [&::-webkit-slider-thumb]:appearance-none
+            [&::-webkit-slider-thumb]:h-3.5
+            [&::-webkit-slider-thumb]:w-3.5
+            [&::-webkit-slider-thumb]:rounded-full
+            [&::-webkit-slider-thumb]:bg-[#c9a87a]
+            [&::-webkit-slider-thumb]:cursor-pointer
+            [&::-webkit-slider-thumb]:transition
+            [&::-webkit-slider-thumb]:hover:bg-[#d8b88d]
+            [&::-moz-range-thumb]:h-3.5
+            [&::-moz-range-thumb]:w-3.5
+            [&::-moz-range-thumb]:rounded-full
+            [&::-moz-range-thumb]:bg-[#c9a87a]
+            [&::-moz-range-thumb]:border-0
+          "
+                          />
+                          {/* Live value badge */}
+                          <span className="w-9 text-center rounded-md bg-[#262624] border border-[#494741] py-0.5 text-[11px] tabular-nums text-[#c9a87a]">
+                            {selectedLora.strength_model.toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Divider */}
+                    <div className="mb-3 h-px bg-[#3a3835]" />
+
+                    {/* Row 3: Prompt Textarea */}
                     <div className="relative">
                       <textarea
                         ref={inputRef}
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                         onKeyDown={handlePromptKeyDown}
-                        placeholder="Describe the scene, mood, lens, and details..."
+                        placeholder="Describe the scene, mood, lens, and details…"
                         rows={4}
-                        className="w-full resize-none rounded-xl border border-[#494741] bg-[#262624] px-3 py-3 pr-24 text-sm text-[#ece8df] outline-none transition placeholder:text-[#8f8778] focus:border-[#b9986d]"
                         disabled={isGenerating}
+                        className="w-full resize-none rounded-xl border border-[#494741] bg-[#262624] px-3 py-3 text-sm text-[#ece8df] outline-none transition placeholder:text-[#6b6560] focus:border-[#b9986d] disabled:opacity-60"
                       />
 
-                      <p className="mt-2 text-xs text-[#91897c]">Shift + Enter for a new line.</p>
+                      {/* Bottom bar inside textarea container */}
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="text-[11px] text-[#6b6560]">Shift + Enter for new line</span>
 
-                      <button
-                        onClick={generateImage}
-                        disabled={isGenerating || !prompt.trim()}
-                        className="absolute bottom-10 right-2 rounded-lg bg-[#c9a87a] px-3 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        {isGenerating ? "Generating" : "Generate"}
-                      </button>
+                        <button
+                          onClick={generateImage}
+                          disabled={isGenerating || !prompt.trim()}
+                          className="flex items-center gap-1.5 rounded-lg bg-[#c9a87a] px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          {isGenerating ? (
+                            <>
+                              <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                              </svg>
+                              Generating…
+                            </>
+                          ) : (
+                            <>
+                              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
+                              </svg>
+                              Generate
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -1178,7 +1310,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                         value={activeSession.model}
                         onChange={(e) => switchChatModel(e.target.value)}
                         disabled={isChatLoading || availableModels.length === 0}
-                        className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none"
+                        className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none max-w-[250px] truncate"
                       >
                         {availableModels.length === 0 ? (
                           <option value="">No models</option>
