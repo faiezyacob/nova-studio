@@ -11,8 +11,16 @@ interface ComfyWorkflow {
   [nodeId: string]: WorkflowNode;
 }
 
-function buildWorkflow(promptText: string, prefix: string): ComfyWorkflow {
+function buildWorkflow(promptText: string, prefix: string, ratio: string): ComfyWorkflow {
   const prompt = `A breathtaking photograph of ${promptText}`;
+  
+  const ratioMap: Record<string, { width: number; height: number; aspectRatio: string }> = {
+    "1:1": { width: 1024, height: 1024, aspectRatio: "1:1" },
+    "9:16": { width: 576, height: 1024, aspectRatio: "9:16" },
+    "16:9": { width: 1024, height: 576, aspectRatio: "16:9" },
+  };
+  
+  const { width, height, aspectRatio } = ratioMap[ratio] || ratioMap["1:1"];
   
   return {
     "32": {
@@ -39,7 +47,7 @@ function buildWorkflow(promptText: string, prefix: string): ComfyWorkflow {
       "class_type": "FluxResolutionNode",
       "inputs": {
         "scale": "1.0",
-        "aspect_ratio": "3:4 (Golden Ratio)",
+        "aspect_ratio": aspectRatio,
         "max_shortest_side": "64",
         "verbose": false,
         "divisible_by": "8",
@@ -78,8 +86,8 @@ function buildWorkflow(promptText: string, prefix: string): ComfyWorkflow {
     "13": {
       "class_type": "EmptySD3LatentImage",
       "inputs": {
-        "width": 1024,
-        "height": 1024,
+        "width": width,
+        "height": height,
         "batch_size": 1
       }
     },
@@ -118,14 +126,14 @@ function buildWorkflow(promptText: string, prefix: string): ComfyWorkflow {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { prompt } = body;
+    const { prompt, ratio } = body;
 
     if (!prompt) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
     }
 
     const prefix = `gen_${Math.floor(Date.now() / 1000)}`;
-    const workflow = buildWorkflow(prompt, prefix);
+    const workflow = buildWorkflow(prompt, prefix, ratio || "1:1");
     
     const response = await fetch(`${COMFYUI_URL}/prompt`, {
       method: 'POST',

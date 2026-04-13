@@ -219,6 +219,7 @@ export default function App() {
   const [selectedModel, setSelectedModel] = useState("");
   const [currentModel, setCurrentModel] = useState("");
   const [imageStyle, setImageStyle] = useState("realistic");
+  const [imageRatio, setImageRatio] = useState("1:1");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const modeManuallySet = useRef(false);
 
@@ -662,7 +663,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
       const response = await fetch("/api/comfy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: prompt.trim() }),
+        body: JSON.stringify({ prompt: prompt.trim(), ratio: imageRatio }),
       });
 
       if (!response.ok) throw new Error("Failed to start generation");
@@ -956,6 +957,24 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                               {style.charAt(0).toUpperCase() + style.slice(1)}
                             </option>
                           ))}
+                        </select>
+                        <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9d988d]">
+                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </div>
+
+                      <div className="relative">
+                        <select
+                          value={imageRatio}
+                          onChange={(e) => setImageRatio(e.target.value)}
+                          disabled={isGenerating}
+                          className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none"
+                        >
+                          <option value="1:1">1:1 (1024×1024)</option>
+                          <option value="9:16">9:16 (576×1024)</option>
+                          <option value="16:9">16:9 (1024×576)</option>
                         </select>
                         <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9d988d]">
                           <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
