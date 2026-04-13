@@ -95,6 +95,9 @@ function MessageContent({ content }: { content: string }) {
       } else if (trimmed.startsWith("### ")) {
         flushLiGroup();
         elements.push(<h3 key={`h3-${i}`} className="mt-3 mb-1 text-sm font-semibold text-[#c9a87a]">{trimmed.slice(4)}</h3>);
+      } else if (trimmed.startsWith("## ")) {
+        flushLiGroup();
+        elements.push(<h3 key={`h3-${i}`} className="mt-3 mb-1 text-base font-bold text-[#c9a87a]">{trimmed.slice(3)}</h3>);
       } else if (trimmed === "---") {
         flushLiGroup();
         elements.push(<hr key={`hr-${i}`} className="my-3 border-[#46443f]" />);
@@ -117,7 +120,7 @@ function MessageContent({ content }: { content: string }) {
     return elements;
   }, [content]);
 
-  return <div className="whitespace-pre-wrap leading-relaxed">{formatted}</div>;
+  return <div className="leading-relaxed">{formatted}</div>;
 }
 
 interface HistoryEntry {
@@ -156,11 +159,11 @@ type AppMode = "image" | "chat";
 const STYLE_DESCRIPTIONS: Record<string, string> = {
   realistic: `
 - ALWAYS describe as a low-quality photo
-- ALWAYS include heavy grain (do not include film), noise, and slight blur
+- ALWAYS include heavy grain (do not include film), noise
 - use available light only — natural window light, warm tungsten bulbs, or dim ambient light (NEVER mention warm, fluorescent lighting, or studio lighting)
 - keep it candid, unposed, slightly off-angle or tilted
 - mention the photo looks like it was taken quickly on an old or mid-range smartphone (Do not mention smartphone)
-- include imperfections: slight motion blur, overexposure, or lens flare if appropriate
+- include imperfections: overexposure, or lens flare if appropriate
 - avoid mentioning term that introduce color tint like warm, cool, etc.
 `,
   photography: `
@@ -390,17 +393,6 @@ export default function App() {
     inputRef.current?.focus();
   }, []);
 
-  useEffect(() => {
-    if (!chatMessagesRef.current) return;
-    const el = chatMessagesRef.current;
-    const id = setTimeout(() => {
-      requestAnimationFrame(() => {
-        el.scrollTop = el.scrollHeight;
-      });
-    }, 100);
-    return () => clearTimeout(id);
-  }, [activeSessionId, activeSession?.messages?.length]);
-
   const createNewSession = () => {
     const newSession: ChatSession = {
       id: `session_${Date.now()}`,
@@ -552,6 +544,7 @@ STRICT RULES:
 - Focus on lighting, composition, texture, and natural detail
 - Avoid keyword stuffing or comma-separated tags
 - When user describe a vague clothing style (i.e. luxury clothing, simple outfit, etc) describe and outfit that best match user intent
+- Maintain the NSFW content from original prompt
 - For z-image-turbo: use vivid concrete descriptive language
 STYLE ENFORCEMENT:
 ${stylePrefix}
