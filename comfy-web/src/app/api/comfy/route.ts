@@ -17,19 +17,11 @@ interface Lora {
   strength_clip: number;
 }
 
-function buildWorkflow(promptText: string, prefix: string, ratio: string, lora: Lora | null = null): ComfyWorkflow {
+function buildWorkflow(promptText: string, prefix: string, width: number, height: number, lora: Lora | null = null): ComfyWorkflow {
   const prompt = `A breathtaking photograph of ${promptText}`;
-  
-  const ratioMap: Record<string, { width: number; height: number }> = {
-    "1:1": { width: 1024, height: 1024 },
-    "9:16": { width: 576, height: 1024 },
-    "16:9": { width: 1024, height: 576 },
-  };
-  
-  const { width, height } = ratioMap[ratio] || ratioMap["1:1"];
-  
+
   const nodes: ComfyWorkflow = {};
-  
+
   nodes["16"] = {
     "class_type": "UNETLoader",
     "inputs": {
@@ -44,10 +36,10 @@ function buildWorkflow(promptText: string, prefix: string, ratio: string, lora: 
       "type": "lumina2"
     }
   };
-  
+
   let modelNodeId = "16";
   let clipNodeId = "32";
-  
+
   if (lora && lora.name) {
     nodes["100"] = {
       "class_type": "LoraLoader",
@@ -62,7 +54,7 @@ function buildWorkflow(promptText: string, prefix: string, ratio: string, lora: 
     modelNodeId = "100";
     clipNodeId = "100";
   }
-  
+
   nodes["17"] = {
     "class_type": "VAELoader",
     "inputs": {
@@ -86,14 +78,14 @@ function buildWorkflow(promptText: string, prefix: string, ratio: string, lora: 
   nodes["6"] = {
     "class_type": "CLIPTextEncode",
     "inputs": {
-      "clip": [clipNodeId, 1],
+      "clip": [clipNodeId, lora ? 1 : 0],
       "text": prompt
     }
   };
   nodes["7"] = {
     "class_type": "CLIPTextEncode",
     "inputs": {
-      "clip": [clipNodeId, 1],
+      "clip": [clipNodeId, lora ? 1 : 0],
       "text": ""
     }
   };
@@ -113,7 +105,7 @@ function buildWorkflow(promptText: string, prefix: string, ratio: string, lora: 
       "negative": ["7", 0],
       "latent_image": ["13", 0],
       "seed": 641656615969061,
-      "steps": 8,
+      "steps": 9,
       "cfg": 1.0,
       "sampler_name": "euler",
       "scheduler": "simple",
@@ -134,23 +126,26 @@ function buildWorkflow(promptText: string, prefix: string, ratio: string, lora: 
       "filename_prefix": prefix
     }
   };
-  
+
   return nodes;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { prompt, ratio, loras } = body;
+    const { prompt, width, height, loras } = body;
 
     if (!prompt) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
     }
 
+    const finalWidth = Math.max(256, Math.min(2048, width || 1024));
+    const finalHeight = Math.max(256, Math.min(2048, height || 1024));
+
     const prefix = `gen_${Math.floor(Date.now() / 1000)}`;
     const lora = loras && loras.length > 0 ? loras[0] : null;
-    const workflow = buildWorkflow(prompt, prefix, ratio || "1:1", lora);
-    
+    const workflow = buildWorkflow(prompt, prefix, finalWidth, finalHeight, lora);
+
     const response = await fetch(`${COMFYUI_URL}/prompt`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

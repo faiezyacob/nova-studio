@@ -174,62 +174,66 @@ interface Lora {
 
 const AVAILABLE_LORAS = [
   "pixel_art_style_z_image_turbo.safetensors",
-  "zimage_alexandradaddario_v1.safetensors",
-  "zimage_anadearmas_v1.safetensors",
-  "zimage_angelinajolie_v1.safetensors",
-  "zimage_billieeilish_v3.safetensors",
-  "zimage_elizabetholsen_v1.safetensors",
-  "zimage_jenniferlawrence_v2.safetensors",
-  "zimage_madisonbeer_v2.safetensors",
+  "zimage_anadearmas_v2_onetrainer.safetensors",
+  "zimage_alexandradaddario_v2_onetrainer.safetensors",
+  "zimage_angelinajolie_v2_onetrainer.safetensors",
+  "zimage_billieeilish_v2_onetrainer.safetensors",
+  "zimage_elizabetholsen_v2_onetrainer.safetensors",
+  "zimage_gigihadid_v2_onetrainer.safetensors",
+  "zimage_jenniferlawrence_v2_onetrainer.safetensors",
+  "zimage_madisonbeer_v2_onetrainer.safetensors",
+  "zimage_miakhalifa_v2_onetrainer.safetensors",
   "zimage_sydneysweeney_v1.safetensors",
 ];
 
 const STYLE_DESCRIPTIONS: Record<string, string> = {
   realistic: `
-- ALWAYS describe as a low-quality photo
-- ALWAYS include heavy grain (do not include film), noise
-- use available light only — natural window light, warm tungsten bulbs, or dim ambient light (NEVER mention warm, fluorescent lighting, or studio lighting)
-- keep it candid, unposed, slightly off-angle or tilted
-- mention the photo looks like it was taken quickly on an old or mid-range smartphone (Do not mention smartphone)
-- include imperfections: overexposure, or lens flare if appropriate
-- avoid mentioning term that introduce color tint like warm, cool, etc.
+- ALWAYS describe as a candid photo captured in real life
+- use natural available light such as window light, indoor lamps, street lighting at night
+- keep composition unplanned, slightly off-center, handheld framing
+- include subtle motion blur or focus inconsistency when natural
+- include realistic computational processing such as HDR, auto exposure adjustment, and slight sharpening
+- include minor imperfections like uneven exposure, background clutter, or reflections
+- keep skin, fabric, and environment textures natural and unretouched
+- avoid cinematic mood, avoid stylization, avoid artistic grading
+- do NOT describe as film, DSLR, or professional photography
+- ensure it feels like a real everyday moment captured quickly on a phone camera
 `,
   photography: `
-- ALWAYS describe as a high-resolution professional photograph
-- ALWAYS use soft natural lighting with clean shadows
-- ALWAYS include shallow depth of field with sharp subject and soft background
-- position subject using rule of thirds or slightly off-center
-- ALWAYS ensure composition feels intentional, balanced, and visually pleasing
-- keep background simple, uncluttered, and non-distracting
-- include fine detail and clarity in the subject
-- avoid any grain, noise, blur, or imperfections
+- describe as a high-quality professional camera photograph captured in real environments
+- natural but controlled lighting such as soft daylight, golden hour, or studio-like practical lighting when appropriate
+- subject is clearly the focus but still feels part of a real environment
+- composition feels intentional but not artificially perfect or overly staged
+- include realistic depth of field depending on lens behavior (not always shallow)
+- preserve fine texture detail in skin, fabric, and materials
+- subtle natural imperfections are allowed but must not feel like noise or damage
+- avoid cinematic mood, avoid dramatic grading, avoid stylized effects
 `,
   cinematic: `
-- ALWAYS describe as a dramatic cinematic film still
-- ALWAYS use strong directional or moody lighting
-- ALWAYS include heavy contrast, deep shadows, and rich color grading
-- ALWAYS add a sense of story, tension, or atmosphere like a scene from a movie
-- use a widescreen composition feel with subject placed intentionally in frame
-- ALWAYS include visible film grain and a color-graded tone
-- keep the mood dark, intense, or emotionally charged
+- describe as a frame extracted from a live-action film scene with narrative context
+- lighting should feel motivated by real sources such as streetlights, practical lamps, sunlight through windows, or environmental light sources
+- composition should feel deliberately framed like a shot from a director, with foreground and background storytelling
+- depth, atmosphere, and spatial layering are important to create scene immersion
+- color grading should support mood but remain physically believable and not over-stylized
+- include natural film characteristics such as grain and slight lens imperfections when appropriate
+- the scene should feel like something happening, not a posed image
 `,
   anime: `
-- ALWAYS describe as a high-quality anime-style illustration
-- ALWAYS use clean bold outlines and cel-shaded or soft anime coloring
-- ALWAYS include stylized anime facial features
-- use vibrant saturated colors with dynamic lighting typical of anime art
-- ALWAYS match the background style to anime environments
-- keep the art style consistent with modern anime aesthetics
-- avoid any photorealistic elements
+- describe as a modern high-quality anime illustration consistent with contemporary Japanese animation production
+- expressive characters with stylized facial features and clear emotional readability
+- clean linework integrated naturally into the illustration rather than outlined separately
+- lighting and shading should follow anime production techniques such as soft gradient shading or cel shading depending on scene
+- environments should feel like fully designed anime worlds with depth and atmosphere
+- colors should be expressive and intentional but still harmonious
+- maintain consistent art style across characters and background without mixing realism
 `,
   cgi: `
-- ALWAYS describe as a high-quality photorealistic 3D CGI render
-- ALWAYS include detailed physically-based materials
-- ALWAYS use dramatic studio or environmental lighting with realistic shadows and reflections
-- ALWAYS emphasize depth, texture detail, and render quality
-- include ambient occlusion and realistic light bounce
-- keep the scene polished and production-quality like a game cinematic or animated film render
-- avoid any hand-drawn or painterly qualities
+- describe as a high-end 3D rendered scene from a modern production pipeline such as film, animation, or AAA game cinematics
+- materials should behave realistically with physically based rendering such as metal, glass, fabric, or skin responding naturally to light
+- lighting can come from both practical and environmental sources with realistic bounce and shadow behavior
+- include subtle render imperfections like aliasing, micro-noise, or lens effects when appropriate
+- emphasize spatial depth, scale, and physical presence of objects in the scene
+- avoid overly sterile or toy-like perfection unless specifically required by the subject
 `,
 };
 
@@ -247,7 +251,9 @@ export default function App() {
   const [selectedModel, setSelectedModel] = useState("");
   const [currentModel, setCurrentModel] = useState("");
   const [imageStyle, setImageStyle] = useState("realistic");
-  const [imageRatio, setImageRatio] = useState("1:1");
+  const [imageWidth, setImageWidth] = useState(1024);
+  const [imageHeight, setImageHeight] = useState(1024);
+  const [lockAspectRatio, setLockAspectRatio] = useState(true);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const modeManuallySet = useRef(false);
 
@@ -267,6 +273,7 @@ export default function App() {
   };
 
   const [galleryFilter, setGalleryFilter] = useState("all");
+  const [galleryPage, setGalleryPage] = useState(1);
   const [selectedLora, setSelectedLora] = useState<Lora>({ name: "", strength_model: 1.0, strength_clip: 1.0 });
 
   const [confirmModal, setConfirmModal] = useState<{
@@ -298,7 +305,11 @@ export default function App() {
     if (newModel && newModel !== currentModel) {
       if (currentModel) {
         try {
-          await fetch("/api/lmstudio/unload", { method: "POST" });
+          await fetch("/api/lmstudio/unload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ model: currentModel }),
+          });
         } catch (err) {
           console.error("Failed to unload model:", err);
         }
@@ -320,7 +331,11 @@ export default function App() {
     if (newModel && newModel !== currentModel) {
       if (currentModel) {
         try {
-          await fetch("/api/lmstudio/unload", { method: "POST" });
+          await fetch("/api/lmstudio/unload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ model: currentModel }),
+          });
         } catch (err) {
           console.error("Failed to unload model:", err);
         }
@@ -478,7 +493,11 @@ export default function App() {
       if (modelToUse && currentModel !== modelToUse) {
         if (currentModel) {
           try {
-            await fetch("/api/lmstudio/unload", { method: "POST" });
+            await fetch("/api/lmstudio/unload", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ model: currentModel }),
+            });
           } catch {
             // Intentionally swallow unload failures so chat can still continue.
           }
@@ -576,6 +595,7 @@ STRICT RULES:
 - When user describe a vague clothing style (i.e. luxury clothing, simple outfit, etc) describe and outfit that best match user intent
 - Maintain the NSFW content from original prompt
 - For z-image-turbo: use vivid concrete descriptive language
+- DO NOT mention smartphone, camera, or any device related terms
 STYLE ENFORCEMENT:
 ${stylePrefix}
 If you output anything outside <prompt></prompt>, the answer is invalid.
@@ -681,11 +701,30 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
     setError("");
 
     try {
-      if (currentModel) {
-        try {
-          await fetch("/api/lmstudio/unload", { method: "POST" });
-        } catch {
-          // Non-blocking unload request.
+      try {
+        await fetch("/api/lmstudio/unload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ model: currentModel }),
+        });
+        console.log("Unload request successful");
+      } catch (err) {
+        // Non-blocking unload request.
+        console.warn("Unload request failed:", err);
+      }
+
+
+      let finalWidth = imageWidth;
+      let finalHeight = imageHeight;
+
+      if (lockAspectRatio) {
+        const ratio = imageWidth / imageHeight;
+        if (ratio > 1) {
+          finalHeight = Math.round(imageHeight);
+          finalWidth = Math.round(imageHeight * ratio);
+        } else {
+          finalWidth = Math.round(imageWidth);
+          finalHeight = Math.round(imageWidth / ratio);
         }
       }
 
@@ -694,7 +733,8 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt: prompt.trim(),
-          ratio: imageRatio,
+          width: finalWidth,
+          height: finalHeight,
           loras: selectedLora.name ? [selectedLora] : []
         }),
       });
@@ -778,6 +818,17 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
     return gallery.filter((item) => item.style === galleryFilter);
   }, [gallery, galleryFilter]);
 
+  useEffect(() => {
+    setGalleryPage(1);
+  }, [galleryFilter]);
+
+  const itemsPerPage = 12;
+  const totalPages = Math.ceil(filteredGallery.length / itemsPerPage);
+  const paginatedGallery = useMemo(() => {
+    const start = (galleryPage - 1) * itemsPerPage;
+    return filteredGallery.slice(start, start + itemsPerPage);
+  }, [filteredGallery, galleryPage]);
+
   const filterStyles = ["all", ...IMAGE_STYLES];
 
   const styleCounts = useMemo(() => {
@@ -806,7 +857,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
       <div className="flex min-h-screen w-full">
         <aside className="sticky top-0 h-screen w-72 border-r border-[#3a3936] bg-[#2b2b29]">
           <div className="flex h-full flex-col">
-            <div className="border-b border-[#3a3936] p-5">
+            <div className="border-b border-[#3a3936] px-3 py-5">
               <div className="mb-5 flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#4a4944] bg-[#32312e]">
                   <div className="h-4 w-4 rounded-full border-2 border-[#c9a87a]" />
@@ -954,12 +1005,12 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                 <div className="mx-auto w-full max-w-6xl space-y-7">
                   <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] p-4 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
 
-                    {/* Row 1: Model + Action Controls */}
-                    <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                    {/* Row 1: Model + Style + Enhance */}
+                    <div className="mb-3 flex flex-wrap items-stretch gap-3">
 
-                      {/* Model Select */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] uppercase tracking-widest text-[#6b6560] whitespace-nowrap">Model:</span>
+                      {/* Model */}
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Model</span>
                         <div className="relative min-w-[140px] max-w-[200px]">
                           <select
                             value={selectedModel}
@@ -979,9 +1030,9 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                         </div>
                       </div>
 
-                      {/* Style Select */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] uppercase tracking-widest text-[#6b6560] whitespace-nowrap">Style:</span>
+                      {/* Style */}
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Style</span>
                         <div className="relative">
                           <select
                             value={imageStyle}
@@ -999,73 +1050,60 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                         </div>
                       </div>
 
-                      {/* Ratio Select */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] uppercase tracking-widest text-[#6b6560] whitespace-nowrap">Ratio:</span>
-                        <div className="relative">
-                          <select
-                            value={imageRatio}
-                            onChange={(e) => setImageRatio(e.target.value)}
-                            disabled={isGenerating}
-                            className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none disabled:opacity-50"
-                          >
-                            <option value="1:1">1:1</option>
-                            <option value="9:16">9:16</option>
-                            <option value="16:9">16:9</option>
-                          </select>
-                          <ChevronIcon />
-                        </div>
+                      {/* Enhance */}
+                      <div className="ml-auto flex flex-col gap-1 items-center justify-center">
+                        <button
+                          onClick={enhancePrompt}
+                          disabled={isEnhancing || !prompt.trim() || !selectedModel || availableModels.length === 0}
+                          className="cursor-pointer rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-2 text-xs font-medium text-[#f2dbc0] transition hover:bg-[#4a433a] disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          {isEnhancing ? (
+                            <span className="flex items-center gap-1.5">
+                              <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                              </svg>
+                              Enhancing…
+                            </span>
+                          ) : (
+                            "✦ Enhance"
+                          )}
+                        </button>
                       </div>
-
-                      {/* Enhance Prompt — pushed to far right */}
-                      <button
-                        onClick={enhancePrompt}
-                        disabled={isEnhancing || !prompt.trim() || !selectedModel || availableModels.length === 0}
-                        className="ml-auto rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-2 text-xs font-medium text-[#f2dbc0] transition hover:bg-[#4a433a] disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        {isEnhancing ? (
-                          <span className="flex items-center gap-1.5">
-                            <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                            </svg>
-                            Enhancing…
-                          </span>
-                        ) : (
-                          "✦ Enhance"
-                        )}
-                      </button>
                     </div>
 
                     {/* Divider */}
                     <div className="mb-3 h-px bg-[#3a3835]" />
 
-                    {/* Row 2: LoRA Controls */}
-                    <div className="mb-3 flex flex-wrap items-center gap-2">
-                      <span className="text-[10px] uppercase tracking-widest text-[#6b6560] whitespace-nowrap">LoRA:</span>
+                    {/* Row 2: LoRA + Strength + Ratio */}
+                    <div className="mb-3 flex flex-wrap items-end gap-3">
 
-                      {/* LoRA Name */}
-                      <div className="relative">
-                        <select
-                          value={selectedLora.name}
-                          onChange={(e) => setSelectedLora({ ...selectedLora, name: e.target.value })}
-                          disabled={isGenerating}
-                          className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-1.5 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none max-w-[180px] truncate disabled:opacity-50"
-                        >
-                          <option value="">None</option>
-                          {AVAILABLE_LORAS.map((loraName) => (
-                            <option key={loraName} value={loraName}>
-                              {loraName.replace('.safetensors', '')}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronIcon />
+                      {/* LoRA Select */}
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">LoRA</span>
+                        <div className="relative">
+                          <select
+                            value={selectedLora.name}
+                            onChange={(e) => setSelectedLora({ ...selectedLora, name: e.target.value })}
+                            disabled={isGenerating}
+                            className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none disabled:opacity-50"
+                          >
+                            <option value="">None</option>
+                            {AVAILABLE_LORAS.map((loraName) => (
+                              <option key={loraName} value={loraName}>
+                                {loraName.replace('.safetensors', '')}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronIcon />
+                        </div>
                       </div>
 
-                      {/* LoRA Strength Slider */}
-                      {selectedLora.name && (
-                        <div className="flex items-center gap-2 flex-1 min-w-[160px]">
-                          <span className="text-[10px] text-[#6b6560]">Strength:</span>
+                      {/* Strength — only when LoRA selected */}
+
+                      <div className="flex flex-col gap-1 min-w-[140px] max-w-[200px]">
+                        <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Strength</span>
+                        <div className="flex items-center gap-2 h-[34px]">
                           <input
                             type="range"
                             min="0"
@@ -1094,18 +1132,74 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
             [&::-moz-range-thumb]:border-0
           "
                           />
-                          {/* Live value badge */}
                           <span className="w-9 text-center rounded-md bg-[#262624] border border-[#494741] py-0.5 text-[11px] tabular-nums text-[#c9a87a]">
                             {selectedLora.strength_model.toFixed(2)}
                           </span>
                         </div>
-                      )}
+                      </div>
+
+                      {/* Dimensions */}
+                      <div className="flex flex-wrap items-end gap-3">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Width</span>
+                          <input
+                            type="number"
+                            value={imageWidth}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value) || 512;
+                              setImageWidth(val);
+                              if (lockAspectRatio && imageHeight > 0) {
+                                const aspectRatio = imageWidth / imageHeight;
+                                setImageHeight(Math.round(val / aspectRatio));
+                              }
+                            }}
+                            disabled={isGenerating}
+                            min={256}
+                            max={2048}
+                            step={8}
+                            className="w-20 rounded-lg border border-[#494741] bg-[#262624] px-2 py-2 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] disabled:opacity-50"
+                          />
+                        </div>
+
+                        <button
+                          onClick={() => setLockAspectRatio(!lockAspectRatio)}
+                          disabled={isGenerating}
+                          className={`mb-0.5 rounded-lg border p-1.5 transition disabled:opacity-50 ${lockAspectRatio ? "border-[#c9a87a] text-[#c9a87a]" : "border-[#494741] text-[#6b6560]"}`}
+                          title="Lock aspect ratio"
+                        >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                        </button>
+
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Height</span>
+                          <input
+                            type="number"
+                            value={imageHeight}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value) || 512;
+                              setImageHeight(val);
+                              if (lockAspectRatio && imageHeight > 0) {
+                                const aspectRatio = imageWidth / imageHeight;
+                                setImageWidth(Math.round(val * aspectRatio));
+                              }
+                            }}
+                            disabled={isGenerating}
+                            min={256}
+                            max={2048}
+                            step={8}
+                            className="w-20 rounded-lg border border-[#494741] bg-[#262624] px-2 py-2 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] disabled:opacity-50"
+                          />
+                        </div>
+                      </div>
+
                     </div>
 
                     {/* Divider */}
                     <div className="mb-3 h-px bg-[#3a3835]" />
 
-                    {/* Row 3: Prompt Textarea */}
+                    {/* Row 3: Prompt */}
                     <div className="relative">
                       <textarea
                         ref={inputRef}
@@ -1118,14 +1212,13 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                         className="w-full resize-none rounded-xl border border-[#494741] bg-[#262624] px-3 py-3 text-sm text-[#ece8df] outline-none transition placeholder:text-[#6b6560] focus:border-[#b9986d] disabled:opacity-60"
                       />
 
-                      {/* Bottom bar inside textarea container */}
                       <div className="mt-2 flex items-center justify-between">
                         <span className="text-[11px] text-[#6b6560]">Shift + Enter for new line</span>
 
                         <button
                           onClick={generateImage}
                           disabled={isGenerating || !prompt.trim()}
-                          className="flex items-center gap-1.5 rounded-lg bg-[#c9a87a] px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:cursor-not-allowed disabled:opacity-40"
+                          className="cursor-pointer flex items-center gap-1.5 rounded-lg bg-[#c9a87a] px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           {isGenerating ? (
                             <>
@@ -1177,7 +1270,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                       </div>
 
                       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
-                        {filteredGallery.map((item, index) => (
+                        {paginatedGallery.map((item, index) => (
                           <div
                             key={item.filename}
                             onClick={() => window.open(`/generated/${item.filename}`, "_blank")}
@@ -1290,6 +1383,28 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                           </div>
                         ))}
                       </div>
+
+                      {totalPages > 1 && (
+                        <div className="flex items-center justify-between pt-4">
+                          <button
+                            onClick={() => setGalleryPage((p) => Math.max(1, p - 1))}
+                            disabled={galleryPage === 1}
+                            className="rounded-lg border border-[#494741] px-3 py-1.5 text-xs text-[#bcb6aa] transition hover:border-[#5a4f40] hover:text-[#edeae2] disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            ← Prev
+                          </button>
+                          <span className="text-xs text-[#9f988c]">
+                            {galleryPage} / {totalPages}
+                          </span>
+                          <button
+                            onClick={() => setGalleryPage((p) => Math.min(totalPages, p + 1))}
+                            disabled={galleryPage === totalPages}
+                            className="rounded-lg border border-[#494741] px-3 py-1.5 text-xs text-[#bcb6aa] transition hover:border-[#5a4f40] hover:text-[#edeae2] disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            Next →
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
