@@ -38,6 +38,16 @@ interface VideoWorkspaceProps {
   closeConfirm: () => void;
 }
 
+function ChevronIcon() {
+  return (
+    <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6b6560]">
+      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+      </svg>
+    </div>
+  );
+}
+
 const STORAGE_KEY = 'video_workspace_state';
 const VIDEO_GALLERY_KEY = 'video_gallery';
 
@@ -380,6 +390,20 @@ Rules:
     closeConfirm();
   };
 
+  const clearVideoGallery = async () => {
+    try {
+      await fetch("/api/comfy/images?type=video", { method: "DELETE" });
+    } catch {
+      // Still clear local state even if server deletion fails.
+    }
+
+    setVideoGallery([]);
+    setVideoResult(null);
+    localStorage.removeItem(VIDEO_GALLERY_KEY);
+    toast.success("Gallery cleared");
+    closeConfirm();
+  };
+
   return (
     <>
       <header className="sticky top-0 z-20 border-b border-[#3a3936] bg-[#2a2a28]/95 px-8 py-5 backdrop-blur">
@@ -390,6 +414,16 @@ Rules:
               <h1 className="text-base font-semibold text-[#edeae2]">Wan Video Generator</h1>
               <p className="text-xs text-[#9f988c]">Image to video with Wan2.2</p>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {videoGallery.length > 0 && (
+              <button
+                onClick={() => openConfirm("Clear Gallery", "This will delete all videos from the server.", () => clearVideoGallery())}
+                className="rounded-lg border border-[#5a4a3d] px-3 py-1.5 text-xs text-[#e1bfa0] transition hover:border-[#775e4b] hover:text-[#f2cdae]"
+              >
+                Clear Gallery
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -441,18 +475,18 @@ Rules:
 
           {/* Size & Duration Controls */}
           <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] p-5 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
-            <div className="flex flex-wrap items-center gap-6">
+            <div className="flex flex-wrap items-start gap-6">
 
               {/* Video Size */}
               <div className="flex flex-col gap-2">
                 <p className="text-[10px] uppercase tracking-widest text-[#6b6560]">Video Size</p>
-                <div className="flex gap-1 rounded-xl border border-[#494741] bg-[#262624] p-1">
+                <div className="flex h-[38px] items-center gap-1 rounded-xl border border-[#494741] bg-[#262624] p-1">
                   {(['480', '720'] as const).map((size) => (
                     <button
                       key={size}
                       onClick={() => updateWorkspaceState({ videoSize: size })}
                       disabled={isGenerating}
-                      className={`rounded-lg px-4 py-2 text-sm font-medium transition ${videoSize === size
+                      className={`h-full rounded-lg px-4 text-sm font-medium transition ${videoSize === size
                         ? 'bg-[#c9a87a] text-[#1f1f1d]'
                         : 'text-[#bcb6aa] hover:text-[#edeae2]'
                         } disabled:opacity-50`}
@@ -469,7 +503,7 @@ Rules:
                 <button
                   onClick={() => updateWorkspaceState({ matchImageSize: !matchImageSize })}
                   disabled={isGenerating || !uploadedImage}
-                  className={`flex items-center gap-2 rounded-xl border border-[#494741] bg-[#262624] px-4 py-2 text-sm transition hover:border-[#5a554a] disabled:opacity-50 ${matchImageSize && uploadedImage ? 'text-[#c9a87a]' : 'text-[#bcb6aa]'
+                  className={`flex h-[38px] items-center gap-2 rounded-xl border border-[#494741] bg-[#262624] px-4 text-sm transition hover:border-[#5a554a] disabled:opacity-50 ${matchImageSize && uploadedImage ? 'text-[#c9a87a]' : 'text-[#bcb6aa]'
                     }`}
                 >
                   <div className={`h-3 w-3 rounded-sm border transition-colors ${matchImageSize && uploadedImage ? 'bg-[#c9a87a] border-[#c9a87a]' : 'border-[#6b6560]'
@@ -487,7 +521,7 @@ Rules:
               {/* Resolution Display */}
               <div className="flex flex-col gap-2">
                 <p className="text-[10px] uppercase tracking-widest text-[#6b6560]">Target Resolution</p>
-                <div className="flex items-center justify-center rounded-lg bg-[#262624] border border-[#494741] px-3 py-2 text-sm tabular-nums text-[#c9a87a]">
+                <div className="flex h-[38px] items-center justify-center rounded-lg bg-[#262624] border border-[#494741] px-4 text-sm tabular-nums text-[#c9a87a]">
                   {targetDimensions.width} × {targetDimensions.height}
                 </div>
               </div>
@@ -495,7 +529,7 @@ Rules:
               {/* Duration in Frames */}
               <div className="flex flex-col gap-2">
                 <p className="text-[10px] uppercase tracking-widest text-[#6b6560]">Duration (Frames)</p>
-                <div className="flex items-center gap-2">
+                <div className="flex h-[38px] items-center gap-3">
                   <input
                     type="range"
                     min="17"
@@ -504,7 +538,7 @@ Rules:
                     value={durationFrames}
                     onChange={(e) => updateWorkspaceState({ durationFrames: parseInt(e.target.value) })}
                     disabled={isGenerating}
-                    className="w-32 appearance-none rounded-full bg-[#494741] py-1.5 disabled:opacity-50 cursor-pointer
+                    className="w-32 appearance-none rounded-full bg-[#494741] py-1 disabled:opacity-50 cursor-pointer
                       [&::-webkit-slider-thumb]:appearance-none
                       [&::-webkit-slider-thumb]:h-4
                       [&::-webkit-slider-thumb]:w-4
@@ -517,11 +551,11 @@ Rules:
                       [&::-moz-range-thumb]:bg-[#c9a87a]
                       [&::-moz-range-thumb]:border-0"
                   />
-                  <span className="w-12 rounded-lg bg-[#262624] border border-[#494741] px-2 py-1 text-center text-sm tabular-nums text-[#c9a87a]">
+                  <span className="flex h-[30px] w-12 items-center justify-center rounded-lg bg-[#262624] border border-[#494741] text-center text-sm tabular-nums text-[#c9a87a]">
                     {durationFrames}
                   </span>
                 </div>
-                <p className="text-xs text-[#6b6560]">
+                <p className="text-[11px] text-[#6b6560] leading-none">
                   ~{(durationFrames / 16).toFixed(1)}s at 16fps
                 </p>
               </div>
@@ -531,29 +565,44 @@ Rules:
           {/* Prompt Input */}
           <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] p-5 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
             <div className="mb-3 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <select
-                  value={selectedModel}
-                  onChange={(e) => setSelectedModel(e.target.value)}
-                  disabled={isEnhancing || availableModels.length === 0}
-                  className="rounded-lg border border-[#494741] bg-[#262624] px-2 py-1.5 text-xs text-[#edeae2] outline-none focus:border-[#b9986d] disabled:opacity-50"
-                >
-                  {availableModels.length === 0 ? (
-                    <option value="">Loading models...</option>
-                  ) : (
-                    availableModels.map((model) => (
-                      <option key={model} value={model}>{model}</option>
-                    ))
-                  )}
-                </select>
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Motion Model</span>
+                <div className="relative min-w-[200px]">
+                  <select
+                    value={selectedModel}
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    disabled={isEnhancing || availableModels.length === 0}
+                    className="w-full h-[32px] rounded-lg border border-[#494741] bg-[#262624] px-3 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none truncate disabled:opacity-50"
+                  >
+                    {availableModels.length === 0 ? (
+                      <option value="">Loading models...</option>
+                    ) : (
+                      availableModels.map((model) => (
+                        <option key={model} value={model}>{model}</option>
+                      ))
+                    )}
+                  </select>
+                  <ChevronIcon />
+                </div>
               </div>
-              <button
-                onClick={enhancePrompt}
-                disabled={isEnhancing || !prompt.trim() || !selectedModel || availableModels.length === 0}
-                className="cursor-pointer rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-1.5 text-xs font-medium text-[#f2dbc0] transition hover:bg-[#4a433a] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {isEnhancing ? 'Enhancing...' : '✦ Enhance'}
-              </button>
+
+              <div className="flex flex-col gap-1 items-end self-end">
+                <button
+                  onClick={enhancePrompt}
+                  disabled={isEnhancing || !prompt.trim() || !selectedModel || availableModels.length === 0}
+                  className="cursor-pointer h-[32px] flex items-center gap-1.5 rounded-lg border border-[#5a4f40] bg-[#3a352e] px-4 text-xs font-medium text-[#f2dbc0] transition hover:bg-[#4a433a] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {isEnhancing ? (
+                    <>
+                      <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                      </svg>
+                      Enhancing...
+                    </>
+                  ) : '✦ Enhance'}
+                </button>
+              </div>
             </div>
 
             <textarea

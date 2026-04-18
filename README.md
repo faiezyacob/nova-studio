@@ -1,163 +1,108 @@
-# Nova Studio - Local AI Workspace
+# Nova Studio - Unified Local AI Workspace
 
-A unified local AI workspace combining image generation and chat capabilities. Powered by ComfyUI for image generation and LM Studio for local LLM inference.
+A powerful, unified local AI workspace combining image generation, video generation, and chat capabilities. Designed for high-performance creative workflows powered by ComfyUI and LM Studio.
 
-## Features
+## Workspaces
 
-### Image Generation
-- **AI Image Generation** - Create images using ComfyUI with the z-image-turbo model
-- **Prompt Enhancement** - Automatically enhance your prompts using local LLMs for better results
-- **Style Presets** - Choose from multiple visual styles:
-  - Realistic (iPhone snapshot aesthetic)
-  - Photography (DSLR portrait)
-  - Cinematic (film still)
-  - Anime (manga style)
-  - CGI (3D render)
-- **Gallery** - View, copy prompts, and manage generated images
-- **Local Storage** - Gallery persists in browser localStorage
+Nova Studio is organized into three specialized workspaces, accessible via the modular sidebar.
 
-### Chat
-- **Local LLM Chat** - Chat with LLMs running locally via LM Studio
-- **Multi-session Support** - Create and manage multiple chat sessions
-- **Model Switching** - Switch between downloaded models per session
-- **Persistent Chats** - Chat history saved to browser localStorage
+### 1. Image Workspace
+- **Turbo Generation** - High-speed image creation using ComfyUI with the z-image-turbo model.
+- **LoRA Support** - Enhance images with custom LoRAs and adjustable model strength.
+- **Style Presets** - Choose from curated visual styles:
+  - **Realistic**: Candid phone snapshot aesthetic.
+  - **Photography**: Professional DSLR portrait quality.
+  - **Cinematic**: Narrative film frame with dramatic lighting.
+  - **Anime**: Modern high-quality Japanese animation style.
+  - **CGI**: High-end 3D render (film/game cinematics).
+- **Prompt Enhancement** - Automatically rewrite and refine prompts using local LLMs.
+- **Integration** - Instantly send generated images to the Video Workspace with a single click.
 
-## Screenshot
+### 2. Video Workspace (Wan2.2)
+- **Image-to-Video Animation** - Animate any image using the state-of-the-art Wan2.2 model.
+- **Vision-AI Prompting** - Use vision-capable LLMs (e.g., Llama 3.2 Vision) to analyze your image and generate context-aware motion prompts.
+- **Precise Controls**:
+  - **Aspect Ratio Matching**: Automatically match video dimensions to the source image.
+  - **Resolution Selection**: 480p and 720p output presets.
+  - **Duration Control**: adjustable frame count for shorter or longer animations.
+- **VRAM Auto-Optimization**: Automatically unloads LLM models from VRAM before starting video generation to ensure maximum stability on single-GPU setups.
 
-> **Image generation**: The UI of image generation, support multiple image style (realistic, photography, cinematic, anime, cgi).
+### 3. Chat Workspace
+- **Local LLM Interaction** - Chat with any GGUF model via LM Studio.
+- **Multi-session Management** - Create and organize multiple independent chat sessions.
+- **Model Per Session** - Assign different models to different sessions for specialized tasks.
+- **Persistence** - All chat history and workspace states are saved to browser localStorage.
 
+## Workflow: From Idea to Animation
+
+1. **Generate**: Create a stunning image in the **Image Workspace** using turbo models and LoRAs.
+2. **Transfer**: Click the **"Use for Video"** button on any gallery item to bridge it to the Video Workspace.
+3. **Analyze**: Select a **Vision Model** and click **"Enhance"** to have the AI write a cinematic motion prompt based on the image content.
+4. **Animate**: Click **"Generate Video"** (Nova Studio will handle VRAM management automatically) and watch your image come to life.
+
+## Screenshots
+
+> **Image Generation**: Modern UI with style presets, LoRA support, and aspect ratio controls.
 ![Nova Studio Image Generation](examples/image.png)
 
-> **Chat**: The UI of chat, support multiple chat sessions and models.
+> **Video Generation**: Image-to-video workflow with motion model selection and duration controls.
+![Nova Studio Video Generation](examples/video.png)
 
+> **Chat**: Clean, distraction-free interface for local LLM interaction.
 ![Nova Studio Chat](examples/chat.png)
-
-> **Image style**: Difference style of image generation.
-
-**Realistic**
-![Nova Studio Realistic Style](examples/realistic.png)
-
-**Photography**
-![Nova Studio Photography Style](examples/photography.png)
-
-**Cinematic**
-![Nova Studio Cinematic Style](examples/cinematic.png)
-
-**Anime**
-![Nova Studio Anime Style](examples/anime.png)
-
-**CGI**
-![Nova Studio CGI Style](examples/cgi.png)
 
 ## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      comfy-web (Next.js)                     │
-│                   http://localhost:3000                      │
-├─────────────────────────────────────────────────────────────┤
+│                      Nova Studio (Next.js)                  │
+│                      http://localhost:3000                  │
+├──────────────────┬───────────────────────┬──────────────────┤
+│  Image Workspace │    Video Workspace    │  Chat Workspace  │
+├──────────────────┴───────────────────────┴──────────────────┤
 │  /api/comfy/*  ──────────────►  ComfyUI  (port 8188)        │
 │  /api/lmstudio/* ───────────►  LM Studio (port 1234)        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-- **comfy-web**: Next.js 14 web interface (App Router)
-- **ComfyUI**: Image generation engine with z-image-turbo workflow
-- **LM Studio**: Local LLM inference server
+- **Next.js 14/15**: High-performance web interface.
+- **ComfyUI**: Backend engine for Z-Image-Turbo and Wan2.2 (Video).
+- **LM Studio**: Backend server for LLMs and Vision models.
 
 ## Prerequisites
 
-- Windows (tested on Windows 11)
-- Node.js 18+ and npm
-- Python 3.11+
-- NVIDIA GPU with 12GB+ VRAM (recommended for image generation)
+- **OS**: Windows (tested on Windows 11)
+- **Hardware**: NVIDIA GPU with 12GB+ VRAM (16GB+ recommended for 720p video).
+- **Software**:
+  - Node.js 18+ and npm
+  - Python 3.11+ (for ComfyUI)
+  - [LM Studio](https://lmstudio.ai/) (Local Server enabled on port 1234)
 
 ## Setup
 
-### 1. Clone and Install Dependencies
-
+### 1. Web UI Setup
 ```bash
-# Install web UI dependencies
 cd comfy-web
 npm install
-
-# ComfyUI should already have its venv set up
-# If not, follow ComfyUI documentation
 ```
 
-### 2. ComfyUI and LMStudio setup
+### 2. Backend Setup
+1. **ComfyUI**: Place the `ComfyUI` folder in the root directory. Ensure required custom nodes (ComfyUI-WanVideo or similar) and models are installed.
+2. **LM Studio**: Download your preferred models. For video prompt enhancement, ensure you have at least one **Vision-capable model** (e.g., Llama-3.2-11B-Vision-Instruct).
 
-#### For Image Generation (ComfyUI)
-1. Place ComfyUI on web-app root directory
-
-#### For LLM Chat (LM Studio)
-1. Download [LM Studio](https://lmstudio.ai/)
-2. Download GGUF/GGML models through the LM Studio app
-3. Web-app will list all downloaded models 
-
-### 3. Start the Application
-
-Run the startup script:
+### 3. Start
 ```bash
 start_all.bat
 ```
 
-Or start services manually:
-```bash
-# Terminal 1: Start ComfyUI
-cd ComfyUI
-./venv/Scripts/python.exe main.py
-
-# Terminal 2: Start Web UI
-cd comfy-web
-npm run dev
-```
-
-### 4. Access the Application
-
-- **Web UI**: http://localhost:3000
-- **ComfyUI**: http://127.0.0.1:8188
-- **LM Studio**: http://127.0.0.1:1234
-
-## Usage
-
-### Image Generation Mode
-
-1. Select a LLM model from the dropdown (used for prompt enhancement)
-2. Choose a visual style (realistic, photography, cinematic, anime, cgi)
-3. Enter your image description in the text area
-4. Optionally click "Enhance Prompt" to improve your prompt using the LLM
-5. Press Enter or click "Generate" to create the image
-6. View generated images in the Gallery below
-
-### Chat Mode
-
-1. Click the "Chat" tab in the sidebar
-2. Click "New Chat" to start a conversation
-3. Select a model from the dropdown (each session can use a different model)
-4. Type your message and press Enter to send
-5. Switch between sessions using the sidebar
-
-## Configuration
-
-### Environment Variables (Optional)
-
-Create a `.env.local` file in `comfy-web/`:
-```env
-COMFYUI_URL=http://127.0.0.1:8188
-```
-
-### Customizing the Image Workflow
-
-Edit `comfy-web/src/app/api/comfy/route.ts` to modify the ComfyUI workflow or change default models.
-
 ## Tech Stack
 
-- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
-- **Image Generation**: ComfyUI, z-image-turbo model
-- **LLM Inference**: LM Studio
-- **UI Components**: Custom components with sonner for toasts
+- **Frontend**: Next.js (App Router), React 19, TypeScript, Tailwind CSS
+- **Creative Engines**: ComfyUI (Image/Video)
+- **LLM Engine**: LM Studio (OpenAI-compatible API)
+- **UI Architecture**: Modular Workspace components, Sonner toasts, and persistent storage.
 
 ## License
 
-This project is for personal use. Model licenses apply separately.
+Personal use. Individual model licenses apply.
+
