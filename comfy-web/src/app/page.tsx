@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
 import { Toaster, toast } from "sonner";
+import VideoWorkspace from "@/components/VideoWorkspace";
 
 function MessageContent({ content }: { content: string }) {
   const formatInline = (text: string) => {
@@ -164,7 +165,7 @@ interface ChatSession {
   createdAt: number;
 }
 
-type AppMode = "image" | "chat";
+type AppMode = "image" | "video" | "chat";
 
 interface Lora {
   name: string;
@@ -239,6 +240,13 @@ const STYLE_DESCRIPTIONS: Record<string, string> = {
 
 const IMAGE_STYLES = ["realistic", "photography", "cinematic", "anime", "cgi"];
 
+interface VideoGalleryItem {
+  id: string;
+  filename: string;
+  prompt: string;
+  timestamp: number;
+}
+
 export default function App() {
   const [mode, setMode] = useState<AppMode>("image");
   const [modeHydrated, setModeHydrated] = useState(false);
@@ -246,6 +254,17 @@ export default function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [videoGallery, setVideoGallery] = useState<VideoGalleryItem[]>([]);
+  const [videoResult, setVideoResult] = useState<VideoGalleryItem | null>(null);
+  const [videoWorkspaceState, setVideoWorkspaceState] = useState({
+    prompt: "",
+    uploadedImage: null as string | null,
+    uploadedImageName: "",
+    videoSize: "480" as "480" | "720",
+    matchImageSize: true,
+    durationFrames: 81,
+  });
+  const [videoSelectedModel, setVideoSelectedModel] = useState("");
   const [error, setError] = useState("");
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [selectedModel, setSelectedModel] = useState("");
@@ -395,7 +414,7 @@ export default function App() {
 
   useEffect(() => {
     const saved = localStorage.getItem("app_mode");
-    if (saved === "chat" || saved === "image") {
+    if (saved === "chat" || saved === "image" || saved === "video") {
       setMode(saved);
     }
     setModeHydrated(true);
@@ -431,6 +450,39 @@ export default function App() {
       }
     } catch (e) {
       console.error("Failed to load gallery", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("video_gallery");
+    if (!saved) return;
+
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        setVideoGallery(parsed);
+      }
+    } catch (e) {
+      console.error("Failed to load video gallery", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("video_workspace_state");
+    if (!saved) return;
+
+    try {
+      const parsed = JSON.parse(saved);
+      setVideoWorkspaceState({
+        prompt: parsed.prompt || "",
+        uploadedImage: parsed.uploadedImage || null,
+        uploadedImageName: parsed.uploadedImageName || "",
+        videoSize: parsed.videoSize || "480",
+        matchImageSize: parsed.matchImageSize !== undefined ? parsed.matchImageSize : true,
+        durationFrames: parsed.durationFrames || 81,
+      });
+    } catch (e) {
+      console.error("Failed to load video workspace state", e);
     }
   }, []);
 
@@ -596,6 +648,7 @@ STRICT RULES:
 - Maintain the NSFW content from original prompt
 - For z-image-turbo: use vivid concrete descriptive language
 - DO NOT mention smartphone, camera, or any device related terms
+- Maintain original pose / action (i.e selfie, etc) if included
 STYLE ENFORCEMENT:
 ${stylePrefix}
 If you output anything outside <prompt></prompt>, the answer is invalid.
@@ -743,7 +796,31 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
 
       const result = await response.json();
       toast.loading("Generating...", { id: "generation" });
-      await pollForResult(result.prompt_id, prompt.trim());
+
+      // If SDK returns images directly, use them
+      if (result.images && result.images.length > 0) {
+        const newItems: GalleryItem[] = result.images.map((imgUrl: string) => ({
+          filename: imgUrl.split('/').pop() || `gen_${Date.now()}.png`,
+          prompt: prompt.trim(),
+          timestamp: Date.now(),
+          style: imageStyle,
+        }));
+
+        await Promise.all(
+          newItems.map((item) => fetch(`/api/comfy/images?filename=${item.filename}`).catch(console.error)),
+        );
+
+        setGallery((prev) => {
+          const updated = [...newItems, ...prev];
+          localStorage.setItem("comfyui_gallery", JSON.stringify(updated));
+          return updated;
+        });
+
+        toast.success("Image ready", { id: "generation" });
+      } else {
+        // Fallback to polling for prompt_id
+        await pollForResult(result.prompt_id, prompt.trim());
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Generation failed";
       setError(message);
@@ -869,8 +946,8 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
               </div>
 
               {modeHydrated && (
-                <div className="grid grid-cols-2 rounded-xl border border-[#4a4944] bg-[#32312e] p-1">
-                  {(["image", "chat"] as AppMode[]).map((tab) => (
+                <div className="grid grid-cols-3 rounded-xl border border-[#4a4944] bg-[#32312e] p-1">
+                  {(["image", "chat", "video"] as AppMode[]).map((tab) => (
                     <button
                       key={tab}
                       onClick={() => handleSetMode(tab)}
@@ -928,25 +1005,57 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
               </>
             ) : (
               <div className="flex-1 overflow-y-auto p-3">
-                <div className="mb-2 flex items-center justify-between px-1">
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-[#9f988c]">Recent Images</p>
-                  {gallery.length > 0 && <p className="text-[11px] text-[#9f988c]">{gallery.length}</p>}
-                </div>
-                <div className="space-y-1">
-                  {gallery.length === 0 && (
-                    <p className="px-3 py-8 text-center text-xs text-[#9f988c]">No images yet</p>
-                  )}
-                  {gallery.slice(0, 10).map((item, index) => (
-                    <button
-                      key={`${item.filename}-${index}`}
-                      onClick={() => window.open(`/generated/${item.filename}`, "_blank")}
-                      className="flex w-full items-center gap-2 rounded-lg border border-transparent px-2 py-1.5 text-left transition hover:border-[#4b4740] hover:bg-[#343330]"
-                    >
-                      <img src={`/generated/${item.filename}`} alt={item.prompt} className={`h-9 w-9 rounded transition duration-500 object-cover ${item.hidden ? "blur-[4px]" : ""}`} />
-                      <span className="truncate text-xs text-[#cec8bb]">{item.prompt}</span>
-                    </button>
-                  ))}
-                </div>
+                {mode === "video" ? (
+                  <>
+                    <div className="mb-2 flex items-center justify-between px-1">
+                      <p className="text-[11px] uppercase tracking-[0.22em] text-[#9f988c]">Recent Videos</p>
+                      {videoGallery.length > 0 && <p className="text-[11px] text-[#9f988c]">{videoGallery.length}</p>}
+                    </div>
+                    {videoGallery.length === 0 ? (
+                      <p className="px-3 py-8 text-center text-xs text-[#9f988c]">No videos yet</p>
+                    ) : (
+                      <div className="space-y-1">
+                        {videoGallery.slice(0, 10).map((video, index) => (
+                          <button
+                            key={`${video.id}-${index}`}
+                            onClick={() => {
+                              setVideoResult(video);
+                            }}
+                            className="flex w-full items-center gap-2 rounded-lg border border-transparent px-2 py-1.5 text-left transition hover:border-[#4b4740] hover:bg-[#343330]"
+                          >
+                            <video
+                              src={`/generated/${video.filename}`}
+                              className="h-9 w-9 rounded object-cover"
+                            />
+                            <span className="truncate text-xs text-[#cec8bb]">{video.prompt}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="mb-2 flex items-center justify-between px-1">
+                      <p className="text-[11px] uppercase tracking-[0.22em] text-[#9f988c]">Recent Images</p>
+                      {gallery.length > 0 && <p className="text-[11px] text-[#9f988c]">{gallery.length}</p>}
+                    </div>
+                    <div className="space-y-1">
+                      {gallery.length === 0 && (
+                        <p className="px-3 py-8 text-center text-xs text-[#9f988c]">No images yet</p>
+                      )}
+                      {gallery.slice(0, 10).map((item, index) => (
+                        <button
+                          key={`${item.filename}-${index}`}
+                          onClick={() => window.open(`/generated/${item.filename}`, "_blank")}
+                          className="flex w-full items-center gap-2 rounded-lg border border-transparent px-2 py-1.5 text-left transition hover:border-[#4b4740] hover:bg-[#343330]"
+                        >
+                          <img src={`/generated/${item.filename}`} alt={item.prompt} className={`h-9 w-9 rounded transition duration-500 object-cover ${item.hidden ? "blur-[4px]" : ""}`} />
+                          <span className="truncate text-xs text-[#cec8bb]">{item.prompt}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
@@ -977,7 +1086,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
           {mode === "image" ? (
             <>
               <header className="sticky top-0 z-20 border-b border-[#3a3936] bg-[#2a2a28]/95 px-8 py-5 backdrop-blur">
-                <div className="mx-auto flex w-full max-w-6xl items-center justify-between">
+                <div className="mx-auto flex w-full max-w-4xl items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="h-2 w-2 animate-pulse rounded-full bg-[#c9a87a]" />
                     <div>
@@ -986,9 +1095,6 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="rounded-full border border-[#45433f] bg-[#33322f] px-2.5 py-1 text-[11px] text-[#bcb6aa]">
-                      Enter to generate
-                    </span>
                     {gallery.length > 0 && (
                       <button
                         onClick={() => openConfirm("Clear Gallery", "This will delete all images from the server.", () => clearGallery())}
@@ -1003,7 +1109,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
 
               <section className="flex-1 overflow-y-auto px-8 py-8">
                 <div className="mx-auto w-full max-w-6xl space-y-7">
-                  <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] p-4 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
+                  <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] max-w-4xl m-auto p-4 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
 
                     {/* Row 1: Model + Style + Enhance */}
                     <div className="mb-3 flex flex-wrap items-stretch gap-3">
@@ -1248,7 +1354,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                   )}
 
                   {gallery.length > 0 && (
-                    <div className="space-y-3 pb-4">
+                    <div className="space-y-3 pt-4 max-w-4xl m-auto pb-4">
                       <div className="flex items-center justify-between">
                         <p className="text-xs uppercase tracking-[0.24em] text-[#a19a8d]">Library</p>
                         <div className="flex items-center gap-2">
@@ -1410,10 +1516,24 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                 </div>
               </section>
             </>
+          ) : mode === "video" ? (
+            <VideoWorkspace
+              videoGallery={videoGallery}
+              setVideoGallery={setVideoGallery}
+              videoResult={videoResult}
+              setVideoResult={setVideoResult}
+              workspaceState={videoWorkspaceState}
+              setWorkspaceState={setVideoWorkspaceState}
+              selectedModel={videoSelectedModel}
+              setSelectedModel={setVideoSelectedModel}
+              availableModels={availableModels}
+              openConfirm={openConfirm}
+              closeConfirm={closeConfirm}
+            />
           ) : (
             <>
               <header className="sticky top-0 z-20 border-b border-[#3a3936] bg-[#2a2a28]/95 px-8 py-5 backdrop-blur">
-                <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4">
+                <div className="mx-auto flex w-full max-w-4xl items-center justify-between">
                   <div>
                     <h1 className="text-base font-semibold text-[#edeae2]">{activeSession?.title || "Chat Workspace"}</h1>
                     <p className="text-xs text-[#9f988c]">Focused local chat with fast model switching.</p>
