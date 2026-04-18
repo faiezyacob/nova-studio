@@ -282,6 +282,68 @@ export default function App() {
   const [isChatLoading, setIsChatLoading] = useState(false);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
+  const [isPurging, setIsPurging] = useState(false);
+  const [vramStats, setVramStats] = useState<{ used: number; total: number; percent: number } | null>(null);
+
+  const fetchVramStats = async () => {
+    try {
+      const res = await fetch("/api/system/stats");
+      if (res.ok) {
+        const data = await res.json();
+        setVramStats({
+          used: data.used / (1024 ** 3), // B to GB
+          total: data.total / (1024 ** 3),
+          percent: data.percent
+        });
+      }
+    } catch {
+      // Ignore errors (e.g. if ComfyUI is down)
+    }
+  };
+
+  useEffect(() => {
+    fetchVramStats();
+    const interval = setInterval(fetchVramStats, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const purgeVRAM = async () => {
+    setIsPurging(true);
+    toast.loading("Purging VRAM...", { id: "vram-purge" });
+    try {
+      // 1. Unload LM Studio if any model is loaded
+      if (currentModel) {
+        await fetch("/api/lmstudio/unload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ model: currentModel }),
+        });
+      }
+      
+      // 2. Free ComfyUI memory
+      await fetch("/api/comfy/free", { method: "POST" });
+      
+      // 3. Wait a moment for GPU driver to reclaim
+      await new Promise(r => setTimeout(r, 800));
+      
+      // Refresh stats after purge
+      await fetchVramStats();
+      
+      toast.success("VRAM Cleared", { id: "vram-purge" });
+    } catch (err) {
+      console.error("Purge failed:", err);
+      toast.error("Cleanup failed", { id: "vram-purge" });
+    } finally {
+      setIsPurging(false);
+    }
+  };
+
+  useEffect(() => {
+    if (modeHydrated && mode === "chat") {
+      // Auto-clear ComfyUI memory when switching to chat to prioritize LM Studio tokens/s
+      fetch("/api/comfy/free", { method: "POST" }).catch(console.error);
+    }
+  }, [mode, modeHydrated]);
 
   const adjustChatHeight = () => {
     const el = chatInputRef.current;
@@ -289,6 +351,18 @@ export default function App() {
       el.style.height = "auto";
       el.style.height = Math.min(el.scrollHeight, 160) + "px";
     }
+  };
+
+  const useImageForVideo = (item: GalleryItem) => {
+    const imageUrl = `/generated/${item.filename}`;
+    setVideoWorkspaceState(prev => ({
+      ...prev,
+      uploadedImage: imageUrl,
+      uploadedImageName: item.filename,
+      prompt: item.prompt
+    }));
+    setMode("video");
+    toast.success("Image sent to Video Workspace");
   };
 
   const [galleryFilter, setGalleryFilter] = useState("all");
@@ -755,14 +829,18 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
 
     try {
       try {
-        await fetch("/api/lmstudio/unload", {
+        toast.loading("Unloading LM Studio...", { id: "generation" });
+        const unloadRes = await fetch("/api/lmstudio/unload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ model: currentModel }),
         });
-        console.log("Unload request successful");
+        if (unloadRes.ok) {
+          console.log("Unload request successful");
+          // Wait a bit for VRAM to actually clear
+          await new Promise(r => setTimeout(r, 1000));
+        }
       } catch (err) {
-        // Non-blocking unload request.
         console.warn("Unload request failed:", err);
       }
 
@@ -1077,6 +1155,35 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                 >
                   ComfyUI
                 </a>
+
+                {vramStats && (
+                  <div className="mt-4 px-3">
+                    <div className="mb-1.5 flex items-center justify-between text-[10px] uppercase tracking-wider text-[#6b6560]">
+                      <span>VRAM Usage</span>
+                      <span className={vramStats.percent > 85 ? "text-red-400" : "text-[#c9a87a]"}>
+                        {vramStats.used.toFixed(1)} / {vramStats.total.toFixed(1)} GB
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#1a1a18]">
+                      <div
+                        className={`h-full transition-all duration-500 ${vramStats.percent > 85 ? "bg-red-500" : "bg-[#c9a87a]"
+                          }`}
+                        style={{ width: `${vramStats.percent}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={purgeVRAM}
+                  disabled={isPurging}
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-[#4a4944] bg-[#262624] px-3 py-2 text-[11px] font-medium text-[#c9a87a] transition hover:bg-[#2d2d2b] hover:text-[#d8bb92] disabled:opacity-50"
+                >
+                  <svg className={`h-3 w-3 ${isPurging ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                  {isPurging ? 'Clearing...' : 'Clean GPU VRAM'}
+                </button>
               </div>
             </div>
           </div>
@@ -1389,10 +1496,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                               loading="lazy"
                             />
                             <div className="absolute inset-x-0 top-0 -translate-y-full p-2 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                              <div className="flex items-center justify-between">
-                                <span className="rounded-lg bg-black/40 px-3 py-2 text-[12px] text-white/70 backdrop-blur-sm capitalize">
-                                  {item.style}
-                                </span>
+                              <div className="flex items-center justify-center">
                                 <div className="flex items-center gap-1">
                                   <button
                                     onClick={(e) => {
@@ -1470,6 +1574,15 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                                     </svg>
                                   </button>
                                   <button
+                                    onClick={(e) => { e.stopPropagation(); useImageForVideo(item); }}
+                                    className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                                    title="Use for Video"
+                                  >
+                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                  </button>
+                                  <button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       openConfirm("Delete Image", "This will delete the image from the server.", () => deleteImage(gallery.findIndex((g) => g.filename === item.filename)));
@@ -1483,8 +1596,11 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                                 </div>
                               </div>
                             </div>
-                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2">
-                              <p className="line-clamp-3 text-[11px] text-[#e7e2d8]">{item.prompt}</p>
+                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2.5">
+                              <span className="mb-1.5 inline-block rounded-md bg-[#c9a87a]/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#d8b88d] backdrop-blur-sm border border-[#c9a87a]/30">
+                                {item.style}
+                              </span>
+                              <p className="line-clamp-2 text-[11px] leading-relaxed text-[#e7e2d8] opacity-90">{item.prompt}</p>
                             </div>
                           </div>
                         ))}

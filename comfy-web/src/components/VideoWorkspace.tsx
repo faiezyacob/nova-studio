@@ -206,6 +206,7 @@ Rules:
 - Include precise camera movements (slow zoom in, gentle pan left, orbit around subject, etc.)
 - Use timing and pacing (e.g. "starts slow then accelerates", "over 4 seconds")
 - Keep it one flowing sentence, 60–90 words max
+- Please maintain the initial action of the user prompt
 - Return ONLY the final prompt inside <prompt></prompt>`
             },
             {
@@ -271,11 +272,16 @@ Rules:
 
     try {
       try {
-        await fetch('/api/lmstudio/unload', {
+        toast.loading("Unloading LM Studio...", { id: "video-gen" });
+        const unloadRes = await fetch('/api/lmstudio/unload', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ model: selectedModel }),
         });
+        if (unloadRes.ok) {
+          // Wait for VRAM to settle
+          await new Promise(r => setTimeout(r, 1000));
+        }
       } catch (err) {
         console.warn('Unload request failed:', err);
       }
