@@ -196,6 +196,7 @@ export default function VideoWorkspace({
 
     try {
       const thumbnailBase64 = await createImageThumbnail(uploadedImage, 400);
+      const durationSeconds = (durationFrames / 16).toFixed(1);
 
       const response = await fetch('/api/lmstudio/chat', {
         method: 'POST',
@@ -205,24 +206,30 @@ export default function VideoWorkspace({
           messages: [
             {
               role: 'system',
-              content: `You are a world-class prompt engineer for image-to-video animation using Wan2.2.
-You will be given an image and a raw user prompt.
+              content: `You are an expert prompt engineer for Wan 2.2 Image-to-Video (I2V) generation. 
+You will receive an image, a raw user prompt, and a target duration.
 
-Your job: Write a single, cinematic, highly descriptive motion prompt that perfectly matches what is actually visible in the image.
+Your job: Write a highly descriptive, cinematic motion prompt that naturally progresses the exact scene in the image and ensures the requested action reaches a clear, definitive completion.
 
-Rules:
-- Analyze the image content, subject, style, lighting, and composition
-- Describe natural, believable motion that fits the scene
-- Include precise camera movements (slow zoom in, gentle pan left, orbit around subject, etc.)
-- Use timing and pacing (e.g. "starts slow then accelerates", "over 4 seconds")
-- Keep it one flowing sentence, 60–90 words max
-- Please maintain the initial action of the user prompt
-- Return ONLY the final prompt inside <prompt></prompt>`
+CRITICAL RULES FOR WAN 2.2:
+1. NO TIME PHRASES IN OUTPUT: Never include phrases like "over X seconds" or "within the duration." Video models do not understand time measurements. Instead, use the provided duration to judge how much action is physically possible, and describe the visual sequence in real-time.
+2. ENSURE ACTION COMPLETION: Force the completion of the action by explicitly describing the final resting or completed state (e.g., instead of "starts drinking", use "raises the glass, takes a sip, and lowers it back to the table").
+3. ANCHOR TO THE IMAGE: The first part of your prompt MUST perfectly describe the subject and setting exactly as they appear in the provided image.
+4. STRUCTURE: Use 2 to 3 concise sentences. 
+   - Sentence 1: The subject, setting, and the initiation of the movement.
+   - Sentence 2: The progression and explicit completion/end-state of the action.
+   - Sentence 3: Cinematic camera movement (e.g., slow pan, gentle tracking) and atmospheric details.
+5. TEMPORAL STABILITY: Use dynamic but grounded verbs. Avoid sudden, explosive, or physically impossible transitions. Maintain the core intent of the user's raw prompt.
+
+Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
             },
             {
               role: 'user',
               content: [
-                { type: 'text', text: `User's raw prompt: "${prompt}"\n\nImprove and expand this into a perfect motion prompt based on the image.` },
+                {
+                  type: 'text',
+                  text: `User's raw prompt: "${prompt}"\nTarget Video Duration: ${durationSeconds} seconds.\n\nBased on the image, write a prompt that describes exactly enough action to realistically fill this timeframe, ending with the action fully completed.`
+                },
                 {
                   type: 'image_url',
                   image_url: {
@@ -556,7 +563,7 @@ Rules:
                   </span>
                 </div>
                 <p className="text-[11px] text-[#6b6560] leading-none">
-                  ~{(durationFrames / 16).toFixed(1)}s at 16fps
+                  ~{(durationFrames / 16).toFixed(1)}s at 16fps (81 frames is optimal)
                 </p>
               </div>
             </div>
@@ -695,10 +702,18 @@ Rules:
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                 {videoGallery.map((video) => (
-                  <button
+                  <div
                     key={video.id}
                     onClick={() => setVideoResult(video)}
-                    className="group relative aspect-[9/16] overflow-hidden rounded-lg bg-[#1a1a18] transition hover:ring-2 hover:ring-[#c9a87a]"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setVideoResult(video);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    className="group relative aspect-[9/16] cursor-pointer overflow-hidden rounded-lg bg-[#1a1a18] transition hover:ring-2 hover:ring-[#c9a87a] outline-none"
                   >
                     <video
                       src={`/generated/${video.filename}`}
@@ -725,7 +740,7 @@ Rules:
                         </button>
                       </div>
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>

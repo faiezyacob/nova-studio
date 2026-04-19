@@ -289,7 +289,7 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
       scheduler: "simple",
       start_at_step: 0,
       end_at_step: 3,
-      return_with_leftover_noise: "disable", // ✅ matches original exactly
+      return_with_leftover_noise: "enable", // ✅ Changed to enable so Node 61 can continue
     },
   };
 
@@ -301,15 +301,15 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
       positive: ["50", 0],
       negative: ["50", 1],
       latent_image: ["60", 0],      // ✅ takes latent from FIRST sampler output
-      add_noise: "enable",          // ✅ FIXED: original uses "enable" not "disable"
-      noise_seed: 0,                // ✅ FIXED: original uses 0 for second sampler
+      add_noise: "disable",          // ✅ FIXED: Second pass should not re-add noise
+      noise_seed: 0,
       steps: 6,
       cfg: 1,
       sampler_name: "euler",
       scheduler: "simple",
-      start_at_step: 0,             // ✅ matches original (both start at 0)
-      end_at_step: 3,               // ✅ matches original (both end at 3)
-      return_with_leftover_noise: "disable", // ✅ matches original
+      start_at_step: 3,             // ✅ FIXED: Start where first one left off
+      end_at_step: 6,               // ✅ FIXED: Finish all steps
+      return_with_leftover_noise: "disable",
     },
   };
 
