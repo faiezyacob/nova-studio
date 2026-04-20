@@ -716,7 +716,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                       loading="lazy"
                     />
                     <div className="absolute inset-x-0 top-0 -translate-y-full p-2 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                      <div className="flex items-center justify-center">
+                      <div className="flex items-center justify-end">
                         <div className="flex items-center gap-1">
                           <button
                             onClick={(e) => {

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Toaster, toast } from 'sonner';
+import VideoUpscaleDialog from './VideoUpscaleDialog';
 
 interface VideoGalleryItem {
   id: string;
@@ -79,6 +80,8 @@ export default function VideoWorkspace({
   const [isHydrated, setIsHydrated] = useState(false);
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [isUpscaleOpen, setIsUpscaleOpen] = useState(false);
+  const [videoToUpscale, setVideoToUpscale] = useState<VideoGalleryItem | null>(null);
 
   const { prompt, uploadedImage, uploadedImageName, videoSize, matchImageSize, durationFrames } = workspaceState;
 
@@ -411,6 +414,20 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
     closeConfirm();
   };
 
+  const openUpscale = (video: VideoGalleryItem) => {
+    setVideoToUpscale(video);
+    setIsUpscaleOpen(true);
+  };
+
+  const handleUpscaleSuccess = (newVideo: VideoGalleryItem) => {
+    setVideoResult(newVideo);
+    setVideoGallery(prev => {
+      const updated = [newVideo, ...prev];
+      localStorage.setItem(VIDEO_GALLERY_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   return (
     <>
       <header className="sticky top-0 z-20 border-b border-[#3a3936] bg-[#2a2a28]/95 px-8 py-5 backdrop-blur">
@@ -677,6 +694,12 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
                     Download
                   </button>
                   <button
+                    onClick={() => openUpscale(videoResult)}
+                    className="rounded-lg border border-[#c9a87a]/40 bg-[#c9a87a]/10 px-3 py-2 text-xs text-[#c9a87a] transition hover:bg-[#c9a87a]/20"
+                  >
+                    Upscale
+                  </button>
+                  <button
                     onClick={() => navigator.clipboard.writeText(videoResult.prompt)}
                     className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 text-xs text-[#bcb6aa] transition hover:border-[#5a4f40] hover:text-[#edeae2]"
                   >
@@ -723,20 +746,24 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition group-hover:opacity-100">
                       <div className="flex flex-col items-center gap-2">
-                        <svg className="h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openUpscale(video);
+                          }}
+                          className="rounded-lg bg-black/60 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[#c9a87a] backdrop-blur-sm transition hover:bg-[#c9a87a] hover:text-[#1f1f1d]"
+                        >
+                          Upscale
+                        </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             openConfirm("Delete Video", "This will delete the video from the server.", () => deleteVideo(video.id));
                           }}
-                          className="rounded-lg bg-black/60 p-2 text-white/70 backdrop-blur-sm transition hover:bg-red-500/80 hover:text-white"
-                          title="Delete Video"
+                          className="rounded-lg bg-black/60 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white/70 backdrop-blur-sm transition hover:bg-red-500/80 hover:text-white"
                         >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
+                          Delete
                         </button>
                       </div>
                     </div>
@@ -747,6 +774,15 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
           )}
         </div>
       </main>
+
+      {videoToUpscale && (
+        <VideoUpscaleDialog
+          isOpen={isUpscaleOpen}
+          onClose={() => setIsUpscaleOpen(false)}
+          video={videoToUpscale}
+          onSuccess={handleUpscaleSuccess}
+        />
+      )}
     </>
   );
 }

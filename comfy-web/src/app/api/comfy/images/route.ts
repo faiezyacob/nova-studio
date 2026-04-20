@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir, readFile, unlink, readdir, lstat } from 'fs/promises';
+import { writeFile, mkdir, readFile, unlink, readdir, lstat, stat } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 
@@ -11,6 +11,32 @@ async function ensureDirectory(dir: string) {
   if (!existsSync(dir)) {
     await mkdir(dir, { recursive: true });
   }
+}
+
+async function waitForFileToBeReady(filePath: string, maxAttempts = 60, delayMs = 2000): Promise<boolean> {
+  let lastSize = 0;
+  let stableCount = 0;
+  const MIN_VIDEO_SIZE = 100000;
+  
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      const stats = await stat(filePath);
+      if (stats.isFile() && stats.size > 0) {
+        if (stats.size === lastSize && stats.size > MIN_VIDEO_SIZE) {
+          stableCount++;
+          if (stableCount >= 3) {
+            return true;
+          }
+        } else {
+          stableCount = 0;
+        }
+        lastSize = stats.size;
+      }
+    } catch {
+    }
+    await new Promise(resolve => setTimeout(resolve, delayMs));
+  }
+  return lastSize > MIN_VIDEO_SIZE;
 }
 
 function extractFilename(filename: string): string {
@@ -78,6 +104,11 @@ export async function GET(request: NextRequest) {
 
     console.log('[IMAGES] Checking local ComfyUI path:', comfyLocalPath);
     if (existsSync(comfyLocalPath)) {
+      // For videos, wait for the file to be fully written
+      if (isVideo) {
+        await waitForFileToBeReady(comfyLocalPath);
+      }
+
       console.log('[IMAGES] Found file locally, copying...');
       const imageBuffer = await readFile(comfyLocalPath);
       
