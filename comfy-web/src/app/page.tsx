@@ -28,22 +28,40 @@ export default function App() {
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [selectedModel, setSelectedModel] = useState("");
   const [currentModel, setCurrentModel] = useState("");
-  
+
   // Image Generation States
   const [imageStyle, setImageStyle] = useState("realistic");
-  const [imageWidth, setImageWidth] = useState(1024);
-  const [imageHeight, setImageHeight] = useState(1024);
+  const [imageWidth, setImageWidth] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("image_dimensions");
+      if (saved) {
+        const { width } = JSON.parse(saved);
+        if (width) return width;
+      }
+    }
+    return 1024;
+  });
+  const [imageHeight, setImageHeight] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("image_dimensions");
+      if (saved) {
+        const { height } = JSON.parse(saved);
+        if (height) return height;
+      }
+    }
+    return 1024;
+  });
   const [lockAspectRatio, setLockAspectRatio] = useState(true);
   const [selectedLora, setSelectedLora] = useState<Lora>({ name: "", strength_model: 1.0, strength_clip: 1.0 });
   const [galleryFilter, setGalleryFilter] = useState("all");
   const [galleryPage, setGalleryPage] = useState(1);
-  
+
   // Chat States
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [chatInput, setChatInput] = useState("");
   const [isChatLoading, setIsChatLoading] = useState(false);
-  
+
   const [isPurging, setIsPurging] = useState(false);
   const [vramStats, setVramStats] = useState<{ used: number; total: number; percent: number } | null>(null);
   const modeManuallySet = useRef(false);
@@ -89,12 +107,14 @@ export default function App() {
     setIsPurging(true);
     toast.loading("Purging VRAM...", { id: "vram-purge" });
     try {
-      if (currentModel) {
+      if (localStorage.getItem('loaded_model')) {
         await fetch("/api/lmstudio/unload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ model: currentModel }),
+          body: JSON.stringify({ model: localStorage.getItem('loaded_model') }),
         });
+        localStorage.removeItem("loaded_model");
+        setCurrentModel("");
       }
       await fetch("/api/comfy/free", { method: "POST" });
       await new Promise(r => setTimeout(r, 800));
@@ -115,8 +135,14 @@ export default function App() {
         const data = await res.json();
         const models = (data.data || []).map((model: { id: string }) => model.id);
         setAvailableModels(models);
+        const savedModel = localStorage.getItem("loaded_model");
         if (models.length > 0 && !selectedModel) {
-          setSelectedModel(models[0]);
+          if (savedModel && models.includes(savedModel)) {
+            setSelectedModel(savedModel);
+            setCurrentModel(savedModel);
+          } else {
+            setSelectedModel(models[0]);
+          }
         }
       }
     } catch (err) {
@@ -138,6 +164,7 @@ export default function App() {
         }
       }
       setCurrentModel(newModel);
+      localStorage.setItem("loaded_model", newModel);
     }
     setSelectedModel(newModel);
   };
@@ -145,6 +172,14 @@ export default function App() {
   useEffect(() => {
     fetchModels();
   }, []);
+
+  useEffect(() => {
+    const savedModel = localStorage.getItem("loaded_model");
+    if (savedModel && availableModels.includes(savedModel)) {
+      setCurrentModel(savedModel);
+      setSelectedModel(savedModel);
+    }
+  }, [availableModels]);
 
   useEffect(() => {
     const savedSessions = localStorage.getItem("chat_sessions");
@@ -208,6 +243,10 @@ export default function App() {
       console.error("Failed to load gallery", e);
     }
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("image_dimensions", JSON.stringify({ width: imageWidth, height: imageHeight }));
+  }, [imageWidth, imageHeight]);
 
   useEffect(() => {
     const saved = localStorage.getItem("video_gallery");

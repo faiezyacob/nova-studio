@@ -199,6 +199,7 @@ export default function ChatWorkspace({
         }
       }
       setCurrentModel(newModel);
+      localStorage.setItem("loaded_model", newModel);
     }
   };
 

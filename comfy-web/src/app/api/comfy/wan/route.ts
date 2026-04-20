@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ComfyApi, PromptBuilder, CallWrapper } from "@saintno/comfyui-sdk";
 
-function generateSeed(): number {
-  return Math.floor(Math.random() * 10000000000000);
-}
-
 const COMFYUI_URL = process.env.COMFYUI_URL || "http://127.0.0.1:8188";
 
 const api = new ComfyApi(COMFYUI_URL);
@@ -18,7 +14,7 @@ interface WanOptions {
   frames?: number;
 }
 
-async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: string; video_path: string }> {
+async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: string; video_path: string; subfolder: string }> {
   const { image, prompt, negative_prompt, width, height, frames } = options;
 
   const videoWidth = width || 480;
@@ -301,14 +297,14 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
       positive: ["50", 0],
       negative: ["50", 1],
       latent_image: ["60", 0],      // ✅ takes latent from FIRST sampler output
-      add_noise: "disable",          // ✅ FIXED: Second pass should not re-add noise
+      add_noise: "disable",         // ✅ FIXED: Second pass should not re-add noise
       noise_seed: 0,
       steps: 6,
       cfg: 1,
       sampler_name: "euler",
       scheduler: "simple",
       start_at_step: 3,             // ✅ FIXED: Start where first one left off
-      end_at_step: 6,               // ✅ FIXED: Finish all steps
+      end_at_step: 10000,           // ✅ FIXED: Finish all steps
       return_with_leftover_noise: "disable",
     },
   };
@@ -393,7 +389,7 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
       // Extract video filename and subfolder from output
       const outputNode = data?.["90"];
       const videoData = outputNode?.videos?.[0] || outputNode?.gifs?.[0];
-      
+
       const videoFile = videoData?.filename || `${prefix}_00001_.mp4`;
       const videoSubfolder = videoData?.subfolder || "video";
 

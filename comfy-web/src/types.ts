@@ -26,6 +26,7 @@ export interface VideoGalleryItem {
   filename: string;
   prompt: string;
   timestamp: number;
+  subfolder?: string;
 }
 
 export interface HistoryEntry {

@@ -9,6 +9,7 @@ interface VideoGalleryItem {
   filename: string;
   prompt: string;
   timestamp: number;
+  subfolder?: string;
 }
 
 interface VideoWorkspaceProps {
@@ -20,7 +21,7 @@ interface VideoWorkspaceProps {
     prompt: string;
     uploadedImage: string | null;
     uploadedImageName: string;
-    videoSize: '480' | '720';
+    videoSize: '480' | '540' | '720';
     matchImageSize: boolean;
     durationFrames: number;
   };
@@ -28,7 +29,7 @@ interface VideoWorkspaceProps {
     prompt: string;
     uploadedImage: string | null;
     uploadedImageName: string;
-    videoSize: '480' | '720';
+    videoSize: '480' | '540' | '720';
     matchImageSize: boolean;
     durationFrames: number;
   }>>;
@@ -56,7 +57,7 @@ interface VideoWorkspaceState {
   prompt: string;
   uploadedImage: string | null;
   uploadedImageName: string;
-  videoSize: '480' | '720';
+  videoSize: '480' | '540' | '720';
   matchImageSize: boolean;
   durationFrames: number;
 }
@@ -101,6 +102,7 @@ export default function VideoWorkspace({
 
   const SIZE_PRESETS = {
     '480': { width: 480, height: 832 },
+    '540': { width: 540, height: 960 },
     '720': { width: 720, height: 1280 },
   };
 
@@ -153,7 +155,7 @@ export default function VideoWorkspace({
     newHeight = Math.floor(newHeight / 8) * 8;
 
     // Cap long side to prevent memory issues (e.g., 1280 for 720p level, 832 for 480p level)
-    const maxLongSide = videoSize === '720' ? 1280 : 832;
+    const maxLongSide = videoSize === '720' ? 1280 : videoSize === '540' ? 960 : 832;
     if (newWidth > maxLongSide) {
       newHeight = Math.floor((newHeight * maxLongSide / newWidth) / 8) * 8;
       newWidth = maxLongSide;
@@ -194,6 +196,7 @@ export default function VideoWorkspace({
       return;
     }
 
+    localStorage.setItem("loaded_model", selectedModel);
     setIsEnhancing(true);
     setError('');
 
@@ -357,6 +360,7 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
         filename: videoFilename,
         prompt: prompt,
         timestamp: Date.now(),
+        subfolder: videoSubfolder,
       };
 
       console.log('[VIDEO] New video created:', newVideo);
@@ -382,8 +386,10 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
     if (!videoToDelete) return;
 
     try {
-      // Use the same API as images, since it handles the same directory
-      await fetch(`/api/comfy/images?filename=${videoToDelete.filename}`, { method: 'DELETE' });
+      const deleteUrl = videoToDelete.subfolder
+        ? `/api/comfy/images?filename=${videoToDelete.filename}&subfolder=${videoToDelete.subfolder}`
+        : `/api/comfy/images?filename=${videoToDelete.filename}`;
+      await fetch(deleteUrl, { method: 'DELETE' });
     } catch (err) {
       console.error('Delete failed:', err);
     }
@@ -505,7 +511,7 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
               <div className="flex flex-col gap-2">
                 <p className="text-[10px] uppercase tracking-widest text-[#6b6560]">Video Size</p>
                 <div className="flex h-[38px] items-center gap-1 rounded-xl border border-[#494741] bg-[#262624] p-1">
-                  {(['480', '720'] as const).map((size) => (
+                  {(['480', '540', '720'] as const).map((size) => (
                     <button
                       key={size}
                       onClick={() => updateWorkspaceState({ videoSize: size })}
@@ -676,7 +682,7 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
           {/* Video Result */}
           {videoResult && (
             <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] p-5 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
-              <p className="mb-3 text-[10px] uppercase tracking-widest text-[#6b6560]">Generated Video</p>
+              <p className="mb-3 text-[10px] uppercase tracking-widest text-[#6b6560]">Video Preview</p>
               <div className="flex items-center gap-4">
                 <div className="flex-1 overflow-hidden rounded-xl bg-[#1a1a18]">
                   <video
@@ -691,7 +697,7 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
                     onClick={() => window.open(`/generated/${videoResult.filename}`, '_blank')}
                     className="rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-2 text-xs text-[#f2dbc0] transition hover:bg-[#4a433a]"
                   >
-                    Download
+                    View
                   </button>
                   <button
                     onClick={() => openUpscale(videoResult)}
@@ -736,7 +742,7 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
                     }}
                     role="button"
                     tabIndex={0}
-                    className="group relative aspect-[9/16] cursor-pointer overflow-hidden rounded-lg bg-[#1a1a18] transition hover:ring-2 hover:ring-[#c9a87a] outline-none"
+                    className="group relative aspect-[1/1] cursor-pointer overflow-hidden rounded-lg bg-[#1a1a18] transition hover:ring-2 hover:ring-[#c9a87a] outline-none"
                   >
                     <video
                       src={`/generated/${video.filename}`}
@@ -744,28 +750,76 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
                       muted
                       preload="metadata"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition group-hover:opacity-100">
-                      <div className="flex flex-col items-center gap-2">
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openUpscale(video);
-                          }}
-                          className="rounded-lg bg-black/60 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[#c9a87a] backdrop-blur-sm transition hover:bg-[#c9a87a] hover:text-[#1f1f1d]"
-                        >
-                          Upscale
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openConfirm("Delete Video", "This will delete the video from the server.", () => deleteVideo(video.id));
-                          }}
-                          className="rounded-lg bg-black/60 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white/70 backdrop-blur-sm transition hover:bg-red-500/80 hover:text-white"
-                        >
-                          Delete
-                        </button>
+                    <div className="absolute inset-x-0 top-0 -translate-y-full p-2 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                      <div className="flex items-center justify-end">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigator.clipboard.writeText(video.prompt);
+                              toast.success('Copied');
+                            }}
+                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                            title="Copy Prompt"
+                          >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                          </button>
+                          {/* <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateWorkspaceState({ prompt: video.prompt });
+                              toast.success('Prompt loaded');
+                            }}
+                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                            title="Use Prompt"
+                          >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          </button> */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openUpscale(video);
+                            }}
+                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                            title="Upscale"
+                          >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(`/generated/${video.filename}`, '_blank');
+                            }}
+                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                            title="View"
+                          >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openConfirm("Delete Video", "This will delete the video from the server.", () => deleteVideo(video.id));
+                            }}
+                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                            title="Delete"
+                          >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
+                    </div>
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2.5">
+                      <p className="line-clamp-2 text-[11px] leading-relaxed text-[#e7e2d8] opacity-90">{video.prompt}</p>
                     </div>
                   </div>
                 ))}

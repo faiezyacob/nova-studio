@@ -250,8 +250,13 @@ export async function DELETE(request: NextRequest) {
     }
 
     const imageName = extractFilename(filename);
+    const subfolderParam = searchParams.get('subfolder');
+    const isVideo = /\.(mp4|webm|mov)$/i.test(filename);
+    const subfolder = subfolderParam || (isVideo ? 'video' : '');
     const localPath = path.join(LOCAL_IMAGES_DIR, imageName);
-    const comfyPath = path.join(COMFY_OUTPUT_DIR, imageName);
+    const comfyPath = subfolder
+      ? path.join(COMFY_OUTPUT_DIR, subfolder, imageName)
+      : path.join(COMFY_OUTPUT_DIR, imageName);
 
     let deletedFromLocal = 0;
     let deletedFromComfy = 0;
@@ -264,6 +269,17 @@ export async function DELETE(request: NextRequest) {
     if (existsSync(comfyPath)) {
       await unlink(comfyPath);
       deletedFromComfy = 1;
+    }
+
+    if (isVideo) {
+      const pngFilename = imageName.replace(/\.(mp4|webm|mov)$/i, '.png');
+      const comfyPngPath = subfolder
+        ? path.join(COMFY_OUTPUT_DIR, subfolder, pngFilename)
+        : path.join(COMFY_OUTPUT_DIR, pngFilename);
+      if (existsSync(comfyPngPath)) {
+        await unlink(comfyPngPath);
+        deletedFromComfy++;
+      }
     }
 
     return NextResponse.json({ 

@@ -277,6 +277,7 @@ export default function ImageWorkspace({
   const enhancePrompt = async () => {
     if (!prompt.trim() || !selectedModel) return;
 
+    localStorage.setItem("loaded_model", selectedModel);
     const stylePrefix = STYLE_DESCRIPTIONS[imageStyle] || "";
     const systemPrompt = `
 You are a prompt enhancer optimized for the z-image-turbo model.

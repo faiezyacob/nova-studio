@@ -70,6 +70,7 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, onSuccess }
         filename: result.video_path,
         prompt: `[${modelLabel}] ${video.prompt}`,
         timestamp: Date.now(),
+        subfolder: result.subfolder || '',
       };
 
       onSuccess(newVideo);
