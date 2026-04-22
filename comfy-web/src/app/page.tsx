@@ -164,9 +164,9 @@ export default function App() {
         }
       }
       setCurrentModel(newModel);
-      localStorage.setItem("loaded_model", newModel);
     }
     setSelectedModel(newModel);
+    localStorage.setItem("loaded_model", newModel);
   };
 
   useEffect(() => {
@@ -448,7 +448,7 @@ export default function App() {
                           onClick={() => window.open(`/generated/${item.filename}`, "_blank")}
                           className="flex w-full items-center gap-2 rounded-lg border border-transparent px-2 py-1.5 text-left transition hover:border-[#4b4740] hover:bg-[#343330]"
                         >
-                          <img src={`/generated/${item.filename}`} alt={item.prompt} className={`h-9 w-9 rounded transition duration-500 object-cover ${item.hidden ? "blur-[4px]" : ""}`} />
+                          <img src={`/generated/${item.filename}`} alt={item.prompt} className={`aspect-square h-9 w-9 rounded transition duration-500 object-cover ${item.hidden ? "blur-[4px]" : ""}`} />
                           <span className="truncate text-xs text-[#cec8bb]">{item.prompt}</span>
                         </button>
                       ))}

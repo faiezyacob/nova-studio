@@ -83,6 +83,9 @@ export default function VideoWorkspace({
   const [isCalculating, setIsCalculating] = useState(false);
   const [isUpscaleOpen, setIsUpscaleOpen] = useState(false);
   const [videoToUpscale, setVideoToUpscale] = useState<VideoGalleryItem | null>(null);
+  const [isCombineMode, setIsCombineMode] = useState(false);
+  const [selectedVideos, setSelectedVideos] = useState<string[]>([]);
+  const [isCombining, setIsCombining] = useState(false);
 
   const { prompt, uploadedImage, uploadedImageName, videoSize, matchImageSize, durationFrames } = workspaceState;
 
@@ -378,6 +381,132 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
       toast.error(err instanceof Error ? err.message : 'Generation failed', { id: 'video-gen' });
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const extractLastFrame = (videoUrl: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video');
+      video.src = videoUrl;
+      video.crossOrigin = 'anonymous';
+      video.muted = true;
+      
+      video.onloadedmetadata = () => {
+        video.currentTime = video.duration;
+      };
+      
+      video.onloadeddata = () => {
+        setTimeout(() => {
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Could not get canvas context'));
+            return;
+          }
+          
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/png'));
+        }, 100);
+      };
+      
+      video.onerror = () => {
+        reject(new Error('Failed to load video'));
+      };
+    });
+  };
+
+  const useVideoAsInput = async (video: VideoGalleryItem) => {
+    try {
+      toast.loading('Extracting last frame...', { id: 'extract-frame' });
+      const frameDataUrl = await extractLastFrame(`/generated/${video.filename}`);
+      updateWorkspaceState({ 
+        uploadedImage: frameDataUrl, 
+        uploadedImageName: `frame_${video.filename.replace(/\.[^.]+$/, '.png')}` 
+      });
+      toast.success('Last frame extracted. Ready for video generation.', { id: 'extract-frame' });
+    } catch (err) {
+      console.error('Extract failed:', err);
+      toast.error('Failed to extract last frame', { id: 'extract-frame' });
+    }
+  };
+
+  const toggleCombineMode = () => {
+    if (isCombineMode) {
+      setIsCombineMode(false);
+      setSelectedVideos([]);
+    } else {
+      setIsCombineMode(true);
+      setSelectedVideos([]);
+    }
+  };
+
+  const toggleVideoSelection = (videoId: string) => {
+    setSelectedVideos(prev => {
+      if (prev.includes(videoId)) {
+        return prev.filter(id => id !== videoId);
+      }
+      return [...prev, videoId];
+    });
+  };
+
+  const combineVideos = async () => {
+    if (selectedVideos.length < 2) {
+      toast.error('Select at least 2 videos to combine');
+      return;
+    }
+
+    const orderedVideos = selectedVideos
+      .map(id => videoGallery.find(v => v.id === id))
+      .filter((v): v is VideoGalleryItem => v !== undefined);
+
+    setIsCombining(true);
+    try {
+      toast.loading('Combining videos...', { id: 'combine' });
+
+      const response = await fetch('/api/video/combine', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videos: orderedVideos.map(v => ({
+            filename: v.filename,
+            subfolder: v.subfolder || 'video'
+          }))
+        })
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to combine videos');
+      }
+
+      const result = await response.json();
+      
+      const newVideo: VideoGalleryItem = {
+        id: result.prompt_id || `combined_${Date.now()}`,
+        filename: result.video_path || result.output_filename,
+        prompt: `Combined: ${orderedVideos.map(v => v.prompt).join(' → ')}`,
+        timestamp: Date.now(),
+        subfolder: result.subfolder || 'video',
+      };
+
+      setVideoResult(newVideo);
+      setVideoGallery(prev => {
+        const updated = [newVideo, ...prev];
+        localStorage.setItem(VIDEO_GALLERY_KEY, JSON.stringify(updated));
+        return updated;
+      });
+      
+      setIsCombineMode(false);
+      setSelectedVideos([]);
+      toast.success('Videos combined!', { id: 'combine' });
+    } catch (err) {
+      console.error('Combine failed:', err);
+      toast.error(err instanceof Error ? err.message : 'Failed to combine videos', { id: 'combine' });
+    } finally {
+      setIsCombining(false);
     }
   };
 
@@ -726,24 +855,74 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
           {videoGallery.length > 0 && (
             <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] p-5 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
               <div className="mb-3 flex items-center justify-between">
-                <p className="text-[10px] uppercase tracking-widest text-[#6b6560]">Video History</p>
-                <span className="text-xs text-[#6b6560]">{videoGallery.length}</span>
+                <div className="flex items-center gap-3">
+                  <p className="text-[10px] uppercase tracking-widest text-[#6b6560]">Video History</p>
+                  <span className="text-xs text-[#6b6560]">{videoGallery.length}</span>
+                </div>
+                {isCombineMode ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-[#c9a87a]">{selectedVideos.length} selected</span>
+                    <button
+                      onClick={combineVideos}
+                      disabled={isCombining || selectedVideos.length < 2}
+                      className="cursor-pointer flex items-center gap-1.5 rounded-lg bg-[#c9a87a] px-3 py-1.5 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {isCombining ? (
+                        <>
+                          <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                          </svg>
+                          Combining...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Proceed
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={toggleCombineMode}
+                      className="rounded-lg border border-[#5a4a3d] px-3 py-1.5 text-xs text-[#e1bfa0] transition hover:border-[#775e4b] hover:text-[#f2cdae]"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={toggleCombineMode}
+                    className="rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-1.5 text-xs text-[#f2dbc0] transition hover:bg-[#4a433a]"
+                  >
+                    Combine
+                  </button>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                 {videoGallery.map((video) => (
                   <div
                     key={video.id}
-                    onClick={() => setVideoResult(video)}
+                    onClick={() => isCombineMode ? toggleVideoSelection(video.id) : setVideoResult(video)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
-                        setVideoResult(video);
+                        isCombineMode ? toggleVideoSelection(video.id) : setVideoResult(video);
                       }
                     }}
                     role="button"
                     tabIndex={0}
-                    className="group relative aspect-[1/1] cursor-pointer overflow-hidden rounded-lg bg-[#1a1a18] transition hover:ring-2 hover:ring-[#c9a87a] outline-none"
+                    className={`group relative aspect-[1/1] cursor-pointer overflow-hidden rounded-lg bg-[#1a1a18] transition hover:ring-2 hover:ring-[#c9a87a] outline-none ${isCombineMode && selectedVideos.includes(video.id) ? 'ring-2 ring-[#c9a87a]' : ''}`}
                   >
+                    {isCombineMode && selectedVideos.includes(video.id) && (
+                      <div className="absolute inset-0 bg-[#c9a87a]/20 flex items-center justify-center z-10">
+                        <span className="bg-[#c9a87a] text-[#1f1f1d] text-xs font-bold px-2 py-1 rounded">
+                          {selectedVideos.indexOf(video.id) + 1}
+                        </span>
+                      </div>
+                    )}
                     <video
                       src={`/generated/${video.filename}`}
                       className="h-full w-full object-cover"
@@ -753,6 +932,18 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
                     <div className="absolute inset-x-0 top-0 -translate-y-full p-2 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                       <div className="flex items-center justify-end">
                         <div className="flex items-center gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              useVideoAsInput(video);
+                            }}
+                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                            title="Use Last Frame as Input"
+                          >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </button>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();

@@ -313,7 +313,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
             { role: "system", content: systemPrompt },
             { role: "user", content: prompt },
           ],
-          temperature: 0.4,
+          temperature: 0.4
         }),
       });
 
@@ -595,7 +595,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                     }}
                     disabled={isGenerating}
                     min={256}
-                    max={2048}
+                    max={4096}
                     step={8}
                     className="w-20 rounded-lg border border-[#494741] bg-[#262624] px-2 py-2 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] disabled:opacity-50"
                   />
@@ -627,7 +627,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                     }}
                     disabled={isGenerating}
                     min={256}
-                    max={2048}
+                    max={4096}
                     step={8}
                     className="w-20 rounded-lg border border-[#494741] bg-[#262624] px-2 py-2 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] disabled:opacity-50"
                   />

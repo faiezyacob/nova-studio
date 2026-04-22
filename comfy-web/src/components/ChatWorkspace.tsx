@@ -199,7 +199,7 @@ export default function ChatWorkspace({
         }
       }
       setCurrentModel(newModel);
-      localStorage.setItem("loaded_model", newModel);
+      // localStorage.setItem("loaded_model", newModel);
     }
   };
 
@@ -241,6 +241,7 @@ export default function ChatWorkspace({
           }
         }
         setCurrentModel(modelToUse);
+        localStorage.setItem("loaded_model", modelToUse);
       }
 
       const messages = [

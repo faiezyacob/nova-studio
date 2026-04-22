@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
     }
 
-    const finalWidth = Math.max(256, Math.min(2048, width || 1024));
-    const finalHeight = Math.max(256, Math.min(2048, height || 1024));
+    const finalWidth = Math.max(256, Math.min(4096, width || 1024));
+    const finalHeight = Math.max(256, Math.min(4096, height || 1024));
 
     const lora = loras && loras.length > 0 ? loras[0] : null;
     
