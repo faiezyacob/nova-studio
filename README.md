@@ -1,108 +1,73 @@
-# Nova Studio - Unified Local AI Workspace
+# Nova Studio (Comfy Web)
 
-A powerful, unified local AI workspace combining image generation, video generation, and chat capabilities. Designed for high-performance creative workflows powered by ComfyUI and LM Studio.
+A premium web interface for high-end Image and Video generation using ComfyUI.
 
-## Workspaces
+## 🚀 Getting Started
 
-Nova Studio is organized into three specialized workspaces, accessible via the modular sidebar.
+First, run the development server:
 
-### 1. Image Workspace
-- **Turbo Generation** - High-speed image creation using ComfyUI with the z-image-turbo model.
-- **LoRA Support** - Enhance images with custom LoRAs and adjustable model strength.
-- **Style Presets** - Choose from curated visual styles:
-  - **Realistic**: Candid phone snapshot aesthetic.
-  - **Photography**: Professional DSLR portrait quality.
-  - **Cinematic**: Narrative film frame with dramatic lighting.
-  - **Anime**: Modern high-quality Japanese animation style.
-  - **CGI**: High-end 3D render (film/game cinematics).
-- **Prompt Enhancement** - Automatically rewrite and refine prompts using local LLMs.
-- **Integration** - Instantly send generated images to the Video Workspace with a single click.
-
-### 2. Video Workspace (Wan2.2)
-- **Image-to-Video Animation** - Animate any image using the state-of-the-art Wan2.2 model.
-- **Vision-AI Prompting** - Use vision-capable LLMs (e.g., Llama 3.2 Vision) to analyze your image and generate context-aware motion prompts.
-- **Precise Controls**:
-  - **Aspect Ratio Matching**: Automatically match video dimensions to the source image.
-  - **Resolution Selection**: 480p and 720p output presets.
-  - **Duration Control**: adjustable frame count for shorter or longer animations.
-- **VRAM Auto-Optimization**: Automatically unloads LLM models from VRAM before starting video generation to ensure maximum stability on single-GPU setups.
-
-### 3. Chat Workspace
-- **Local LLM Interaction** - Chat with any GGUF model via LM Studio.
-- **Multi-session Management** - Create and organize multiple independent chat sessions.
-- **Model Per Session** - Assign different models to different sessions for specialized tasks.
-- **Persistence** - All chat history and workspace states are saved to browser localStorage.
-
-## Workflow: From Idea to Animation
-
-1. **Generate**: Create a stunning image in the **Image Workspace** using turbo models and LoRAs.
-2. **Transfer**: Click the **"Use for Video"** button on any gallery item to bridge it to the Video Workspace.
-3. **Analyze**: Select a **Vision Model** and click **"Enhance"** to have the AI write a cinematic motion prompt based on the image content.
-4. **Animate**: Click **"Generate Video"** (Nova Studio will handle VRAM management automatically) and watch your image come to life.
-
-## Screenshots
-
-> **Image Generation**: Modern UI with style presets, LoRA support, and aspect ratio controls.
-![Nova Studio Image Generation](examples/image.png)
-
-> **Video Generation**: Image-to-video workflow with motion model selection and duration controls.
-![Nova Studio Video Generation](examples/video.png)
-
-> **Chat**: Clean, distraction-free interface for local LLM interaction.
-![Nova Studio Chat](examples/chat.png)
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      Nova Studio (Next.js)                  │
-│                      http://localhost:3000                  │
-├──────────────────┬───────────────────────┬──────────────────┤
-│  Image Workspace │    Video Workspace    │  Chat Workspace  │
-├──────────────────┴───────────────────────┴──────────────────┤
-│  /api/comfy/*  ──────────────►  ComfyUI  (port 8188)        │
-│  /api/lmstudio/* ───────────►  LM Studio (port 1234)        │
-└─────────────────────────────────────────────────────────────┘
-```
-
-- **Next.js 14/15**: High-performance web interface.
-- **ComfyUI**: Backend engine for Z-Image-Turbo and Wan2.2 (Video).
-- **LM Studio**: Backend server for LLMs and Vision models.
-
-## Prerequisites
-
-- **OS**: Windows (tested on Windows 11)
-- **Hardware**: NVIDIA GPU with 12GB+ VRAM (16GB+ recommended for 720p video).
-- **Software**:
-  - Node.js 18+ and npm
-  - Python 3.11+ (for ComfyUI)
-  - [LM Studio](https://lmstudio.ai/) (Local Server enabled on port 1234)
-
-## Setup
-
-### 1. Web UI Setup
 ```bash
-cd comfy-web
-npm install
+npm run dev
 ```
 
-### 2. Backend Setup
-1. **ComfyUI**: Place the `ComfyUI` folder in the root directory. Ensure required custom nodes (ComfyUI-WanVideo or similar) and models are installed.
-2. **LM Studio**: Download your preferred models. For video prompt enhancement, ensure you have at least one **Vision-capable model** (e.g., Llama-3.2-11B-Vision-Instruct).
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### 3. Start
-```bash
-start_all.bat
-```
+## 🎥 Video Generation Guide
 
-## Tech Stack
+### 1. Generating Continuation Videos (First Frame to Next)
+Nova Studio allows you to create seamless video continuations by using the last frame of a generated video as the starting point for the next one.
 
-- **Frontend**: Next.js (App Router), React 19, TypeScript, Tailwind CSS
-- **Creative Engines**: ComfyUI (Image/Video)
-- **LLM Engine**: LM Studio (OpenAI-compatible API)
-- **UI Architecture**: Modular Workspace components, Sonner toasts, and persistent storage.
+1.  Generate a video in the **Video Workspace**.
+2.  In the **Video Gallery**, hover over the generated video and click the **"Use for Video"** icon (video camera icon).
+3.  The application will automatically extract the **last frame** of that video and set it as the input image for your next generation.
+4.  Modify your prompt to describe the next sequence of action and click **Generate Video**.
 
-## License
+### 2. Combining Videos
+Once you have generated multiple segments of a video, you can stitch them together directly in the app.
 
-Personal use. Individual model licenses apply.
+1.  Click the **"Combine Mode"** button in the Video Gallery.
+2.  Select the videos you want to combine in the order you want them to appear.
+3.  Click **"Combine Selected"**.
+4.  The app will use FFmpeg to merge the videos into a single file without re-encoding (preserving quality).
+
+> [!NOTE]
+> **FFmpeg** must be installed and available in your system PATH for the combine feature to work.
+
+## 📦 Model Requirements
+
+To use all features, ensure the following models are downloaded and placed in your ComfyUI `models` directories.
+
+### Image Generation (z-image-turbo)
+| Model Type | Filename | Path in ComfyUI |
+| :--- | :--- | :--- |
+| **UNET** | `z-image-turbo-fp8-e4m3fn.safetensors` | `models/unet` |
+| **CLIP** | `Qwen3-4B-Q4_K_S.gguf` | `models/clip` |
+| **VAE** | `ae.safetensors` | `models/vae` |
+
+### Video Generation (Wan 2.2)
+| Model Type | Filename | Path in ComfyUI |
+| :--- | :--- | :--- |
+| **UNET (High Noise)** | `wan2.2_i2v_high_noise_14B_Q4_K_S.gguf` | `models/unet` |
+| **UNET (Low Noise)** | `wan2.2_i2v_low_noise_14B_Q4_K_S.gguf` | `models/unet` |
+| **VAE** | `wan_2.1_vae.safetensors` | `models/vae` |
+| **CLIP** | `umt5_xxl_fp8_e4m3fn_scaled.safetensors` | `models/clip` |
+| **Distill LoRA** | `lightx2v_I2V_14B_480p_cfg_step_distill_rank32_bf16.safetensors` | `models/loras` |
+
+### Video Upscaling
+| Model Type | Filename | Path in ComfyUI |
+| :--- | :--- | :--- |
+| **Upscale Model** | `RealESRGAN_x2plus.pth` | `models/upscale_models` |
+| **Upscale Model** | `RealESRGAN_x4plus.safetensors` | `models/upscale_models` |
+
+### Recommended LoRAs (Image)
+Place these in `models/loras` (Download from [malcolmrey/zimage](https://huggingface.co/malcolmrey/zimage/tree/main)):
+- `pixel_art_style_z_image_turbo.safetensors`
+- `zimage_anadearmas_v2_onetrainer.safetensors`
+- `zimage_alexandradaddario_v2_onetrainer.safetensors`
+- ... (and other `zimage_*` models)
+
+## 🛠️ System Requirements
+- **ComfyUI**: Running with `--allow-code-cs --enable-cors-header`.
+- **FFmpeg**: Required for combining video segments.
+- **LM Studio**: Required for prompt enhancement (vision models recommended for I2V).
 
