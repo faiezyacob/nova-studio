@@ -390,28 +390,28 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
       video.src = videoUrl;
       video.crossOrigin = 'anonymous';
       video.muted = true;
-      
+
       video.onloadedmetadata = () => {
         video.currentTime = video.duration;
       };
-      
+
       video.onloadeddata = () => {
         setTimeout(() => {
           const canvas = document.createElement('canvas');
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
-          
+
           const ctx = canvas.getContext('2d');
           if (!ctx) {
             reject(new Error('Could not get canvas context'));
             return;
           }
-          
+
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           resolve(canvas.toDataURL('image/png'));
         }, 100);
       };
-      
+
       video.onerror = () => {
         reject(new Error('Failed to load video'));
       };
@@ -422,9 +422,9 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
     try {
       toast.loading('Extracting last frame...', { id: 'extract-frame' });
       const frameDataUrl = await extractLastFrame(`/generated/${video.filename}`);
-      updateWorkspaceState({ 
-        uploadedImage: frameDataUrl, 
-        uploadedImageName: `frame_${video.filename.replace(/\.[^.]+$/, '.png')}` 
+      updateWorkspaceState({
+        uploadedImage: frameDataUrl,
+        uploadedImageName: `frame_${video.filename.replace(/\.[^.]+$/, '.png')}`
       });
       toast.success('Last frame extracted. Ready for video generation.', { id: 'extract-frame' });
     } catch (err) {
@@ -483,7 +483,7 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
       }
 
       const result = await response.json();
-      
+
       const newVideo: VideoGalleryItem = {
         id: result.prompt_id || `combined_${Date.now()}`,
         filename: result.video_path || result.output_filename,
@@ -498,7 +498,7 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
         localStorage.setItem(VIDEO_GALLERY_KEY, JSON.stringify(updated));
         return updated;
       });
-      
+
       setIsCombineMode(false);
       setSelectedVideos([]);
       toast.success('Videos combined!', { id: 'combine' });
@@ -979,7 +979,7 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
                             title="Upscale"
                           >
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                             </svg>
                           </button>
                           <button
