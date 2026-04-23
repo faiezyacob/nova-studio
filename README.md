@@ -4,13 +4,34 @@ A premium web interface for high-end Image and Video generation using ComfyUI.
 
 ## 🚀 Getting Started
 
-First, run the development server:
+The easiest way to start both the Web UI and ComfyUI is to run the provided batch script:
 
+### 1. Automatic Startup (Windows)
+Double-click `start_all.bat` in the root directory. This will:
+- Start ComfyUI using its virtual environment.
+- Start the development server for the Web UI.
+
+---
+
+### 2. Manual Startup
+If you prefer to start the services manually, follow these steps:
+
+#### **A. Start ComfyUI**
+Navigate to the `ComfyUI` folder and run the main script.
 ```bash
+cd ComfyUI
+# Using virtual environment (recommended)
+.\venv\Scripts\python.exe main.py --allow-code-cs --enable-cors-header
+```
+*Note: Ensure you have the required custom nodes and models installed.*
+
+#### **B. Start Web UI**
+Navigate to the `comfy-web` folder and start the development server.
+```bash
+cd comfy-web
 npm run dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🎥 Video Generation Guide
 
