@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nova Studio (Comfy Web)
 
-## Getting Started
+A premium web interface for high-end Image and Video generation using ComfyUI.
+
+## 🚀 Getting Started
 
 First, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🎥 Video Generation Guide
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1. Generating Continuation Videos (First Frame to Next)
+Nova Studio allows you to create seamless video continuations by using the last frame of a generated video as the starting point for the next one.
 
-## Learn More
+1.  Generate a video in the **Video Workspace**.
+2.  In the **Video Gallery**, hover over the generated video and click the **"Use for Video"** icon (video camera icon).
+3.  The application will automatically extract the **last frame** of that video and set it as the input image for your next generation.
+4.  Modify your prompt to describe the next sequence of action and click **Generate Video**.
 
-To learn more about Next.js, take a look at the following resources:
+### 2. Combining Videos
+Once you have generated multiple segments of a video, you can stitch them together directly in the app.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1.  Click the **"Combine Mode"** button in the Video Gallery.
+2.  Select the videos you want to combine in the order you want them to appear.
+3.  Click **"Combine Selected"**.
+4.  The app will use FFmpeg to merge the videos into a single file without re-encoding (preserving quality).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+> [!NOTE]
+> **FFmpeg** must be installed and available in your system PATH for the combine feature to work.
 
-## Deploy on Vercel
+## 📦 Model Requirements
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+To use all features, ensure the following models are downloaded and placed in your ComfyUI `models` directories.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Image Generation (z-image-turbo)
+| Model Type | Filename | Path in ComfyUI |
+| :--- | :--- | :--- |
+| **UNET** | `z-image-turbo-fp8-e4m3fn.safetensors` | `models/unet` |
+| **CLIP** | `Qwen3-4B-Q4_K_S.gguf` | `models/clip` |
+| **VAE** | `ae.safetensors` | `models/vae` |
+
+### Video Generation (Wan 2.2)
+| Model Type | Filename | Path in ComfyUI |
+| :--- | :--- | :--- |
+| **UNET (High Noise)** | `wan2.2_i2v_high_noise_14B_Q4_K_S.gguf` | `models/unet` |
+| **UNET (Low Noise)** | `wan2.2_i2v_low_noise_14B_Q4_K_S.gguf` | `models/unet` |
+| **VAE** | `wan_2.1_vae.safetensors` | `models/vae` |
+| **CLIP** | `umt5_xxl_fp8_e4m3fn_scaled.safetensors` | `models/clip` |
+| **Distill LoRA** | `lightx2v_I2V_14B_480p_cfg_step_distill_rank32_bf16.safetensors` | `models/loras` |
+
+### Video Upscaling
+| Model Type | Filename | Path in ComfyUI |
+| :--- | :--- | :--- |
+| **Upscale Model** | `RealESRGAN_x2plus.pth` | `models/upscale_models` |
+| **Upscale Model** | `RealESRGAN_x4plus.safetensors` | `models/upscale_models` |
+
+### Recommended LoRAs (Image)
+Place these in `models/loras` (Download from [malcolmrey/zimage](https://huggingface.co/malcolmrey/zimage/tree/main)):
+- `pixel_art_style_z_image_turbo.safetensors`
+- `zimage_anadearmas_v2_onetrainer.safetensors`
+- `zimage_alexandradaddario_v2_onetrainer.safetensors`
+- ... (and other `zimage_*` models)
+
+## 🛠️ System Requirements
+- **ComfyUI**: Running with `--allow-code-cs --enable-cors-header`.
+- **FFmpeg**: Required for combining video segments.
+- **LM Studio**: Required for prompt enhancement (vision models recommended for I2V).
+
