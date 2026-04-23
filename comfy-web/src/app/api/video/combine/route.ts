@@ -86,9 +86,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const { copyFile, mkdir: mkDir } = await import('fs/promises');
+    const comfyOutputVideoDir = path.join(process.cwd(), '..', 'ComfyUI', 'output', 'video');
+    if (!existsSync(comfyOutputVideoDir)) {
+      await mkDir(comfyOutputVideoDir, { recursive: true });
+    }
+    const comfyDestPath = path.join(comfyOutputVideoDir, outputFilename);
+    await copyFile(outputPath, comfyDestPath);
+
     return NextResponse.json({
       video_path: outputFilename,
-      subfolder: '',
+      subfolder: 'video',
       prompt_id: `combined_${Date.now()}`
     });
   } catch (error) {

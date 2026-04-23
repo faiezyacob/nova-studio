@@ -13,7 +13,7 @@ async function ensureDirectory(dir: string) {
   }
 }
 
-async function waitForFileToBeReady(filePath: string, maxAttempts = 60, delayMs = 2000): Promise<boolean> {
+async function waitForFileToBeReady(filePath: string, maxAttempts = 120, delayMs = 3000): Promise<boolean> {
   let lastSize = 0;
   let stableCount = 0;
   const MIN_VIDEO_SIZE = 100000;
@@ -24,7 +24,7 @@ async function waitForFileToBeReady(filePath: string, maxAttempts = 60, delayMs 
       if (stats.isFile() && stats.size > 0) {
         if (stats.size === lastSize && stats.size > MIN_VIDEO_SIZE) {
           stableCount++;
-          if (stableCount >= 3) {
+          if (stableCount >= 5) {
             return true;
           }
         } else {
@@ -68,24 +68,26 @@ export async function GET(request: NextRequest) {
   
   console.log('[IMAGES] Detected:', { imageName, contentType, isVideo, subfolder });
   
-  // Videos from Wan2.2 are saved in "video/" subfolder in ComfyUI
-  // For local storage, we store them directly in public/generated without subfolder
-  let effectiveSubfolder = subfolder;
-  
-  if (isVideo && subfolder === 'video') {
-    // Convert "video" subfolder to empty for local storage
-    // But still fetch from ComfyUI's video/ subfolder
-    effectiveSubfolder = '';
-  }
-  
-  const subfolderParts = effectiveSubfolder ? effectiveSubfolder.split('/').map(s => extractFilename(s)) : [];
-  const subfolderPath = subfolderParts.join(path.sep);
-  const localPath = path.join(LOCAL_IMAGES_DIR, subfolderPath, imageName);
-
-  console.log('[IMAGES] Paths:', { localPath, subfolder, effectiveSubfolder });
-
   try {
-    // 1. Check if already in cache
+    // Videos from Wan2.2 are saved in "video/" subfolder in ComfyUI
+    // For local storage, we store them directly in public/generated without subfolder
+    let effectiveSubfolder = subfolder;
+    
+    if (isVideo && subfolder === 'video') {
+      // Convert "video" subfolder to empty for local storage
+      // But still fetch from ComfyUI's video/ subfolder
+      effectiveSubfolder = '';
+    }
+    
+    const subfolderParts = effectiveSubfolder ? effectiveSubfolder.split('/').map(s => extractFilename(s)) : [];
+    const subfolderPath = subfolderParts.join(path.sep);
+    const flatLocalPath = path.join(LOCAL_IMAGES_DIR, extractFilename(imageName));
+    let localPath = subfolderPath 
+      ? path.join(LOCAL_IMAGES_DIR, subfolderPath, imageName) 
+      : flatLocalPath;
+
+    console.log('[IMAGES] Paths:', { localPath, flatLocalPath, subfolder, effectiveSubfolder });
+
     if (existsSync(localPath)) {
       console.log('[IMAGES] Serving from cache:', localPath);
       const imageBuffer = await readFile(localPath);
@@ -97,23 +99,32 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    if (existsSync(flatLocalPath)) {
+      console.log('[IMAGES] Serving from flat cache:', flatLocalPath);
+      const imageBuffer = await readFile(flatLocalPath);
+      return new NextResponse(imageBuffer, {
+        headers: {
+          'Content-Type': contentType,
+          'Cache-Control': 'no-store',
+        },
+      });
+    }
+
     // 2. Try to read directly from ComfyUI output directory (if local)
-    // This is much faster and more reliable than fetching via HTTP
     const comfyLocalDir = subfolder ? path.join(COMFY_OUTPUT_DIR, subfolder) : COMFY_OUTPUT_DIR;
     const comfyLocalPath = path.join(comfyLocalDir, filename);
 
     console.log('[IMAGES] Checking local ComfyUI path:', comfyLocalPath);
     if (existsSync(comfyLocalPath)) {
-      // For videos, wait for the file to be fully written
       if (isVideo) {
         await waitForFileToBeReady(comfyLocalPath);
       }
 
-      console.log('[IMAGES] Found file locally, copying...');
+      console.log('[IMAGES] Found file locally, copying to flat path...');
       const imageBuffer = await readFile(comfyLocalPath);
       
-      await ensureDirectory(path.dirname(localPath));
-      await writeFile(localPath, imageBuffer);
+      await ensureDirectory(path.dirname(flatLocalPath));
+      await writeFile(flatLocalPath, imageBuffer);
       
       return new NextResponse(imageBuffer, {
         headers: {
@@ -141,10 +152,10 @@ export async function GET(request: NextRequest) {
     const imageBuffer = await response.arrayBuffer();
     console.log('[IMAGES] Fetched buffer size:', imageBuffer.byteLength);
 
-    await ensureDirectory(path.dirname(localPath));
-    await writeFile(localPath, Buffer.from(imageBuffer));
+    await ensureDirectory(path.dirname(flatLocalPath));
+    await writeFile(flatLocalPath, Buffer.from(imageBuffer));
 
-    console.log('[IMAGES] Cached file to:', localPath);
+    console.log('[IMAGES] Cached file to:', flatLocalPath);
 
     return new NextResponse(imageBuffer, {
       headers: {

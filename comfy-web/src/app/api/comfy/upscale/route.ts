@@ -110,7 +110,7 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
       if (resolved) return;
       
       // Delay to ensure FFmpeg and file combine nodes are fully done
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 5000));
       
       resolved = true;
       
