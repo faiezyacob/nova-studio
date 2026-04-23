@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
     const subfolderParts = effectiveSubfolder ? effectiveSubfolder.split('/').map(s => extractFilename(s)) : [];
     const subfolderPath = subfolderParts.join(path.sep);
     const flatLocalPath = path.join(LOCAL_IMAGES_DIR, extractFilename(imageName));
-    let localPath = subfolderPath 
+    const localPath = subfolderPath 
       ? path.join(LOCAL_IMAGES_DIR, subfolderPath, imageName) 
       : flatLocalPath;
 

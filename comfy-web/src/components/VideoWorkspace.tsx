@@ -341,8 +341,8 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
 
       await new Promise(resolve => setTimeout(resolve, 8000));
 
-      let videoFilename = result.video_path || '';
-      let videoSubfolder = result.subfolder || 'video';
+      const videoFilename = result.video_path || '';
+      const videoSubfolder = result.subfolder || 'video';
 
       try {
         const cacheUrl = `/api/comfy/images?filename=${encodeURIComponent(videoFilename)}&subfolder=${encodeURIComponent(videoSubfolder)}`;

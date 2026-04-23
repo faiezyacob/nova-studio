@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useRef, type KeyboardEvent } from "react";
+import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { toast } from "sonner";
 import { GalleryItem, HistoryEntry, Lora } from "@/types";
+import ImageUpscaleDialog from "./ImageUpscaleDialog";
 
 const AVAILABLE_LORAS = [
   "pixel_art_style_z_image_turbo.safetensors",
@@ -144,6 +145,7 @@ export default function ImageWorkspace({
   closeConfirm,
   useImageForVideo,
 }: ImageWorkspaceProps) {
+  const [selectedImageForUpscale, setSelectedImageForUpscale] = useState<GalleryItem | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const itemsPerPage = 12;
 
@@ -760,6 +762,18 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                             </svg>
                           </button>
                           <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedImageForUpscale(item);
+                            }}
+                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                            title="Upscale Image"
+                          >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                            </svg>
+                          </button>
+                          <button
                             onClick={(e) => { e.stopPropagation(); useImageForVideo(item); }}
                             className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
                             title="Use for Video"
@@ -817,6 +831,20 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
           )}
         </div>
       </section>
+
+      <ImageUpscaleDialog
+        isOpen={selectedImageForUpscale !== null}
+        onClose={() => setSelectedImageForUpscale(null)}
+        image={selectedImageForUpscale || { filename: '', prompt: '' }}
+        onSuccess={(newImage) => {
+          setGallery((prev) => {
+            const updated = [newImage, ...prev];
+            localStorage.setItem("comfyui_gallery", JSON.stringify(updated));
+            return updated;
+          });
+          setSelectedImageForUpscale(null);
+        }}
+      />
     </>
   );
 }
