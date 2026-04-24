@@ -147,6 +147,8 @@ export default function ImageWorkspace({
 }: ImageWorkspaceProps) {
   const [selectedImageForUpscale, setSelectedImageForUpscale] = useState<GalleryItem | null>(null);
   const [imageSeed, setImageSeed] = useState<string>("");
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const itemsPerPage = 12;
 
@@ -367,7 +369,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
     closeConfirm();
   };
 
-  const deleteImage = async (index: number) => {
+  const deleteImage = async (index: number, showToast = true) => {
     const item = gallery[index];
     if (!item) return;
 
@@ -380,8 +382,10 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
     const updated = gallery.filter((_, i) => i !== index);
     setGallery(updated);
     localStorage.setItem("comfyui_gallery", JSON.stringify(updated));
-    toast.success("Deleted");
-    closeConfirm();
+    if (showToast) {
+      toast.success("Deleted");
+      closeConfirm();
+    }
   };
 
   const toggleImageVisibility = (index: number) => {
@@ -428,7 +432,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
   return (
     <>
       <header className="sticky top-0 z-20 border-b border-[#3a3936] bg-[#2a2a28]/95 px-8 py-5 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-between">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-2 w-2 animate-pulse rounded-full bg-[#c9a87a]" />
             <div>
@@ -438,12 +442,51 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
           </div>
           <div className="flex items-center gap-2">
             {gallery.length > 0 && (
-              <button
-                onClick={() => openConfirm("Clear Gallery", "This will delete all images from the server.", () => clearGallery())}
-                className="rounded-lg border border-[#5a4a3d] px-3 py-1.5 text-xs text-[#e1bfa0] transition hover:border-[#775e4b] hover:text-[#f2cdae]"
-              >
-                Clear Gallery
-              </button>
+              <>
+                <button
+                  onClick={() => {
+                    setIsSelectMode(!isSelectMode);
+                    if (isSelectMode) setSelectedForDeletion(new Set());
+                  }}
+                  className={`rounded-lg border px-3 py-1.5 text-xs transition ${isSelectMode ? "border-[#c9a87a] text-[#c9a87a]" : "border-[#5a4a3d] text-[#e1bfa0] hover:border-[#775e4b] hover:text-[#f2cdae]"}`}
+                >
+                  {isSelectMode ? "Cancel" : "Select"}
+                </button>
+                {isSelectMode && selectedForDeletion.size > 0 && (
+                  <button
+                    onClick={() => openConfirm("Delete Selected", `Delete ${selectedForDeletion.size} image(s)?`, () => {
+                      const filenames = Array.from(selectedForDeletion);
+                      const deleteFromGallery = gallery.filter(item => selectedForDeletion.has(item.filename));
+                      const deleteFromServer = async () => {
+                        for (const item of deleteFromGallery) {
+                          try {
+                            await fetch(`/api/comfy/images?filename=${item.filename}`, { method: "DELETE" });
+                          } catch {
+                            // Continue even if server delete fails
+                          }
+                        }
+                      };
+                      deleteFromServer();
+                      const updated = gallery.filter(item => !selectedForDeletion.has(item.filename));
+                      setGallery(updated);
+                      localStorage.setItem("comfyui_gallery", JSON.stringify(updated));
+                      toast.success(`Deleted ${filenames.length} image(s)`);
+                      closeConfirm();
+                      setSelectedForDeletion(new Set());
+                      setIsSelectMode(false);
+                    })}
+                    className="rounded-lg border border-[#8b3a3a] px-3 py-1.5 text-xs text-[#e87a7a] transition hover:border-[#a84a4a] hover:text-[#f28a8a]"
+                  >
+                    Delete ({selectedForDeletion.size})
+                  </button>
+                )}
+                <button
+                  onClick={() => openConfirm("Clear Gallery", "This will delete all images from the server.", () => clearGallery())}
+                  className="rounded-lg border border-[#5a4a3d] px-3 py-1.5 text-xs text-[#e1bfa0] transition hover:border-[#775e4b] hover:text-[#f2cdae]"
+                >
+                  Clear Gallery
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -724,115 +767,147 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
               </div>
 
               <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
-                {paginatedGallery.map((item) => (
-                  <div
-                    key={item.filename}
-                    onClick={() => window.open(`/generated/${item.filename}`, "_blank")}
-                    className="group relative overflow-hidden rounded-xl border border-[#3f3e3a] bg-[#32312e] cursor-pointer"
-                  >
-                    <img
-                      src={`/generated/${item.filename}`}
-                      alt={item.prompt}
-                      className={`aspect-square w-full object-cover transition duration-500 group-hover:scale-105 ${item.hidden ? "blur-xl" : ""}`}
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-x-0 top-0 -translate-y-full p-2 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                      <div className="flex items-center justify-end">
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleImageVisibility(gallery.findIndex((g) => g.filename === item.filename));
-                            }}
-                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
-                          >
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              {item.hidden ? (
-                                <>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </>
-                              ) : (
-                                <>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75a3 3 0 000 4.5" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.25 14.25a3 3 0 000-4.5" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
-                                </>
-                              )}
+                {paginatedGallery.map((item) => {
+                  const originalIndex = gallery.findIndex((g) => g.filename === item.filename);
+                  const isSelected = selectedForDeletion.has(item.filename);
+                  return (
+                    <div
+                      key={item.filename}
+                      onClick={() => {
+                        if (isSelectMode) {
+                          setSelectedForDeletion(prev => {
+                            const next = new Set(prev);
+                            if (next.has(item.filename)) {
+                              next.delete(item.filename);
+                            } else {
+                              next.add(item.filename);
+                            }
+                            return next;
+                          });
+                        } else {
+                          window.open(`/generated/${item.filename}`, "_blank");
+                        }
+                      }}
+                      className={`group relative overflow-hidden rounded-xl border bg-[#32312e] cursor-pointer transition ${isSelectMode
+                        ? isSelected ? "border-[#c9a87a] ring-2 ring-[#c9a87a]/50" : "border-[#3f3e3a] hover:border-[#5a5550]"
+                        : "border-[#3f3e3a] hover:border-[#5a5550]"
+                        }`}
+                    >
+                      {isSelectMode && (
+                        <div className={`absolute top-2 left-2 z-10 flex h-5 w-5 items-center justify-center rounded-md border-2 transition ${isSelected
+                          ? "border-[#c9a87a] bg-[#c9a87a]" : "border-white/50 bg-black/30"
+                          }`}>
+                          {isSelected && (
+                            <svg className="h-3 w-3 text-[#1f1f1d]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                             </svg>
-                          </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); copyToClipboard(item.prompt); }}
-                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
-                            title="Copy Prompt"
-                          >
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                            </svg>
-                          </button>
-                          {item.seed !== undefined && (
+                          )}
+                        </div>
+                      )}
+                      <img
+                        src={`/generated/${item.filename}`}
+                        alt={item.prompt}
+                        className={`aspect-square w-full object-cover transition duration-500 group-hover:scale-105 ${item.hidden ? "blur-xl" : ""}`}
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-x-0 top-0 -translate-y-full p-2 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                        <div className="flex items-center justify-end">
+                          <div className="flex items-center gap-1">
                             <button
-                              onClick={(e) => { e.stopPropagation(); copyToClipboard(String(item.seed)); }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleImageVisibility(originalIndex);
+                              }}
                               className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
-                              title="Copy Seed"
                             >
                               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                                {item.hidden ? (
+                                  <>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                  </>
+                                ) : (
+                                  <>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75a3 3 0 000 4.5" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.25 14.25a3 3 0 000-4.5" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
+                                  </>
+                                )}
                               </svg>
                             </button>
-                          )}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedImageForUpscale(item);
-                            }}
-                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
-                            title="Upscale Image"
-                          >
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); useImageForVideo(item); }}
-                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
-                            title="Use for Video"
-                          >
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openConfirm("Delete Image", "This will delete the image from the server.", () => deleteImage(gallery.findIndex((g) => g.filename === item.filename)));
-                            }}
-                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
-                          >
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); copyToClipboard(item.prompt); }}
+                              className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                              title="Copy Prompt"
+                            >
+                              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            </button>
+                            {item.seed !== undefined && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); copyToClipboard(String(item.seed)); }}
+                                className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                                title="Copy Seed"
+                              >
+                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                                </svg>
+                              </button>
+                            )}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedImageForUpscale(item);
+                              }}
+                              className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                              title="Upscale Image"
+                            >
+                              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); useImageForVideo(item); }}
+                              className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                              title="Use for Video"
+                            >
+                              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openConfirm("Delete Image", "This will delete the image from the server.", () => deleteImage(originalIndex));
+                              }}
+                              className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                            >
+                              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2.5">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="inline-block rounded-md bg-[#c9a87a]/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#d8b88d] backdrop-blur-sm border border-[#c9a87a]/30">
-                          {item.style}
-                        </span>
-                        {item.seed !== undefined && (
-                          <span className="inline-block rounded-md bg-[#494741]/60 px-2 py-0.5 text-[9px] font-mono text-[#9f988c] backdrop-blur-sm border border-[#5a5550]">
-                            #{item.seed}
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="inline-block rounded-md bg-[#c9a87a]/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#d8b88d] backdrop-blur-sm border border-[#c9a87a]/30">
+                            {item.style}
                           </span>
-                        )}
+                          {item.seed !== undefined && (
+                            <span className="inline-block rounded-md bg-[#494741]/60 px-2 py-0.5 text-[9px] font-mono text-[#9f988c] backdrop-blur-sm border border-[#5a5550]">
+                              #{item.seed}
+                            </span>
+                          )}
+                        </div>
+                        <p className="line-clamp-2 text-[11px] leading-relaxed text-[#e7e2d8] opacity-90">{item.prompt}</p>
                       </div>
-                      <p className="line-clamp-2 text-[11px] leading-relaxed text-[#e7e2d8] opacity-90">{item.prompt}</p>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {totalPages > 1 && (

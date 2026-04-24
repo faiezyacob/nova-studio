@@ -105,7 +105,7 @@ export default function App() {
 
   const purgeVRAM = async () => {
     setIsPurging(true);
-    toast.loading("Purging VRAM...", { id: "vram-purge" });
+    toast.loading("Purging VRAM & System RAM...", { id: "vram-purge" });
     try {
       if (localStorage.getItem('loaded_model')) {
         await fetch("/api/lmstudio/unload", {
@@ -117,9 +117,10 @@ export default function App() {
         setCurrentModel("");
       }
       await fetch("/api/comfy/free", { method: "POST" });
+      await fetch("/api/system/free", { method: "POST" });
       await new Promise(r => setTimeout(r, 800));
       await fetchVramStats();
-      toast.success("VRAM Cleared", { id: "vram-purge" });
+      toast.success("VRAM & RAM Cleared", { id: "vram-purge" });
     } catch (err) {
       console.error("Purge failed:", err);
       toast.error("Cleanup failed", { id: "vram-purge" });
@@ -503,7 +504,7 @@ export default function App() {
                   <svg className={`h-3 w-3 ${isPurging ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
-                  {isPurging ? 'Clearing...' : 'Clean GPU VRAM'}
+                  {isPurging ? 'Clearing...' : 'Clean All Memory'}
                 </button>
               </div>
             </div>

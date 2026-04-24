@@ -227,7 +227,7 @@ CRITICAL RULES FOR WAN 2.2:
 4. STRUCTURE: Use 2 to 3 concise sentences. 
    - Sentence 1: The subject, setting, and the initiation of the movement.
    - Sentence 2: The progression and explicit completion/end-state of the action.
-   - Sentence 3: Cinematic camera movement (e.g., slow pan, gentle tracking) and atmospheric details.
+   - Sentence 3: Optional natural camera behavior only if appropriate, such as mostly static framing, slight handheld wobble, or a small casual reframing; avoid cinematic or professional-looking camera moves.
 5. TEMPORAL STABILITY: Use dynamic but grounded verbs. Avoid sudden, explosive, or physically impossible transitions. Maintain the core intent of the user's raw prompt.
 
 Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
