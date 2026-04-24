@@ -424,7 +424,7 @@ export default function App() {
                           >
                             <video
                               src={`/generated/${video.filename}`}
-                              className="h-9 w-9 rounded object-cover"
+                              className="h-9 w-9 aspect-square rounded object-cover"
                             />
                             <span className="truncate text-xs text-[#cec8bb]">{video.prompt}</span>
                           </button>

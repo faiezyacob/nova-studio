@@ -146,10 +146,11 @@ export default function ImageWorkspace({
   useImageForVideo,
 }: ImageWorkspaceProps) {
   const [selectedImageForUpscale, setSelectedImageForUpscale] = useState<GalleryItem | null>(null);
+  const [imageSeed, setImageSeed] = useState<string>("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const itemsPerPage = 12;
 
-  const pollForResult = async (promptId: string, promptText: string) => {
+  const pollForResult = async (promptId: string, promptText: string, seed: number) => {
     const maxAttempts = 90;
     let attempts = 0;
 
@@ -169,6 +170,7 @@ export default function ImageWorkspace({
               prompt: promptText,
               timestamp: Date.now(),
               style: imageStyle,
+              seed: seed,
             }));
 
             await Promise.all(
@@ -237,7 +239,8 @@ export default function ImageWorkspace({
           prompt: prompt.trim(),
           width: finalWidth,
           height: finalHeight,
-          loras: selectedLora.name ? [selectedLora] : []
+          loras: selectedLora.name ? [selectedLora] : [],
+          seed: imageSeed ? parseInt(imageSeed) : undefined
         }),
       });
 
@@ -245,6 +248,7 @@ export default function ImageWorkspace({
 
       const result = await response.json();
       toast.loading("Generating...", { id: "generation" });
+      const generatedSeed = result.seed;
 
       if (result.images && result.images.length > 0) {
         const newItems: GalleryItem[] = result.images.map((imgUrl: string) => ({
@@ -252,6 +256,7 @@ export default function ImageWorkspace({
           prompt: prompt.trim(),
           timestamp: Date.now(),
           style: imageStyle,
+          seed: generatedSeed,
         }));
 
         await Promise.all(
@@ -266,7 +271,7 @@ export default function ImageWorkspace({
 
         toast.success("Image ready", { id: "generation" });
       } else {
-        await pollForResult(result.prompt_id, prompt.trim());
+        await pollForResult(result.prompt_id, prompt.trim(), generatedSeed);
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Generation failed";
@@ -446,7 +451,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
 
       <section className="flex-1 overflow-y-auto px-8 py-8">
         <div className="mx-auto w-full max-w-6xl space-y-7">
-          <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] max-w-4xl m-auto p-4 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
+          <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] max-w-5xl m-auto p-4 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
 
             {/* Row 1: Model + Style + Enhance */}
             <div className="mb-3 flex flex-wrap items-stretch gap-3">
@@ -634,6 +639,19 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                     className="w-20 rounded-lg border border-[#494741] bg-[#262624] px-2 py-2 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] disabled:opacity-50"
                   />
                 </div>
+
+                {/* Seed */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Seed</span>
+                  <input
+                    type="text"
+                    value={imageSeed}
+                    onChange={(e) => setImageSeed(e.target.value)}
+                    placeholder="Optional"
+                    disabled={isGenerating}
+                    className="w-28 rounded-lg border border-[#494741] bg-[#262624] px-2 py-2 text-xs text-[#edeae2] outline-none transition placeholder:text-[#6b6560] focus:border-[#b9986d] disabled:opacity-50"
+                  />
+                </div>
               </div>
 
             </div>
@@ -684,7 +702,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
           </div>
 
           {gallery.length > 0 && (
-            <div className="space-y-3 pt-4 max-w-4xl m-auto pb-4">
+            <div className="space-y-3 pt-4 max-w-5xl m-auto pb-4">
               <div className="flex items-center justify-between">
                 <p className="text-xs uppercase tracking-[0.24em] text-[#a19a8d]">Library</p>
                 <div className="flex items-center gap-2">
@@ -748,19 +766,23 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                           <button
                             onClick={(e) => { e.stopPropagation(); copyToClipboard(item.prompt); }}
                             className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                            title="Copy Prompt"
                           >
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                             </svg>
                           </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); window.open(`/generated/${item.filename}`, "_blank"); }}
-                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
-                          >
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                          </button>
+                          {item.seed !== undefined && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); copyToClipboard(String(item.seed)); }}
+                              className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                              title="Copy Seed"
+                            >
+                              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                              </svg>
+                            </button>
+                          )}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -797,9 +819,16 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                       </div>
                     </div>
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2.5">
-                      <span className="mb-1.5 inline-block rounded-md bg-[#c9a87a]/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#d8b88d] backdrop-blur-sm border border-[#c9a87a]/30">
-                        {item.style}
-                      </span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="inline-block rounded-md bg-[#c9a87a]/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#d8b88d] backdrop-blur-sm border border-[#c9a87a]/30">
+                          {item.style}
+                        </span>
+                        {item.seed !== undefined && (
+                          <span className="inline-block rounded-md bg-[#494741]/60 px-2 py-0.5 text-[9px] font-mono text-[#9f988c] backdrop-blur-sm border border-[#5a5550]">
+                            #{item.seed}
+                          </span>
+                        )}
+                      </div>
                       <p className="line-clamp-2 text-[11px] leading-relaxed text-[#e7e2d8] opacity-90">{item.prompt}</p>
                     </div>
                   </div>

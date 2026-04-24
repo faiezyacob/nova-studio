@@ -10,7 +10,7 @@ interface Lora {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { prompt, width, height, loras } = body;
+    const { prompt, width, height, loras, seed } = body;
 
     if (!prompt) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
@@ -21,11 +21,12 @@ export async function POST(request: NextRequest) {
 
     const lora = loras && loras.length > 0 ? loras[0] : null;
     
-    const result = await generateWithSDK(prompt, finalWidth, finalHeight, lora);
+    const result = await generateWithSDK(prompt, finalWidth, finalHeight, lora, seed);
     
     return NextResponse.json({ 
       prompt_id: result.prompt_id,
-      images: result.images 
+      images: result.images,
+      seed: result.seed
     });
   } catch (error) {
     return NextResponse.json(

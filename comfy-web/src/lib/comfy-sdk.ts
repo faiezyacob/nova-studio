@@ -1,9 +1,5 @@
 import { ComfyApi, PromptBuilder, CallWrapper } from "@saintno/comfyui-sdk";
 
-function generateSeed(): number {
-  return Math.floor(Math.random() * 10000000000000);
-}
-
 const COMFYUI_URL = process.env.COMFYUI_URL || "http://127.0.0.1:8188";
 
 const api = new ComfyApi(COMFYUI_URL);
@@ -37,12 +33,14 @@ export async function generateWithSDK(
   prompt: string,
   width: number,
   height: number,
-  lora: Lora | null = null
-): Promise<{ prompt_id: string; images: string[] }> {
+  lora: Lora | null = null,
+  seed?: number
+): Promise<{ prompt_id: string; images: string[]; seed: number }> {
   await api.init(5, 2000).waitForReady();
 
   const prefix = `gen_${Math.floor(Date.now() / 1000)}`;
   const fullPrompt = `A breathtaking photograph of ${prompt}`;
+  const generationSeed = seed ?? Math.floor(Math.random() * 10000000000000);
 
   const nodes: Record<string, object> = {};
 
@@ -128,7 +126,7 @@ export async function generateWithSDK(
       positive: ["6", 0],
       negative: ["7", 0],
       latent_image: ["13", 0],
-      seed: generateSeed(),
+      seed: generationSeed,
       steps: 9,
       cfg: 1.0,
       sampler_name: "euler",
@@ -179,7 +177,7 @@ export async function generateWithSDK(
         const urlObj = new URL(url);
         return urlObj.searchParams.get('filename') || img.filename || `${prefix}_00001_.png`;
       }) || [];
-      resolve({ prompt_id: prefix, images });
+      resolve({ prompt_id: prefix, images, seed: generationSeed });
     });
 
     wrapper.onFailed((err: Error) => {
