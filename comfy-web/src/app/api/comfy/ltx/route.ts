@@ -20,7 +20,7 @@ async function generateLtxVideo(options: {
     width = 768,
     height = 512,
     frames = 81,
-    fps = 16,
+    fps = 24,
   } = options;
 
   const prefix = `ltx_${Math.floor(Date.now() / 1000)}`;
@@ -291,7 +291,7 @@ async function generateLtxVideo(options: {
   // STAGE 1 SAMPLING
   // =========================
 
-  // Node 50 - Random noise
+  // Node 50 - Random noise stage 1
   nodes["50"] = {
     class_type: "RandomNoise",
     inputs: {
@@ -412,6 +412,14 @@ async function generateLtxVideo(options: {
     },
   };
 
+  // Node 65 - Random noise stage 2 (Fixed seed 42)
+  nodes["65"] = {
+    class_type: "RandomNoise",
+    inputs: {
+      noise_seed: 42,
+    },
+  };
+
   // Node 62 - KSampler select euler for stage 2
   nodes["62"] = {
     class_type: "KSamplerSelect",
@@ -433,7 +441,7 @@ async function generateLtxVideo(options: {
   nodes["64"] = {
     class_type: "SamplerCustomAdvanced",
     inputs: {
-      noise: ["50", 0],
+      noise: ["65", 0],
       guider: ["63", 0],
       sampler: ["62", 0],
       sigmas: ["61", 0],
@@ -576,7 +584,7 @@ export async function POST(request: NextRequest) {
     const width = body.get('width') ? parseInt(body.get('width') as string) : undefined;
     const height = body.get('height') ? parseInt(body.get('height') as string) : undefined;
     const frames = body.get('frames') ? parseInt(body.get('frames') as string) : undefined;
-    const fps = body.get('fps') ? parseInt(body.get('fps') as string) : 16;
+    const fps = body.get('fps') ? parseInt(body.get('fps') as string) : 24;
 
     if (!imageFile) {
       return NextResponse.json({ error: 'Image required' }, { status: 400 });

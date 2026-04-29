@@ -93,6 +93,11 @@ export default function VideoWorkspace({
     { value: 'ltx-2.3-i2v', label: 'LTX 2.3 I2V (12GB)' },
   ];
 
+  const WORKFLOW_FPS: Record<string, number> = {
+    'wan-2.2-i2v': 16,
+    'ltx-2.3-i2v': 24,
+  };
+
   const { prompt, uploadedImage, uploadedImageName, videoSize, matchImageSize, durationFrames } = workspaceState;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -211,7 +216,8 @@ export default function VideoWorkspace({
 
     try {
       const thumbnailBase64 = await createImageThumbnail(uploadedImage, 400);
-      const durationSeconds = (durationFrames / 16).toFixed(1);
+      const currentFps = WORKFLOW_FPS[activeWorkflow] || 16;
+      const durationSeconds = (durationFrames / currentFps).toFixed(1);
 
       const response = await fetch('/api/lmstudio/chat', {
         method: 'POST',
@@ -230,62 +236,84 @@ You will receive:
 - a target duration
 
 Your job:
-Generate a prompt that describes a CLEAR, STEP-BY-STEP progression of motion that starts exactly from the image and evolves naturally over time.
+Generate a natural, continuous motion description that evolves directly from the image and can seamlessly continue into future generations.
 
 CRITICAL RULES FOR LTX 2.3:
 
 1. FORMAT:
-You MUST use:
 
 [VISUAL]:
-A sequence of short, chronological actions written as a continuous progression.
-Each action must logically follow the previous one.
-Avoid combining multiple actions in a single phrase.
+Write a smooth, continuous paragraph describing motion progression.
 
-[Example structure]
-- The subject is still.
-- Then they begin to move.
-- They continue the motion.
-- The action completes.
-- They settle into a final resting state.
+- Motion must feel fluid and uninterrupted
+- Avoid rigid step-by-step phrasing
+- Use natural transitions (begins to, gradually, continues, subtly shifts)
 
-Write this as a smooth paragraph, not bullet points.
+IMPORTANT:
+The motion must NOT feel like it fully ends.
+The final moment should feel like the motion is still ongoing or can naturally continue.
+
+2. CONTINUITY (MOST IMPORTANT):
+
+- NEVER force a full stop or “resting pose”
+- NEVER end with hands resting, action completed, or subject becoming idle
+- The last frame should feel like a mid-action continuation point
+
+Bad:
+"She places her hand on the table and stops"
+
+Good:
+"Her hand continues lowering toward the table, slowing as it nears the surface"
+
+3. IMAGE ANCHOR:
+
+- The first sentence MUST exactly match the image (pose, composition, lighting)
+- Do NOT alter initial state
+
+4. MOTION SCALE:
+
+- Use duration ONLY to control how much motion happens
+- Short = subtle movement
+- Long = more progression, but STILL continuous (not completed)
+
+5. PHYSICAL REALISM:
+
+- Maintain inertia and smooth transitions
+- Avoid sudden or unnatural jumps
+- Motions must feel physically plausible
+
+6. NO CINEMATIC LANGUAGE:
+
+Do NOT include:
+- camera movements
+- cinematic terms
+- metaphors or dramatic phrasing
+
+Keep everything literal and observable.
+
+7. NO TIME LANGUAGE:
+
+Do NOT mention seconds or duration.
+
+8. SOUND DESIGN:
 
 [SOUNDS]:
-Describe matching audio that evolves with the actions.
-Include:
+Describe audio that evolves naturally with the motion:
 - ambient environment
-- motion-related sounds
-- final settling sounds
+- subtle movement sounds
+- no dramatic sound effects unless implied by motion
 
-2. STRICT SEQUENTIAL FLOW:
-- Do NOT describe multiple actions happening at the same time.
-- Use clear progression: "begins", "then", "continues", "finishes", "comes to rest".
-
-3. NO CINEMATIC LANGUAGE:
-Avoid:
-- dramatic camera moves
-- cinematic phrasing
-- artistic metaphors
-
-Keep it physically grounded and literal.
-
-4. NO TIME REFERENCES:
-Do NOT use seconds or duration wording.
-
-5. STRONG IMAGE ANCHOR:
-The first sentence MUST match the image exactly (pose, lighting, composition).
-
-6. FORCE COMPLETION:
-The motion MUST end in a stable, clearly described final state.
-
-7. MOTION SCALE MATCH:
-Use the provided duration ONLY to decide how MUCH motion happens.
-Short duration = small movement.
-Long duration = more progression.
+9. OUTPUT FORMAT:
 
 Return ONLY:
-<prompt>...</prompt>`
+
+<prompt>
+[VISUAL]:
+...
+
+[SOUNDS]:
+...
+</prompt>`
                 : `You are an expert prompt engineer for Wan 2.2 Image-to-Video (I2V) generation. 
 You will receive an image, a raw user prompt, and a target duration.
 
@@ -403,11 +431,13 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
 
       if (isLtxWorkflow) {
         const ltxFormData = new FormData();
+        const currentFps = WORKFLOW_FPS[activeWorkflow] || 24;
         ltxFormData.append('image', imageFile);
         ltxFormData.append('prompt', prompt);
         ltxFormData.append('width', String(finalWidth));
         ltxFormData.append('height', String(finalHeight));
         ltxFormData.append('frames', String(durationFrames));
+        ltxFormData.append('fps', String(currentFps));
         const ltxResponse = await fetch('/api/comfy/ltx', {
           method: 'POST',
           body: ltxFormData,
@@ -666,18 +696,6 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
                 <h1 className="text-base font-semibold text-[#edeae2]">Video Generator</h1>
                 <p className="text-xs text-[#9f988c]">Image to video</p>
               </div>
-              <div className="relative">
-                <select
-                  value={activeWorkflow}
-                  onChange={(e) => setActiveWorkflow(e.target.value)}
-                  className="h-[28px] rounded-lg border border-[#494741] bg-[#262624] px-2 pr-6 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none"
-                >
-                  {WORKFLOW_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-                <ChevronIcon />
-              </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -821,7 +839,7 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
                   </span>
                 </div>
                 <p className="text-[11px] text-[#6b6560] leading-none">
-                  ~{(durationFrames / 16).toFixed(1)}s at 16fps (81 frames is optimal)
+                  ~{(durationFrames / (WORKFLOW_FPS[activeWorkflow] || 16)).toFixed(1)}s at {WORKFLOW_FPS[activeWorkflow] || 16}fps (81 frames is optimal)
                 </p>
               </div>
             </div>
@@ -830,24 +848,42 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
           {/* Prompt Input */}
           <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] p-5 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
             <div className="mb-3 flex items-center justify-between gap-2">
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Motion Model</span>
-                <div className="relative min-w-[200px]">
-                  <select
-                    value={selectedModel}
-                    onChange={(e) => setSelectedModel(e.target.value)}
-                    disabled={isEnhancing || availableModels.length === 0}
-                    className="w-full h-[32px] rounded-lg border border-[#494741] bg-[#262624] px-3 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none truncate disabled:opacity-50"
-                  >
-                    {availableModels.length === 0 ? (
-                      <option value="">Loading models...</option>
-                    ) : (
-                      availableModels.map((model) => (
-                        <option key={model} value={model}>{model}</option>
-                      ))
-                    )}
-                  </select>
-                  <ChevronIcon />
+              <div className="flex items-center gap-4">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Workflow</span>
+                  <div className="relative min-w-[160px]">
+                    <select
+                      value={activeWorkflow}
+                      onChange={(e) => setActiveWorkflow(e.target.value)}
+                      className="w-full h-[32px] rounded-lg border border-[#494741] bg-[#262624] px-3 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none disabled:opacity-50"
+                    >
+                      {WORKFLOW_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                    <ChevronIcon />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Motion Model</span>
+                  <div className="relative min-w-[200px]">
+                    <select
+                      value={selectedModel}
+                      onChange={(e) => setSelectedModel(e.target.value)}
+                      disabled={isEnhancing || availableModels.length === 0}
+                      className="w-full h-[32px] rounded-lg border border-[#494741] bg-[#262624] px-3 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none truncate disabled:opacity-50"
+                    >
+                      {availableModels.length === 0 ? (
+                        <option value="">Loading models...</option>
+                      ) : (
+                        availableModels.map((model) => (
+                          <option key={model} value={model}>{model}</option>
+                        ))
+                      )}
+                    </select>
+                    <ChevronIcon />
+                  </div>
                 </div>
               </div>
 
