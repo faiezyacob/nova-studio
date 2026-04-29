@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, type KeyboardEvent } from "react";
+import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { toast } from "sonner";
 import { ChatMessage, ChatSession } from "@/types";
 
@@ -153,6 +153,8 @@ export default function ChatWorkspace({
 }: ChatWorkspaceProps) {
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
   const activeSession = useMemo(
     () => chatSessions.find((session) => session.id === activeSessionId),
@@ -175,6 +177,57 @@ export default function ChatWorkspace({
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      Array.from(files).forEach((file) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setSelectedImages((prev) => [...prev, reader.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    // Reset input so the same file can be selected again
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") !== -1) {
+        const file = items[i].getAsFile();
+        if (file) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setSelectedImages((prev) => [...prev, reader.result as string]);
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const files = e.dataTransfer.files;
+    if (files) {
+      Array.from(files).forEach((file) => {
+        if (file.type.startsWith("image/")) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setSelectedImages((prev) => [...prev, reader.result as string]);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const switchChatModel = async (newModel: string) => {
@@ -210,6 +263,7 @@ export default function ChatWorkspace({
       id: `msg_${Date.now()}`,
       role: "user",
       content: chatInput.trim(),
+      images: selectedImages.length > 0 ? [...selectedImages] : undefined,
       timestamp: Date.now(),
     };
 
@@ -222,6 +276,7 @@ export default function ChatWorkspace({
     );
 
     setChatInput("");
+    setSelectedImages([]);
     setIsChatLoading(true);
 
     try {
@@ -245,8 +300,25 @@ export default function ChatWorkspace({
       }
 
       const messages = [
-        ...(currentSession?.messages || []).map((m) => ({ role: m.role, content: m.content })),
-        { role: "user", content: userMessage.content },
+        ...(currentSession?.messages || []).map((m) => {
+          if (m.images && m.images.length > 0) {
+            const contentArray: any[] = [{ type: "text", text: m.content }];
+            m.images.forEach(img => {
+              contentArray.push({ type: "image_url", image_url: { url: img } });
+            });
+            return { role: m.role, content: contentArray };
+          }
+          return { role: m.role, content: m.content };
+        }),
+        userMessage.images && userMessage.images.length > 0
+          ? {
+            role: "user",
+            content: [
+              { type: "text", text: userMessage.content },
+              ...userMessage.images.map(img => ({ type: "image_url", image_url: { url: img } }))
+            ]
+          }
+          : { role: "user", content: userMessage.content },
       ];
 
       const response = await fetch("/api/lmstudio/chat", {
@@ -369,7 +441,12 @@ export default function ChatWorkspace({
 
       {activeSession ? (
         <>
-          <div ref={chatMessagesRef} className="flex-1 overflow-y-auto px-8 py-7">
+          <div
+            ref={chatMessagesRef}
+            className="flex-1 overflow-y-auto px-8 py-7"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDrop}
+          >
             {activeSession.messages.length === 0 ? (
               <div className="flex h-full items-center justify-center">
                 <p className="text-sm text-[#9f988c]">Start a new conversation.</p>
@@ -387,6 +464,18 @@ export default function ChatWorkspace({
                         : "border border-[#46443f] bg-[#30302e] text-[#ece8df]"
                         }`}
                     >
+                      {message.images && message.images.length > 0 && (
+                        <div className="mb-3 flex flex-wrap gap-2">
+                          {message.images.map((img, idx) => (
+                            <img
+                              key={idx}
+                              src={img}
+                              alt="Upload"
+                              className="max-h-48 max-w-full rounded-lg border border-[#46443f] object-contain shadow-sm"
+                            />
+                          ))}
+                        </div>
+                      )}
                       <MessageContent content={message.content} />
                       <p className={`mt-2 text-[11px] ${message.role === "user" ? "text-[#3b3327]" : "text-[#a39d91]"}`}>
                         {formatTime(message.timestamp)}
@@ -411,25 +500,66 @@ export default function ChatWorkspace({
           </div>
 
           <div className="sticky bottom-0 border-t border-[#3a3936] bg-[#2a2a28] px-8 py-5">
-            <div className="mx-auto flex w-full max-w-5xl items-center justify-center gap-2 rounded-xl border border-[#46443f] bg-[#30302e] p-2">
-              <textarea
-                ref={chatInputRef}
-                value={chatInput}
-                onChange={(e) => { setChatInput(e.target.value); adjustChatHeight(); }}
-                onKeyDown={handleChatKeyDown}
-                placeholder="Ask anything..."
-                rows={1}
-                className="max-h-40 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-[#ece8df] outline-none placeholder:text-[#8f8778]"
-                disabled={isChatLoading}
-              />
+            <div className="mx-auto w-full max-w-5xl">
+              {selectedImages.length > 0 && (
+                <div className="mb-2 flex flex-wrap gap-2 rounded-xl border border-[#46443f] bg-[#30302e] p-2">
+                  {selectedImages.map((img, idx) => (
+                    <div key={idx} className="group relative h-20 w-20">
+                      <img
+                        src={img}
+                        alt="Preview"
+                        className="h-full w-full rounded-lg border border-[#46443f] object-cover"
+                      />
+                      <button
+                        onClick={() => removeImage(idx)}
+                        className="absolute -right-1 -top-1 rounded-full bg-red-500/80 p-0.5 text-white opacity-0 transition group-hover:opacity-100 hover:bg-red-600"
+                      >
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex items-center gap-2 rounded-xl border border-[#46443f] bg-[#30302e] p-2 focus-within:border-[#c9a87a] transition-colors">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex h-10 w-10 items-center justify-center rounded-lg text-[#9f988c] transition hover:bg-[#3a3936] hover:text-[#edeae2]"
+                  title="Upload Image"
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                />
+                <textarea
+                  ref={chatInputRef}
+                  value={chatInput}
+                  onChange={(e) => { setChatInput(e.target.value); adjustChatHeight(); }}
+                  onKeyDown={handleChatKeyDown}
+                  onPaste={handlePaste}
+                  placeholder="Ask anything..."
+                  rows={1}
+                  className="max-h-40 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-[#ece8df] outline-none placeholder:text-[#8f8778]"
+                  disabled={isChatLoading}
+                />
 
-              <button
-                onClick={sendMessage}
-                disabled={isChatLoading || !chatInput.trim()}
-                className="mx-auto self-center rounded-lg bg-[#c9a87a] px-3 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Send
-              </button>
+                <button
+                  onClick={sendMessage}
+                  disabled={isChatLoading || (!chatInput.trim() && selectedImages.length === 0)}
+                  className="rounded-lg bg-[#c9a87a] px-3 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Send
+                </button>
+              </div>
             </div>
             <p className="mx-auto mt-2 w-full max-w-5xl text-xs text-[#8f8778]">Enter to send. Shift + Enter for a new line.</p>
           </div>

@@ -2,6 +2,7 @@ export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
+  images?: string[]; // base64 strings or URLs
   timestamp: number;
 }
 
