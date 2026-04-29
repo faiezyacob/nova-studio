@@ -452,7 +452,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       prompt_id: result.prompt_id,
-      video_path: result.video_path
+      video_path: result.video_path,
+      subfolder: result.subfolder
     });
   } catch (error) {
     return NextResponse.json(

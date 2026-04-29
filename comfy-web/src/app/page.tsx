@@ -20,7 +20,7 @@ export default function App() {
     prompt: "",
     uploadedImage: null as string | null,
     uploadedImageName: "",
-    videoSize: "480" as "480" | "720",
+    videoSize: "480" as "480" | "540" | "720",
     matchImageSize: true,
     durationFrames: 81,
   });
