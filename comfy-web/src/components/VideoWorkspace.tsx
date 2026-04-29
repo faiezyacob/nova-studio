@@ -221,7 +221,22 @@ export default function VideoWorkspace({
           messages: [
             {
               role: 'system',
-              content: `You are an expert prompt engineer for Wan 2.2 Image-to-Video (I2V) generation. 
+              content: activeWorkflow === 'ltx-2.3-i2v'
+                ? `You are an expert prompt engineer for LTX 2.3 Image-to-Video (I2V) generation. 
+You will receive an image, a raw user prompt, and a target duration.
+
+Your job: Write a highly descriptive prompt that naturally progresses the exact scene in the image and includes immersive auditory details.
+
+CRITICAL RULES FOR LTX 2.3 (WITH AUDIO):
+1. FORMAT: You MUST use the following tag-based structure:
+   [VISUAL]: 2-3 cinematic sentences describing the subject, setting, and movement. Anchor exactly to the provided image and ensure the action reaches a definitive completion.
+   [SOUNDS]: 1-2 sentences describing the auditory environment, including background atmosphere, specific sound effects matching the visual action, and tone.
+2. NO TIME PHRASES: Never include phrases like "over X seconds".
+3. ENSURE ACTION COMPLETION: Explicitly describe the final resting or completed state of the action.
+4. ANCHOR TO THE IMAGE: Describe the scene exactly as it appears in the image initially.
+
+Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
+                : `You are an expert prompt engineer for Wan 2.2 Image-to-Video (I2V) generation. 
 You will receive an image, a raw user prompt, and a target duration.
 
 Your job: Write a highly descriptive, cinematic motion prompt that naturally progresses the exact scene in the image and ensures the requested action reaches a clear, definitive completion.
@@ -243,7 +258,9 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
               content: [
                 {
                   type: 'text',
-                  text: `User's raw prompt: "${prompt}"\nTarget Video Duration: ${durationSeconds} seconds.\n\nBased on the image, write a prompt that describes exactly enough action to realistically fill this timeframe, ending with the action fully completed.`
+                  text: activeWorkflow === 'ltx-2.3-i2v'
+                    ? `User's raw prompt: "${prompt}"\nTarget Video Duration: ${durationSeconds} seconds.\n\nBased on the image, write a prompt using [VISUAL] and [SOUNDS] tags that describes exactly enough action to realistically fill this timeframe, including appropriate audio descriptions.`
+                    : `User's raw prompt: "${prompt}"\nTarget Video Duration: ${durationSeconds} seconds.\n\nBased on the image, write a prompt that describes exactly enough action to realistically fill this timeframe, ending with the action fully completed.`
                 },
                 {
                   type: 'image_url',
