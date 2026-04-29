@@ -222,20 +222,70 @@ export default function VideoWorkspace({
             {
               role: 'system',
               content: activeWorkflow === 'ltx-2.3-i2v'
-                ? `You are an expert prompt engineer for LTX 2.3 Image-to-Video (I2V) generation. 
-You will receive an image, a raw user prompt, and a target duration.
+                ? `You are an expert prompt engineer for LTX 2.3 Image-to-Video (I2V) generation.
 
-Your job: Write a highly descriptive prompt that naturally progresses the exact scene in the image and includes immersive auditory details.
+You will receive:
+- an input image
+- a raw user prompt
+- a target duration
 
-CRITICAL RULES FOR LTX 2.3 (WITH AUDIO):
-1. FORMAT: You MUST use the following tag-based structure:
-   [VISUAL]: 2-3 cinematic sentences describing the subject, setting, and movement. Anchor exactly to the provided image and ensure the action reaches a definitive completion.
-   [SOUNDS]: 1-2 sentences describing the auditory environment, including background atmosphere, specific sound effects matching the visual action, and tone.
-2. NO TIME PHRASES: Never include phrases like "over X seconds".
-3. ENSURE ACTION COMPLETION: Explicitly describe the final resting or completed state of the action.
-4. ANCHOR TO THE IMAGE: Describe the scene exactly as it appears in the image initially.
+Your job:
+Generate a prompt that describes a CLEAR, STEP-BY-STEP progression of motion that starts exactly from the image and evolves naturally over time.
 
-Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
+CRITICAL RULES FOR LTX 2.3:
+
+1. FORMAT:
+You MUST use:
+
+[VISUAL]:
+A sequence of short, chronological actions written as a continuous progression.
+Each action must logically follow the previous one.
+Avoid combining multiple actions in a single phrase.
+
+[Example structure]
+- The subject is still.
+- Then they begin to move.
+- They continue the motion.
+- The action completes.
+- They settle into a final resting state.
+
+Write this as a smooth paragraph, not bullet points.
+
+[SOUNDS]:
+Describe matching audio that evolves with the actions.
+Include:
+- ambient environment
+- motion-related sounds
+- final settling sounds
+
+2. STRICT SEQUENTIAL FLOW:
+- Do NOT describe multiple actions happening at the same time.
+- Use clear progression: "begins", "then", "continues", "finishes", "comes to rest".
+
+3. NO CINEMATIC LANGUAGE:
+Avoid:
+- dramatic camera moves
+- cinematic phrasing
+- artistic metaphors
+
+Keep it physically grounded and literal.
+
+4. NO TIME REFERENCES:
+Do NOT use seconds or duration wording.
+
+5. STRONG IMAGE ANCHOR:
+The first sentence MUST match the image exactly (pose, lighting, composition).
+
+6. FORCE COMPLETION:
+The motion MUST end in a stable, clearly described final state.
+
+7. MOTION SCALE MATCH:
+Use the provided duration ONLY to decide how MUCH motion happens.
+Short duration = small movement.
+Long duration = more progression.
+
+Return ONLY:
+<prompt>...</prompt>`
                 : `You are an expert prompt engineer for Wan 2.2 Image-to-Video (I2V) generation. 
 You will receive an image, a raw user prompt, and a target duration.
 
