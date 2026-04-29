@@ -86,6 +86,12 @@ export default function VideoWorkspace({
   const [isCombineMode, setIsCombineMode] = useState(false);
   const [selectedVideos, setSelectedVideos] = useState<string[]>([]);
   const [isCombining, setIsCombining] = useState(false);
+  const [activeWorkflow, setActiveWorkflow] = useState('wan-2.2-i2v');
+
+  const WORKFLOW_OPTIONS = [
+    { value: 'wan-2.2-i2v', label: 'Wan 2.2 I2V' },
+    { value: 'ltx-2.3-i2v', label: 'LTX 2.3 I2V (12GB)' },
+  ];
 
   const { prompt, uploadedImage, uploadedImageName, videoSize, matchImageSize, durationFrames } = workspaceState;
 
@@ -325,17 +331,36 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
       formData.append('height', String(finalHeight));
       formData.append('frames', String(durationFrames));
 
-      const response = await fetch('/api/comfy/wan', {
-        method: 'POST',
-        body: formData,
-      });
+      const isLtxWorkflow = activeWorkflow === 'ltx-2.3-i2v';
+      let result: { prompt_id?: string; video_path?: string; subfolder?: string } = {};
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to generate video');
+      if (isLtxWorkflow) {
+        const ltxFormData = new FormData();
+        ltxFormData.append('image', imageFile);
+        ltxFormData.append('prompt', prompt);
+        ltxFormData.append('width', String(finalWidth));
+        ltxFormData.append('height', String(finalHeight));
+        ltxFormData.append('frames', String(durationFrames));
+        const ltxResponse = await fetch('/api/comfy/ltx', {
+          method: 'POST',
+          body: ltxFormData,
+        });
+        if (!ltxResponse.ok) {
+          const data = await ltxResponse.json();
+          throw new Error(data.error || 'Failed to generate LTX video');
+        }
+        result = await ltxResponse.json();
+      } else {
+        const response = await fetch('/api/comfy/wan', {
+          method: 'POST',
+          body: formData,
+        });
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to generate video');
+        }
+        result = await response.json();
       }
-
-      const result = await response.json();
       console.log('[VIDEO] Generation result:', result);
       toast.loading('Generating video...', { id: 'video-gen' });
 
@@ -569,9 +594,23 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-2 w-2 animate-pulse rounded-full bg-[#c9a87a]" />
-            <div>
-              <h1 className="text-base font-semibold text-[#edeae2]">Wan Video Generator</h1>
-              <p className="text-xs text-[#9f988c]">Image to video with Wan2.2</p>
+            <div className="flex items-center gap-3">
+              <div>
+                <h1 className="text-base font-semibold text-[#edeae2]">Video Generator</h1>
+                <p className="text-xs text-[#9f988c]">Image to video</p>
+              </div>
+              <div className="relative">
+                <select
+                  value={activeWorkflow}
+                  onChange={(e) => setActiveWorkflow(e.target.value)}
+                  className="h-[28px] rounded-lg border border-[#494741] bg-[#262624] px-2 pr-6 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none"
+                >
+                  {WORKFLOW_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                <ChevronIcon />
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
