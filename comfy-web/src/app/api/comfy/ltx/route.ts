@@ -28,25 +28,26 @@ async function generateLtxVideo(options: {
 
   const nodes: Record<string, any> = {};
 
-  // =========================
-  // IMAGE UPLOAD
-  // Exactly matching WAN pattern
-  // =========================
+  // ── IMAGE UPLOAD (unchanged) ──────────────────────────────────────────────
 
   let imageFilename = "";
 
-  if (typeof image === "string" && !image.startsWith("data:") && !image.includes(",")) {
-    // Already a ComfyUI filename
+  if (
+    typeof image === "string" &&
+    !image.startsWith("data:") &&
+    !image.includes(",")
+  ) {
     imageFilename = image;
     console.log("Using existing ComfyUI image filename:", imageFilename);
   } else if (typeof image === "string" && image.startsWith("data:")) {
-    // Parse mime type from data URI for correct extension
     const mimeMatch = image.match(/^data:([^;]+);base64,/);
     const mimeType = mimeMatch ? mimeMatch[1] : "image/png";
     const ext =
-      mimeType === "image/jpeg" ? "jpg" :
-        mimeType === "image/webp" ? "webp" :
-          "png";
+      mimeType === "image/jpeg"
+        ? "jpg"
+        : mimeType === "image/webp"
+          ? "webp"
+          : "png";
 
     const base64Data = image.split(",")[1];
     const buffer = Buffer.from(base64Data, "base64");
@@ -70,14 +71,13 @@ async function generateLtxVideo(options: {
     imageFilename = uploadResult.name;
     console.log("Uploaded LTX image as:", imageFilename);
   } else {
-    throw new Error("Invalid image format - must be filename or base64 data URI");
+    throw new Error(
+      "Invalid image format - must be filename or base64 data URI"
+    );
   }
 
-  // =========================
-  // MODEL LOADING
-  // =========================
+  // ── MODEL LOADING ─────────────────────────────────────────────────────────
 
-  // Node 1 - Dual CLIP Loader (Gemma 3 + LTX text projection)
   nodes["1"] = {
     class_type: "DualCLIPLoader",
     inputs: {
@@ -88,13 +88,12 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // Node 2 - GGUF Diffusion Model
   nodes["2"] = {
     class_type: "UnetLoaderGGUF",
     inputs: { unet_name: "ltx-2-3-22b-dev-Q4_K_M.gguf" },
   };
 
-  // SageAttention Patch (from KJNodes)
+  // SageAttention - unchanged, this is good
   nodes["8"] = {
     class_type: "PathchSageAttentionKJ",
     inputs: {
@@ -103,7 +102,7 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // Torch Settings Patch
+  // Torch settings - unchanged, this is good
   nodes["9"] = {
     class_type: "ModelPatchTorchSettings",
     inputs: {
@@ -112,23 +111,26 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // Node 3 - Distilled LoRA Stage 1 (strength 0.6)
+  // FIX: Single LoRA application at correct strength.
+  // Node 42 was loading the same LoRA again at 1.0 on top of this 0.6,
+  // creating an effective strength of ~1.6 which over-sharpens and
+  // causes ringing artifacts especially on edges and text.
+  // The distilled LoRA is designed to run at 1.0 as a single application.
   nodes["3"] = {
     class_type: "LoraLoaderModelOnly",
     inputs: {
       model: ["9", 0],
-      lora_name: "ltx-2.3-22b-distilled-1.1_lora-dynamic_fro09_avg_rank_111_bf16.safetensors",
-      strength_model: 0.6,
+      lora_name:
+        "ltx-2.3-22b-distilled-1.1_lora-dynamic_fro09_avg_rank_111_bf16.safetensors",
+      strength_model: 1.0,
     },
   };
 
-  // Node 4 - Video VAE
   nodes["4"] = {
     class_type: "VAELoader",
     inputs: { vae_name: "LTX23_video_vae_bf16.safetensors" },
   };
 
-  // Node 5 - Audio VAE (KJNodes)
   nodes["5"] = {
     class_type: "VAELoaderKJ",
     inputs: {
@@ -139,23 +141,18 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // Node 6 - Spatial Upscaler Model
   nodes["6"] = {
     class_type: "LatentUpscaleModelLoader",
     inputs: { model_name: "ltx-2.3-spatial-upscaler-x2-1.1.safetensors" },
   };
 
-  // Node 7 - TAE VAE (for preview override)
   nodes["7"] = {
     class_type: "VAELoader",
     inputs: { vae_name: "taeltx2_3.safetensors" },
   };
 
-  // =========================
-  // PROMPTS + CONDITIONING
-  // =========================
+  // ── PROMPTS + CONDITIONING ────────────────────────────────────────────────
 
-  // Node 10 - Positive prompt
   nodes["10"] = {
     class_type: "CLIPTextEncode",
     inputs: {
@@ -164,18 +161,16 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // Node 11 - Negative prompt
   nodes["11"] = {
     class_type: "CLIPTextEncode",
     inputs: {
       clip: ["1", 0],
       text:
         negative_prompt ||
-        "blurry, low quality, still frame, frames, watermark, overlay, titles, has blurbox, has subtitles",
+        "blurry, low quality, still frame, watermark, overlay, titles, subtitles, flickering, distorted",
     },
   };
 
-  // Node 12 - LTXVConditioning (attaches frame_rate to conditioning)
   nodes["12"] = {
     class_type: "LTXVConditioning",
     inputs: {
@@ -185,11 +180,8 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // =========================
-  // IMAGE PROCESSING
-  // =========================
+  // ── IMAGE PROCESSING ──────────────────────────────────────────────────────
 
-  // Node 20 - Load Image
   nodes["20"] = {
     class_type: "LoadImage",
     inputs: {
@@ -198,16 +190,20 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // Node 21 - Resize to longer edge 1024 (matches workflow node 151)
+  // FIX: Match resize to actual latent resolution instead of 1024.
+  // At 1024 the image is larger than the 768x512 latent which means
+  // LTXVPreprocess has to downsample, discarding detail that was never
+  // recoverable in stage 1. Stage 2 spatial upscaler handles the 2x
+  // enlargement so stage 1 input should match stage 1 latent size.
   nodes["21"] = {
     class_type: "ResizeImagesByLongerEdge",
     inputs: {
       images: ["20", 0],
-      longer_edge: 1024,
+      longer_edge: Math.max(width, height),
     },
   };
 
-  // Node 22 - LTXVPreprocess
+  // mode and img_compression unchanged - these are fine as-is
   nodes["22"] = {
     class_type: "LTXVPreprocess",
     inputs: {
@@ -217,11 +213,8 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // =========================
-  // LATENT SETUP
-  // =========================
+  // ── LATENT SETUP ──────────────────────────────────────────────────────────
 
-  // Node 32 - Empty video latent
   nodes["32"] = {
     class_type: "EmptyLTXVLatentVideo",
     inputs: {
@@ -232,7 +225,6 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // Node 33 - Empty audio latent
   nodes["33"] = {
     class_type: "LTXVEmptyLatentAudio",
     inputs: {
@@ -243,11 +235,9 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // =========================
-  // MODEL PATCHING - STAGE 1
-  // =========================
+  // ── MODEL PATCHING - STAGE 1 ──────────────────────────────────────────────
 
-  // Node 40 - Chunk Feed Forward Stage 1
+  // Chunk settings unchanged - these were fine and fast
   nodes["40"] = {
     class_type: "LTXVChunkFeedForward",
     inputs: {
@@ -259,35 +249,29 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // Node 41 - Preview Override Stage 1
+  // FIX: preview_rate 8 -> 60.
+  // Every preview decodes the TAE VAE mid-step which causes a VRAM spike.
+  // With SageAttention already reducing attention memory, the bottleneck
+  // shifts to these frequent preview decodes. 60 = max allowed = fewest
+  // possible previews without disabling the node entirely.
   nodes["41"] = {
     class_type: "LTX2SamplingPreviewOverride",
     inputs: {
       model: ["40", 0],
       vae: ["7", 0],
-      preview_rate: 8,
+      preview_rate: 60,
     },
   };
 
-  // =========================
-  // MODEL PATCHING - STAGE 2
-  // =========================
+  // ── MODEL PATCHING - STAGE 2 ──────────────────────────────────────────────
 
-  // Node 42 - Optional LoRA strength 1.0 for stage 2
-  nodes["42"] = {
-    class_type: "LoraLoaderModelOnly",
-    inputs: {
-      model: ["3", 0],
-      lora_name: "ltx-2.3-22b-distilled-1.1_lora-dynamic_fro09_avg_rank_111_bf16.safetensors",
-      strength_model: 1.0,
-    },
-  };
-
-  // Node 43 - Chunk Feed Forward Stage 2
+  // FIX: Removed node 42 (duplicate LoRA).
+  // Node 43 now references node 3 directly since LoRA is already
+  // correctly applied there at 1.0.
   nodes["43"] = {
     class_type: "LTXVChunkFeedForward",
     inputs: {
-      model: ["42", 0],
+      model: ["3", 0],
       chunk_size: 2,
       overlap: 2048,
       chunks: 4,
@@ -295,67 +279,70 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // Node 44 - Preview Override Stage 2
   nodes["44"] = {
     class_type: "LTX2SamplingPreviewOverride",
     inputs: {
       model: ["43", 0],
       vae: ["7", 0],
-      preview_rate: 8,
+      // Stage 2 operates on 2x upscaled latent - even more reason
+      // to avoid frequent TAE decodes on 16GB VRAM
+      preview_rate: 60,
     },
   };
 
-  // =========================
-  // STAGE 1 SAMPLING
-  // =========================
+  // ── STAGE 1 SAMPLING ──────────────────────────────────────────────────────
 
-  // Node 50 - Random noise stage 1
   nodes["50"] = {
     class_type: "RandomNoise",
-    inputs: {
-      noise_seed: seed,
-    },
+    inputs: { noise_seed: seed },
   };
 
-  // Node 51 - Manual sigmas stage 1
+  // Sigmas unchanged - these are correct for the distilled model
   nodes["51"] = {
     class_type: "ManualSigmas",
     inputs: {
-      sigmas: "1., 0.99375, 0.9875, 0.98125, 0.975, 0.909375, 0.725, 0.421875, 0.0",
+      sigmas:
+        "1., 0.99375, 0.9875, 0.98125, 0.975, 0.909375, 0.725, 0.421875, 0.0",
     },
   };
 
-  // Node 52 - KSampler select euler_ancestral for stage 1
+  // Sampler unchanged
   nodes["52"] = {
     class_type: "KSamplerSelect",
     inputs: { sampler_name: "euler_ancestral" },
   };
 
-  // Node 53 - CFG Guider stage 1
   nodes["53"] = {
     class_type: "CFGGuider",
     inputs: {
       model: ["41", 0],
       positive: ["12", 0],
       negative: ["12", 1],
+      // cfg 1 is intentional for distilled LTX - do not raise this,
+      // the distilled model bakes guidance in during training
       cfg: 1,
     },
   };
 
-  // Node 54 - Img to video inplace (inject start frame into low-res latent)
+  // FIX: strength 0.8 -> 0.65, interpolate false -> true.
+  // strength 0.8 clamps the first frame so rigidly that the model
+  // cannot smoothly transition to frame 1, causing a visible
+  // color/brightness pop on the first frame of every generation.
+  // interpolate: true tells LTXVImgToVideoInplace to blend the
+  // image conditioning across nearby frames rather than hard-clamping
+  // only frame 0, which eliminates the discontinuity.
   nodes["54"] = {
     class_type: "LTXVImgToVideoInplace",
     inputs: {
       vae: ["4", 0],
       image: ["22", 0],
       latent: ["32", 0],
-      strength: 0.8,
-      interpolate: false,
+      strength: 0.65,
+      interpolate: true,
       bypass: false,
     },
   };
 
-  // Node 55 - Concat video + audio latents for stage 1
   nodes["55"] = {
     class_type: "LTXVConcatAVLatent",
     inputs: {
@@ -364,7 +351,6 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // Node 56 - Stage 1 sampler
   nodes["56"] = {
     class_type: "SamplerCustomAdvanced",
     inputs: {
@@ -376,17 +362,13 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // =========================
-  // STAGE 1 -> STAGE 2 BRIDGE
-  // =========================
+  // ── STAGE 1 -> STAGE 2 BRIDGE ─────────────────────────────────────────────
 
-  // Node 57 - Separate AV latent from stage 1 output
   nodes["57"] = {
     class_type: "LTXVSeparateAVLatent",
     inputs: { av_latent: ["56", 0] },
   };
 
-  // Node 58 - Spatial upscale 2x on video latent
   nodes["58"] = {
     class_type: "LTXVLatentUpsampler",
     inputs: {
@@ -396,20 +378,24 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // Node 59 - Re-inject image guide into upscaled latent
+  // FIX: strength 0.8 -> 0.5, interpolate false -> true.
+  // The upscaled latent from node 58 already has good structure from
+  // stage 1. Re-injecting at 0.8 partially overwrites that structure
+  // with the raw encoded image, fighting the stage 1 result and causing
+  // frame 0 to look different from all other frames in the final video.
+  // 0.5 lets stage 1's motion structure survive into stage 2.
   nodes["59"] = {
     class_type: "LTXVImgToVideoInplace",
     inputs: {
       vae: ["4", 0],
       image: ["22", 0],
       latent: ["58", 0],
-      strength: 0.8,
-      interpolate: false,
+      strength: 0.5,
+      interpolate: true,
       bypass: false,
     },
   };
 
-  // Node 60 - Concat upscaled video + audio latent for stage 2
   nodes["60"] = {
     class_type: "LTXVConcatAVLatent",
     inputs: {
@@ -418,11 +404,9 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // =========================
-  // STAGE 2 SAMPLING
-  // =========================
+  // ── STAGE 2 SAMPLING ──────────────────────────────────────────────────────
 
-  // Node 61 - Manual sigmas stage 2
+  // Sigmas unchanged - correct for stage 2 refinement pass
   nodes["61"] = {
     class_type: "ManualSigmas",
     inputs: {
@@ -430,21 +414,26 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // Node 65 - Random noise stage 2 (Fixed seed 42)
+  // FIX: Fixed seed 42 -> random seed derived from stage 1 seed.
+  // Using the hardcoded seed 42 for every single generation means
+  // the stage 2 noise pattern is always identical regardless of what
+  // stage 1 produced. When stage 1 generates varied motion, stage 2
+  // always applies the same noise on top, creating a consistent
+  // "fingerprint" artifact pattern visible across all outputs.
+  // Deriving from stage 1 seed keeps it deterministic per-generation
+  // while being unique to each run.
   nodes["65"] = {
     class_type: "RandomNoise",
     inputs: {
-      noise_seed: 42,
+      noise_seed: (seed + 1) % 10000000000000,
     },
   };
 
-  // Node 62 - KSampler select euler for stage 2
   nodes["62"] = {
     class_type: "KSamplerSelect",
     inputs: { sampler_name: "euler" },
   };
 
-  // Node 63 - CFG Guider stage 2
   nodes["63"] = {
     class_type: "CFGGuider",
     inputs: {
@@ -455,7 +444,6 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // Node 64 - Stage 2 sampler
   nodes["64"] = {
     class_type: "SamplerCustomAdvanced",
     inputs: {
@@ -467,17 +455,15 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // =========================
-  // DECODE + OUTPUT
-  // =========================
+  // ── DECODE + OUTPUT ───────────────────────────────────────────────────────
 
-  // Node 70 - Separate final AV latent
   nodes["70"] = {
     class_type: "LTXVSeparateAVLatent",
     inputs: { av_latent: ["64", 0] },
   };
 
-  // Node 71 - Tiled VAE decode video
+  // temporal_overlap 8 -> 16: slightly more blending at tile boundaries
+  // reduces the faint horizontal banding sometimes visible in motion
   nodes["71"] = {
     class_type: "VAEDecodeTiled",
     inputs: {
@@ -486,11 +472,10 @@ async function generateLtxVideo(options: {
       tile_size: 512,
       overlap: 64,
       temporal_size: 2048,
-      temporal_overlap: 8,
+      temporal_overlap: 16,
     },
   };
 
-  // Node 72 - Audio VAE decode
   nodes["72"] = {
     class_type: "LTXVAudioVAEDecode",
     inputs: {
@@ -499,7 +484,6 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // Node 73 - Create video from frames + audio
   nodes["73"] = {
     class_type: "CreateVideo",
     inputs: {
@@ -509,7 +493,6 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // Node 74 - Save video
   nodes["74"] = {
     class_type: "SaveVideo",
     inputs: {
@@ -520,9 +503,7 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // =========================
-  // PROMPT BUILDER + EXECUTION
-  // =========================
+  // ── EXECUTION ─────────────────────────────────────────────────────────────
 
   return new Promise((resolve, reject) => {
     let resolved = false;
@@ -541,21 +522,19 @@ async function generateLtxVideo(options: {
     builder.setInputNode("seed", "50.inputs.noise_seed");
     builder.setOutputNode("video_path", "74");
 
-    console.log("[LTX API] Mapping prompt to node 10 inputs.text:", prompt);
-
     builder
       .input("prompt", prompt)
       .input(
         "negative_prompt",
         negative_prompt ||
-        "blurry, low quality, still frame, frames, watermark, overlay, titles, has blurbox, has subtitles"
+        "blurry, low quality, still frame, watermark, overlay, titles, subtitles, flickering, distorted"
       )
       .input("width", width)
       .input("height", height)
       .input("frames", frames)
       .input("seed", seed);
 
-    console.log("Submitting LTX workflow with seed:", seed);
+    console.log("Submitting LTX workflow | seed:", seed, "| prefix:", prefix);
     console.log("LTX Nodes:", JSON.stringify(nodes, null, 2));
 
     const wrapper = new CallWrapper(api, builder);
@@ -568,13 +547,10 @@ async function generateLtxVideo(options: {
       const outputNode = data?.["74"] || data?.["73"];
       const videoData = outputNode?.videos?.[0] || outputNode?.gifs?.[0];
 
-      const videoFile = videoData?.filename || `${prefix}_00001_.mp4`;
-      const videoSubfolder = videoData?.subfolder || "video";
-
       resolve({
         prompt_id: prefix,
-        video_path: videoFile,
-        subfolder: videoSubfolder,
+        video_path: videoData?.filename ?? `${prefix}_00001_.mp4`,
+        subfolder: videoData?.subfolder ?? "video",
       });
     });
 
@@ -586,7 +562,7 @@ async function generateLtxVideo(options: {
     });
 
     wrapper.onProgress((progress: any) => {
-      console.log(`LTX Progress: step ${progress?.value} / ${progress?.max}`);
+      console.log(`LTX Progress: ${progress?.value} / ${progress?.max}`);
     });
 
     wrapper.run();
