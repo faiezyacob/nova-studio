@@ -94,11 +94,29 @@ async function generateLtxVideo(options: {
     inputs: { unet_name: "ltx-2-3-22b-dev-Q4_K_M.gguf" },
   };
 
+  // SageAttention Patch (from KJNodes)
+  nodes["8"] = {
+    class_type: "PathchSageAttentionKJ",
+    inputs: {
+      model: ["2", 0],
+      sage_attention: "auto",
+    },
+  };
+
+  // Torch Settings Patch
+  nodes["9"] = {
+    class_type: "ModelPatchTorchSettings",
+    inputs: {
+      model: ["8", 0],
+      enable_fp16_accumulation: true,
+    },
+  };
+
   // Node 3 - Distilled LoRA Stage 1 (strength 0.6)
   nodes["3"] = {
     class_type: "LoraLoaderModelOnly",
     inputs: {
-      model: ["2", 0],
+      model: ["9", 0],
       lora_name: "ltx-2.3-22b-distilled-1.1_lora-dynamic_fro09_avg_rank_111_bf16.safetensors",
       strength_model: 0.6,
     },
