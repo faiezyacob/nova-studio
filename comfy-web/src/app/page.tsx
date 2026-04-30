@@ -18,6 +18,7 @@ export default function App() {
   const [videoResult, setVideoResult] = useState<VideoGalleryItem | null>(null);
   const [videoWorkspaceState, setVideoWorkspaceState] = useState({
     prompt: "",
+    negative_prompt: "",
     uploadedImage: null as string | null,
     uploadedImageName: "",
     videoSize: "480" as "480" | "540" | "720",

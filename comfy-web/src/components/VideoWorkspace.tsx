@@ -19,6 +19,7 @@ interface VideoWorkspaceProps {
   setVideoResult: React.Dispatch<React.SetStateAction<VideoGalleryItem | null>>;
   workspaceState: {
     prompt: string;
+    negative_prompt: string;
     uploadedImage: string | null;
     uploadedImageName: string;
     videoSize: '480' | '540' | '720';
@@ -27,6 +28,7 @@ interface VideoWorkspaceProps {
   };
   setWorkspaceState: React.Dispatch<React.SetStateAction<{
     prompt: string;
+    negative_prompt: string;
     uploadedImage: string | null;
     uploadedImageName: string;
     videoSize: '480' | '540' | '720';
@@ -55,6 +57,7 @@ const VIDEO_GALLERY_KEY = 'video_gallery';
 
 interface VideoWorkspaceState {
   prompt: string;
+  negative_prompt: string;
   uploadedImage: string | null;
   uploadedImageName: string;
   videoSize: '480' | '540' | '720';
@@ -98,7 +101,7 @@ export default function VideoWorkspace({
     'ltx-2.3-i2v': 24,
   };
 
-  const { prompt, uploadedImage, uploadedImageName, videoSize, matchImageSize, durationFrames } = workspaceState;
+  const { prompt, negative_prompt, uploadedImage, uploadedImageName, videoSize, matchImageSize, durationFrames } = workspaceState;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -215,106 +218,178 @@ export default function VideoWorkspace({
     setError('');
 
     try {
-      const thumbnailBase64 = await createImageThumbnail(uploadedImage, 400);
+      // FIX: Increased thumbnail size for better image grounding
+      // 400px loses fine detail (facial expression, texture, lighting nuance)
+      // that the vision model needs to accurately anchor the first frame
+      const thumbnailBase64 = await createImageThumbnail(uploadedImage, 768);
+
       const currentFps = WORKFLOW_FPS[activeWorkflow] || 16;
       const durationSeconds = (durationFrames / currentFps).toFixed(1);
 
-      const response = await fetch('/api/lmstudio/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: selectedModel,
-          messages: [
-            {
-              role: 'system',
-              content: activeWorkflow === 'ltx-2.3-i2v'
-                ? `You are an expert prompt engineer for LTX 2.3 Image-to-Video (I2V) generation.
+      // Derive resolution label for prompt context
+      const resolutionContext = (() => {
+        if (activeWorkflow === 'ltx-2.3-i2v') {
+          const h = targetDimensions.height;
+          if (h >= 720) return '720p (1280×720)';
+          if (h >= 540) return '540p (960×540)';
+          return '480p (854×480)';
+        }
+        return '';
+      })();
+
+      const isLTX = activeWorkflow === 'ltx-2.3-i2v';
+
+      const ltxSystemPrompt = `You are an expert prompt engineer for LTX 2.3 Image-to-Video (I2V) generation.
 
 You will receive:
-- an input image
-- a raw user prompt
-- a target duration
+- An input image (the exact first frame of the video)
+- A raw user prompt describing desired motion
+- A target duration in seconds
+- Output resolution
 
 Your job:
-Generate a natural, continuous motion description that evolves directly from the image and can seamlessly continue into future generations.
+Generate a [VISUAL] motion description and [SOUNDS] audio description optimized for LTX 2.3's two-stage pipeline (stage 1 generates motion structure, stage 2 refines detail at 2x resolution).
 
-CRITICAL RULES FOR LTX 2.3:
+══════════════════════════════════════
+SECTION 1 — [VISUAL] RULES
+══════════════════════════════════════
 
-1. FORMAT:
+STRUCTURE:
+Write one continuous paragraph. No bullet points, no numbered steps.
 
-[VISUAL]:
-Write a smooth, continuous paragraph describing motion progression.
+FIRST SENTENCE — IMAGE ANCHOR (critical):
+- Must describe EXACTLY what is visible in the image
+- Match: subject position, pose, expression, lighting, background, clothing
+- Do NOT invent or alter anything from the first frame
+- This anchors the model to frame 0 and prevents first-frame artifacts
 
-- Motion must feel fluid and uninterrupted
-- Avoid rigid step-by-step phrasing
-- Use natural transitions (begins to, gradually, continues, subtly shifts)
+MOTION LANGUAGE:
+- Use present continuous tense: "is turning", "continues rising", "slowly shifts"
+- Use gradual transition words: "begins to", "gradually", "subtly", "continues", "eases into"
+- Avoid: "suddenly", "quickly", "instantly", "snaps to"
 
-IMPORTANT:
-The motion must NOT feel like it fully ends.
-The final moment should feel like the motion is still ongoing or can naturally continue.
+MOTION SCALE BY DURATION:
+- Under 2s: micro-movements only (breath, eye blink, hair settle, subtle sway)
+- 2-4s: single small action (head turn, hand raise, weight shift)
+- 4-6s: one full action with follow-through (standing up, picking something up)
+- 6s+: action with natural continuation into next beat
 
-2. CONTINUITY (MOST IMPORTANT):
+CONTINUITY (most important for seamless looping/chaining):
+- The motion must feel ONGOING at the final frame, not completed
+- Never end with: action completed, subject idle, resting pose reached
+- Always end mid-motion or with motion that implies continuation
 
-- NEVER force a full stop or “resting pose”
-- NEVER end with hands resting, action completed, or subject becoming idle
-- The last frame should feel like a mid-action continuation point
+Bad: "She places her hand on the table and stops"
+Good: "Her hand continues lowering toward the table, fingers beginning to spread as it nears the surface"
 
-Bad:
-"She places her hand on the table and stops"
+PHYSICAL REALISM:
+- Respect inertia: objects slow before stopping, accelerate before moving fast
+- Clothing, hair, and soft objects lag slightly behind body movement
+- Eyes blink naturally during longer sequences
 
-Good:
-"Her hand continues lowering toward the table, slowing as it nears the surface"
+FORBIDDEN:
+- Camera movement language (pan, zoom, dolly, rack focus, cut)
+- Cinematic terms (establishing shot, close-up, tracking)
+- Time references ("over 3 seconds", "at the 2 second mark")
+- Metaphors or emotional interpretation ("radiating confidence")
+- Completing the action fully unless duration is very long (6s+)
 
-3. IMAGE ANCHOR:
+══════════════════════════════════════
+SECTION 2 — [SOUNDS] RULES  
+══════════════════════════════════════
 
-- The first sentence MUST exactly match the image (pose, composition, lighting)
-- Do NOT alter initial state
+LTX 2.3 has dedicated audio conditioning that directly affects video temporal consistency.
+Better sound descriptions = more coherent motion timing.
 
-4. MOTION SCALE:
+STRUCTURE: One paragraph, 2-3 sentences.
 
-- Use duration ONLY to control how much motion happens
-- Short = subtle movement
-- Long = more progression, but STILL continuous (not completed)
+LAYER ORDER (always include all three):
+1. Environment/ambient: the acoustic space (room, outdoor, indoor, crowd noise, silence)
+2. Subject sounds: sounds the subject's motion creates (fabric, footsteps, breath, object handling)
+3. Texture/detail: subtle ongoing sounds that establish rhythm (HVAC hum, distant traffic, wind)
 
-5. PHYSICAL REALISM:
+MATCHING SOUNDS TO MOTION:
+- Slow motion = quieter, more ambient-heavy
+- Fast motion = more distinct impact/movement sounds
+- Static subject = pure ambient with very subtle body sounds (breath, slight cloth shift)
 
-- Maintain inertia and smooth transitions
-- Avoid sudden or unnatural jumps
-- Motions must feel physically plausible
+FORBIDDEN in SOUNDS:
+- Music or musical instruments (unless explicitly in the scene)
+- Dramatic sound effects not implied by the image
+- Emotional sound descriptors ("tense silence", "peaceful ambiance")
 
-6. NO CINEMATIC LANGUAGE:
+══════════════════════════════════════
+SPEECH AND DIALOGUE RULES
+══════════════════════════════════════
 
-Do NOT include:
-- camera movements
-- cinematic terms
-- metaphors or dramatic phrasing
+If the user's prompt contains spoken words, dialogue, or implies the subject is speaking:
 
-Keep everything literal and observable.
+ALWAYS include the exact dialogue in the [VISUAL] section using this format:
+  She says, "[exact words here]"
+  or
+  He speaks the words, "[exact words here]"
 
-7. NO TIME LANGUAGE:
+PLACEMENT:
+- Place the dialogue line at the moment in the motion when the speech occurs
+- If the clip is short, the speech starts near the beginning
+- Never paraphrase or summarize — preserve the user's exact intended words
 
-Do NOT mention seconds or duration.
+SPEECH MOTION:
+Describe the physical speech motion alongside the dialogue:
+- Lip movement, jaw motion, breath before speaking
+- Natural facial expression shifts during speech
+- Eye contact changes (direct to camera = addressing viewer)
 
-8. SOUND DESIGN:
+EXAMPLE:
 
-[SOUNDS]:
-Describe audio that evolves naturally with the motion:
-- ambient environment
-- subtle movement sounds
-- no dramatic sound effects unless implied by motion
+User prompt: "woman saying hello everyone welcome to my channel"
 
-9. OUTPUT FORMAT:
+Bad (paraphrased, no dialogue):
+"Her lips begin to move as she addresses the camera, forming words with subtle facial shifts."
 
-Return ONLY:
+Good (exact dialogue preserved):
+"She looks directly into the camera with a warm expression and says, 'Hello everyone, welcome to my channel,' 
+her lips moving clearly with each word, her jaw dropping naturally on the open vowels, 
+a slight smile returning between phrases as she holds the product toward the lens."
+
+SOUNDS for speech scenes:
+- Lead with the voice as the PRIMARY sound, not ambient
+- Describe voice tone/quality: clear, warm, enthusiastic, soft, firm
+- Ambient comes second as background context
+
+══════════════════════════════════════
+SECTION 3 — NEGATIVE PROMPT
+══════════════════════════════════════
+
+After analyzing the image and motion, identify the 3-5 most likely failure modes for this specific generation and add them to the negative prompt.
+
+Base failures to always include:
+"blurry, low quality, watermark, overlay, titles, subtitles, flickering, distorted"
+
+Add specific ones based on the scene, for example:
+- Human subject: "morphing face, extra limbs, floating hands, deformed fingers"
+- Outdoor/nature: "static background, frozen trees, unnatural sky"
+- Object interaction: "object clipping, physics violation, teleporting object"
+- Camera-fixed scene: "camera shake, unwanted zoom, scene cut"
+
+══════════════════════════════════════
+OUTPUT FORMAT — STRICT
+══════════════════════════════════════
+
+Return ONLY this exact structure inside the tags. No explanation, no commentary.
 
 <prompt>
 [VISUAL]:
-...
+{one continuous paragraph}
 
 [SOUNDS]:
-...
-</prompt>`
-                : `You are an expert prompt engineer for Wan 2.2 Image-to-Video (I2V) generation. 
+{one paragraph, 2-3 sentences}
+
+[NEGATIVE]:
+{comma separated terms}
+</prompt>`;
+
+      const wanSystemPrompt = `You are an expert prompt engineer for Wan 2.2 Image-to-Video (I2V) generation. 
 You will receive an image, a raw user prompt, and a target duration.
 
 Your job: Write a highly descriptive, cinematic motion prompt that naturally progresses the exact scene in the image and ensures the requested action reaches a clear, definitive completion.
@@ -329,27 +404,50 @@ CRITICAL RULES FOR WAN 2.2:
    - Sentence 3: Optional natural camera behavior only if appropriate, such as mostly static framing, slight handheld wobble, or a small casual reframing; avoid cinematic or professional-looking camera moves.
 5. TEMPORAL STABILITY: Use dynamic but grounded verbs. Avoid sudden, explosive, or physically impossible transitions. Maintain the core intent of the user's raw prompt.
 
-Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
+Return ONLY the final optimized prompt inside <prompt></prompt> tags.`;
+
+      const ltxUserPrompt = `User's raw prompt: "${prompt}"
+Target duration: ${durationSeconds} seconds
+Output resolution: ${resolutionContext}
+          ${prompt.match(/["']|saying|says|speaks|shouts|whispers|tells/i)
+          ? `\n⚠️ SPEECH DETECTED: The user's prompt contains dialogue or speaking intent.\nYou MUST include the exact spoken words in the [VISUAL] section using the speech format.\nDo NOT paraphrase or omit the dialogue.\n`
+          : ''
+        }
+Analyze the image carefully — the subject's exact pose, expression, lighting, and environment.
+Then write the [VISUAL], [SOUNDS], and [NEGATIVE] sections describing motion that fills this duration naturally without completing the action.`;
+      const wanUserPrompt = `User's raw prompt: "${prompt}"
+Target Video Duration: ${durationSeconds} seconds.
+
+Based on the image, write a prompt that describes exactly enough action to realistically fill this timeframe, ending with the action fully completed.`;
+
+      const response = await fetch('/api/lmstudio/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: selectedModel,
+          messages: [
+            {
+              role: 'system',
+              content: isLTX ? ltxSystemPrompt : wanSystemPrompt,
             },
             {
               role: 'user',
               content: [
                 {
                   type: 'text',
-                  text: activeWorkflow === 'ltx-2.3-i2v'
-                    ? `User's raw prompt: "${prompt}"\nTarget Video Duration: ${durationSeconds} seconds.\n\nBased on the image, write a prompt using [VISUAL] and [SOUNDS] tags that describes exactly enough action to realistically fill this timeframe, including appropriate audio descriptions.`
-                    : `User's raw prompt: "${prompt}"\nTarget Video Duration: ${durationSeconds} seconds.\n\nBased on the image, write a prompt that describes exactly enough action to realistically fill this timeframe, ending with the action fully completed.`
+                  text: isLTX ? ltxUserPrompt : wanUserPrompt,
                 },
                 {
                   type: 'image_url',
-                  image_url: {
-                    url: thumbnailBase64,
-                  }
-                }
-              ]
-            }
+                  image_url: { url: thumbnailBase64 },
+                },
+              ],
+            },
           ],
-          temperature: 0.6,
+          // FIX: Lower temperature for structured output tasks
+          // 0.6 causes the model to deviate from the required format
+          // 0.3 keeps output creative enough while respecting structure
+          temperature: 0.3,
         }),
       });
 
@@ -357,8 +455,12 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         errorMessage = errorData.error || `Server error: ${response.status}`;
-        if (errorMessage.includes('Channel Error') || errorMessage.includes('channel')) {
-          errorMessage = 'Model does not support vision. Please select a vision-capable model (e.g., Llama 3.2 Vision, Qwen2-VL)';
+        if (
+          errorMessage.includes('Channel Error') ||
+          errorMessage.includes('channel')
+        ) {
+          errorMessage =
+            'Model does not support vision. Please select a vision-capable model (e.g., Llama 3.2 Vision, Qwen2-VL)';
         }
         throw new Error(errorMessage);
       }
@@ -371,7 +473,33 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
       }
 
       const match = rawText.match(/<prompt>([\s\S]*?)<\/prompt>/i);
+
+      // FIX: Detect malformed output and warn user instead of silently
+      // falling back to raw text which may include system prompt leakage
+      if (!match) {
+        console.warn('Model did not return expected <prompt> tags. Raw output:', rawText);
+        toast.warning('Model returned unexpected format — using raw output. Consider switching to a stronger vision model.');
+      }
+
       const enhanced = match?.[1]?.trim() || rawText.trim();
+
+      if (isLTX && match) {
+        // Extract [NEGATIVE] section and update negative prompt field separately
+        const negativeMatch = enhanced.match(/\[NEGATIVE\]:\s*([\s\S]*?)(?=\[|$)/i);
+        if (negativeMatch?.[1]?.trim()) {
+          const extractedNegative = negativeMatch[1].trim();
+          // Strip [NEGATIVE] block from the positive prompt
+          const positiveOnly = enhanced
+            .replace(/\[NEGATIVE\]:\s*[\s\S]*?(?=\[|$)/i, '')
+            .trim();
+          updateWorkspaceState({
+            prompt: positiveOnly,
+            negative_prompt: extractedNegative,
+          });
+          toast.success('Prompt and negative prompt enhanced ✨');
+          return;
+        }
+      }
 
       if (enhanced && enhanced !== prompt) {
         updateWorkspaceState({ prompt: enhanced });
@@ -421,6 +549,7 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
       formData.append('image', imageFile);
       console.log('[VIDEO] Sending prompt:', prompt);
       formData.append('prompt', prompt);
+      formData.append('negative_prompt', negative_prompt || '');
       const { width: finalWidth, height: finalHeight } = targetDimensions;
       formData.append('width', String(finalWidth));
       formData.append('height', String(finalHeight));
@@ -434,6 +563,7 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
         const currentFps = WORKFLOW_FPS[activeWorkflow] || 24;
         ltxFormData.append('image', imageFile);
         ltxFormData.append('prompt', prompt);
+        ltxFormData.append('negative_prompt', negative_prompt || '');
         ltxFormData.append('width', String(finalWidth));
         ltxFormData.append('height', String(finalHeight));
         ltxFormData.append('frames', String(durationFrames));
@@ -914,6 +1044,18 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
               disabled={isGenerating}
               className="w-full resize-none rounded-xl border border-[#494741] bg-[#262624] px-3 py-3 text-sm text-[#ece8df] outline-none transition placeholder:text-[#6b6560] focus:border-[#b9986d] disabled:opacity-60"
             />
+
+            <div className="mt-4 space-y-2">
+              <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Negative Prompt</span>
+              <textarea
+                value={negative_prompt}
+                onChange={(e) => updateWorkspaceState({ negative_prompt: e.target.value })}
+                placeholder="List failure modes to avoid (blurry, morphing, etc.)..."
+                rows={2}
+                disabled={isGenerating}
+                className="w-full resize-none rounded-xl border border-[#494741] bg-[#262624] px-3 py-3 text-xs text-[#bcb6aa] outline-none transition placeholder:text-[#6b6560] focus:border-[#b9986d] disabled:opacity-60"
+              />
+            </div>
 
             <div className="mt-3 flex items-center justify-between">
               <p className="text-xs text-[#6b6560]">Describe how the image should animate</p>
