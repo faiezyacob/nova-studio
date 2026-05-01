@@ -10,6 +10,7 @@ interface VideoUpscaleDialogProps {
     filename: string;
     subfolder?: string;
     prompt: string;
+    resolution?: string;
   };
   onSuccess: (newVideo: any) => void;
 }
@@ -38,6 +39,8 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, onSuccess }
     const toastId = toast.loading('Initiating upscale...');
 
     try {
+      toast.loading('Upscaling video... this may take a few minutes', { id: toastId });
+      
       const response = await fetch('/api/comfy/upscale', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -54,7 +57,6 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, onSuccess }
       }
 
       const result = await response.json();
-      toast.loading('Upscaling video... this may take a few minutes', { id: toastId });
 
       // Caching logic
       try {
@@ -65,12 +67,17 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, onSuccess }
       }
 
       const modelLabel = UPSCALE_MODELS.find(m => m.id === upscaleModel)?.label || upscaleModel;
+      const upscaleFactor = upscaleModel.includes('x2') ? 2 : 4;
+      const baseRes = video.resolution ? parseInt(video.resolution) : 0;
+      const newRes = baseRes ? `${baseRes * upscaleFactor}p` : `${upscaleFactor}x Upscale`;
+
       const newVideo = {
         id: `upscale_${Date.now()}`,
         filename: result.video_path,
         prompt: `[${modelLabel}] ${video.prompt}`,
         timestamp: Date.now(),
         subfolder: result.subfolder || '',
+        resolution: newRes,
       };
 
       onSuccess(newVideo);

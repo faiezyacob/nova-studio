@@ -10,6 +10,7 @@ interface VideoGalleryItem {
   prompt: string;
   timestamp: number;
   subfolder?: string;
+  resolution?: string;
 }
 
 interface VideoWorkspaceProps {
@@ -25,6 +26,7 @@ interface VideoWorkspaceProps {
     videoSize: '480' | '540' | '720';
     matchImageSize: boolean;
     durationFrames: number;
+    activeWorkflow: string;
   };
   setWorkspaceState: React.Dispatch<React.SetStateAction<{
     prompt: string;
@@ -34,6 +36,7 @@ interface VideoWorkspaceProps {
     videoSize: '480' | '540' | '720';
     matchImageSize: boolean;
     durationFrames: number;
+    activeWorkflow: string;
   }>>;
   selectedModel: string;
   setSelectedModel: (model: string) => void;
@@ -63,6 +66,7 @@ interface VideoWorkspaceState {
   videoSize: '480' | '540' | '720';
   matchImageSize: boolean;
   durationFrames: number;
+  activeWorkflow: string;
 }
 
 export default function VideoWorkspace({
@@ -89,7 +93,6 @@ export default function VideoWorkspace({
   const [isCombineMode, setIsCombineMode] = useState(false);
   const [selectedVideos, setSelectedVideos] = useState<string[]>([]);
   const [isCombining, setIsCombining] = useState(false);
-  const [activeWorkflow, setActiveWorkflow] = useState('wan-2.2-i2v');
 
   const WORKFLOW_OPTIONS = [
     { value: 'wan-2.2-i2v', label: 'Wan 2.2 I2V' },
@@ -101,7 +104,7 @@ export default function VideoWorkspace({
     'ltx-2.3-i2v': 24,
   };
 
-  const { prompt, negative_prompt, uploadedImage, uploadedImageName, videoSize, matchImageSize, durationFrames } = workspaceState;
+  const { prompt, negative_prompt, uploadedImage, uploadedImageName, videoSize, matchImageSize, durationFrames, activeWorkflow } = workspaceState;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -616,6 +619,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
         prompt: prompt,
         timestamp: Date.now(),
         subfolder: videoSubfolder,
+        resolution: `${videoSize}p`,
       };
 
       console.log('[VIDEO] New video created:', newVideo);
@@ -742,6 +746,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
         prompt: `Combined: ${orderedVideos.map(v => v.prompt).join(' → ')}`,
         timestamp: Date.now(),
         subfolder: result.subfolder || 'video',
+        resolution: orderedVideos[0]?.resolution, // Assume resolution matches first video
       };
 
       setVideoResult(newVideo);
@@ -984,7 +989,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                   <div className="relative min-w-[160px]">
                     <select
                       value={activeWorkflow}
-                      onChange={(e) => setActiveWorkflow(e.target.value)}
+                      onChange={(e) => updateWorkspaceState({ activeWorkflow: e.target.value })}
                       className="w-full h-[32px] rounded-lg border border-[#494741] bg-[#262624] px-3 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none disabled:opacity-50"
                     >
                       {WORKFLOW_OPTIONS.map((opt) => (
@@ -1293,8 +1298,15 @@ Based on the image, write a prompt that describes exactly enough action to reali
                         </div>
                       </div>
                     </div>
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2.5">
-                      <p className="line-clamp-2 text-[11px] leading-relaxed text-[#e7e2d8] opacity-90">{video.prompt}</p>
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent p-3 pt-12">
+                      {video.resolution && (
+                        <span className="mb-2 inline-block rounded-md border border-[#c9a87a]/20 bg-black/70 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-[#c9a87a] backdrop-blur-sm">
+                          {video.resolution}
+                        </span>
+                      )}
+                      <p className="line-clamp-2 text-[11px] font-medium leading-snug text-[#edeae2] drop-shadow-md opacity-90">
+                        {video.prompt}
+                      </p>
                     </div>
                   </div>
                 ))}

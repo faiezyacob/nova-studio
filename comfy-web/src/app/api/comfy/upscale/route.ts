@@ -46,7 +46,7 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
   nodes["2"] = {
     class_type: "VHS_BatchManager",
     inputs: {
-      frames_per_batch: 16,
+      frames_per_batch: 32,
       count: 0,
     }
   };
@@ -82,8 +82,8 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
     inputs: {
       images: ["3", 0],
       frame_rate: ["5", 0],
-      width: ["5", 0],
-      height: ["5", 1],
+      width: ["5", 1],
+      height: ["5", 2],
       loop_count: 0,
       filename_prefix: `video/${prefix}`,
       format: "video/h264-mp4",
@@ -109,8 +109,11 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
     wrapper.onFinished(async (data: any) => {
       if (resolved) return;
       
+      console.log(`[UPSCALE API] ComfyUI reported finished for prefix ${prefix}. Waiting for file...`);
+      
       // Delay to ensure FFmpeg and file combine nodes are fully done
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      // Increased to 10s for long videos (>100 frames)
+      await new Promise(resolve => setTimeout(resolve, 10000));
       
       resolved = true;
       

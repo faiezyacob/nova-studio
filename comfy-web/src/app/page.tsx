@@ -24,6 +24,7 @@ export default function App() {
     videoSize: "480" as "480" | "540" | "720",
     matchImageSize: true,
     durationFrames: 81,
+    activeWorkflow: "wan-2.2-i2v",
   });
   const [videoSelectedModel, setVideoSelectedModel] = useState("");
   const [availableModels, setAvailableModels] = useState<string[]>([]);
@@ -271,6 +272,10 @@ export default function App() {
       console.error("Failed to load video workspace state", e);
     }
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("video_workspace_state", JSON.stringify(videoWorkspaceState));
+  }, [videoWorkspaceState]);
 
   const handleSetMode = (newMode: AppMode) => {
     modeManuallySet.current = true;

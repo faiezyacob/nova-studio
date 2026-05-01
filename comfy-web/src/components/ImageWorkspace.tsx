@@ -21,16 +21,18 @@ const AVAILABLE_LORAS = [
 
 const STYLE_DESCRIPTIONS: Record<string, string> = {
   realistic: `
-- ALWAYS describe as a candid photo captured in real life
-- use natural available light such as window light, indoor lamps, street lighting at night
-- keep composition unplanned, slightly off-center, handheld framing
-- include subtle motion blur or focus inconsistency when natural
-- include realistic computational processing such as HDR, auto exposure adjustment, and slight sharpening
-- include minor imperfections like uneven exposure, background clutter, or reflections
-- keep skin, fabric, and environment textures natural and unretouched
-- avoid cinematic mood, avoid stylization, avoid artistic grading
-- do NOT describe as film, DSLR, or professional photography
-- ensure it feels like a real everyday moment captured quickly on a phone camera
+- ALWAYS describe as a candid photo taken on a modern smartphone camera in everyday conditions
+- lighting must feel completely uncontrolled and ambient: harsh overhead indoor LEDs, mixed color temperature from multiple sources, flat overcast daylight, warm yellow tungsten, or uneven window light casting hard shadows
+- include authentic phone camera artifacts: digital noise in shadow areas, luminance grain in low light, color smearing in highlights, lens flare from bright sources, slight barrel distortion at edges
+- skin tones should appear slightly processed by computational photography: oversharpened edges, smoothed textures, unnatural micro-contrast from HDR merging
+- colors may appear slightly oversaturated or shifted depending on auto white balance guessing incorrectly
+- compression artifacts are acceptable especially in busy texture areas or gradients
+- depth of field should feel like a phone sensor: mostly everything in focus unless portrait mode is active, in which case edge masking may appear slightly unnatural around hair or complex outlines
+- composition is accidental or rushed: subject may be slightly cut off, tilted horizon, dead center framing, or too much empty space
+- backgrounds should feel real and lived-in: cluttered surfaces, generic interiors, ordinary streets, unremarkable environments
+- avoid any cinematic framing, dramatic lighting, professional composition, or artistic intent
+- avoid clean studio-like results, avoid beautiful bokeh, avoid color grading of any kind
+- the image should feel like something pulled from someone's camera roll without a second thought
 `,
   photography: `
 - describe as a high-quality professional camera photograph captured in real environments
