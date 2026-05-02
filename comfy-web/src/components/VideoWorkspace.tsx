@@ -96,6 +96,8 @@ export default function VideoWorkspace({
   const [isCombineMode, setIsCombineMode] = useState(false);
   const [selectedVideos, setSelectedVideos] = useState<string[]>([]);
   const [isCombining, setIsCombining] = useState(false);
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
@@ -105,7 +107,7 @@ export default function VideoWorkspace({
   ];
 
   const WORKFLOW_FPS: Record<string, number> = {
-    'wan-2.2-i2v': 16,
+    'wan-2.2-i2v': 24,
     'ltx-2.3-i2v': 24,
   };
 
@@ -138,7 +140,7 @@ export default function VideoWorkspace({
   }, [availableModels, selectedModel]);
 
   useEffect(() => {
-    const maxFrames = activeWorkflow === 'ltx-2.3-i2v' ? 241 : 81;
+    const maxFrames = activeWorkflow === 'ltx-2.3-i2v' ? 241 : 129;
     if (durationFrames > maxFrames) {
       updateWorkspaceState({ durationFrames: maxFrames });
     }
@@ -812,6 +814,30 @@ Based on the image, write a prompt that describes exactly enough action to reali
     closeConfirm();
   };
 
+  const deleteSelectedVideos = async () => {
+    const deleteFromGallery = videoGallery.filter(v => selectedForDeletion.has(v.id));
+    const deleteFromServer = async () => {
+      for (const item of deleteFromGallery) {
+        try {
+          const deleteUrl = item.subfolder
+            ? `/api/comfy/images?filename=${item.filename}&subfolder=${item.subfolder}`
+            : `/api/comfy/images?filename=${item.filename}`;
+          await fetch(deleteUrl, { method: 'DELETE' });
+        } catch {
+          // Continue even if server delete fails
+        }
+      }
+    };
+    deleteFromServer();
+    const updated = videoGallery.filter(v => !selectedForDeletion.has(v.id));
+    setVideoGallery(updated);
+    localStorage.setItem(VIDEO_GALLERY_KEY, JSON.stringify(updated));
+    toast.success(`Deleted ${selectedForDeletion.size} video(s)`);
+    closeConfirm();
+    setSelectedForDeletion(new Set());
+    setIsSelectMode(false);
+  };
+
   const clearVideoGallery = async () => {
     try {
       await fetch("/api/comfy/images?type=video", { method: "DELETE" });
@@ -855,12 +881,31 @@ Based on the image, write a prompt that describes exactly enough action to reali
           </div>
           <div className="flex items-center gap-2">
             {videoGallery.length > 0 && (
-              <button
-                onClick={() => openConfirm("Clear Gallery", "This will delete all videos from the server.", () => clearVideoGallery())}
-                className="rounded-lg border border-[#5a4a3d] px-3 py-1.5 text-xs text-[#e1bfa0] transition hover:border-[#775e4b] hover:text-[#f2cdae]"
-              >
-                Clear Gallery
-              </button>
+              <>
+                <button
+                  onClick={() => {
+                    setIsSelectMode(!isSelectMode);
+                    if (isSelectMode) setSelectedForDeletion(new Set());
+                  }}
+                  className={`rounded-lg border px-3 py-1.5 text-xs transition ${isSelectMode ? "border-[#c9a87a] text-[#c9a87a]" : "border-[#5a4a3d] text-[#e1bfa0] hover:border-[#775e4b] hover:text-[#f2cdae]"}`}
+                >
+                  {isSelectMode ? "Cancel" : "Select"}
+                </button>
+                {isSelectMode && selectedForDeletion.size > 0 && (
+                  <button
+                    onClick={() => openConfirm("Delete Selected", `Delete ${selectedForDeletion.size} video(s)?`, deleteSelectedVideos)}
+                    className="rounded-lg border border-[#8b3a3a] px-3 py-1.5 text-xs text-[#e87a7a] transition hover:border-[#a84a4a] hover:text-[#f28a8a]"
+                  >
+                    Delete ({selectedForDeletion.size})
+                  </button>
+                )}
+                <button
+                  onClick={() => openConfirm("Clear Gallery", "This will delete all videos from the server.", () => clearVideoGallery())}
+                  className="rounded-lg border border-[#5a4a3d] px-3 py-1.5 text-xs text-[#e1bfa0] transition hover:border-[#775e4b] hover:text-[#f2cdae]"
+                >
+                  Clear Gallery
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -1202,29 +1247,66 @@ Based on the image, write a prompt that describes exactly enough action to reali
                     </button>
                   </div>
                 ) : (
-                  <button
-                    onClick={toggleCombineMode}
-                    className="rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-1.5 text-xs text-[#f2dbc0] transition hover:bg-[#4a433a]"
-                  >
-                    Combine
-                  </button>
+                  <>
+                    {!isSelectMode && (
+                      <button
+                        onClick={toggleCombineMode}
+                        className="rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-1.5 text-xs text-[#f2dbc0] transition hover:bg-[#4a433a]"
+                      >
+                        Combine
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                 {videoGallery.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((video) => (
                   <div
                     key={video.id}
-                    onClick={() => isCombineMode ? toggleVideoSelection(video.id) : setVideoResult(video)}
+                    onClick={() => {
+                      if (isSelectMode) {
+                        setSelectedForDeletion(prev => {
+                          const next = new Set(prev);
+                          if (next.has(video.id)) {
+                            next.delete(video.id);
+                          } else {
+                            next.add(video.id);
+                          }
+                          return next;
+                        });
+                      } else if (isCombineMode) {
+                        toggleVideoSelection(video.id);
+                      } else {
+                        setVideoResult(video);
+                      }
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
-                        isCombineMode ? toggleVideoSelection(video.id) : setVideoResult(video);
+                        if (isCombineMode) {
+                          toggleVideoSelection(video.id);
+                        } else {
+                          setVideoResult(video);
+                        }
                       }
                     }}
                     role="button"
                     tabIndex={0}
-                    className={`group relative aspect-[1/1] cursor-pointer overflow-hidden rounded-lg bg-[#1a1a18] transition hover:ring-2 hover:ring-[#c9a87a] outline-none ${isCombineMode && selectedVideos.includes(video.id) ? 'ring-2 ring-[#c9a87a]' : ''}`}
+                    className={`group relative aspect-[1/1] cursor-pointer overflow-hidden rounded-lg bg-[#1a1a18] transition hover:ring-2 hover:ring-[#c9a87a] outline-none ${isSelectMode
+                      ? selectedForDeletion.has(video.id) ? "border-[#c9a87a] ring-2 ring-[#c9a87a]/50" : "border-[#3f3e3a] hover:border-[#5a5550]"
+                      : isCombineMode && selectedVideos.includes(video.id) ? 'ring-2 ring-[#c9a87a]' : ''}`}
                   >
+                    {isSelectMode && selectedForDeletion.has(video.id) && (
+                      <div className={`absolute top-2 left-2 z-10 flex h-5 w-5 items-center justify-center rounded-md border-2 transition ${selectedForDeletion.has(video.id)
+                        ? "border-[#c9a87a] bg-[#c9a87a]" : "border-white/50 bg-black/30"
+                        }`}>
+                        {selectedForDeletion.has(video.id) && (
+                          <svg className="h-3 w-3 text-[#1f1f1d]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </div>
+                    )}
                     {isCombineMode && selectedVideos.includes(video.id) && (
                       <div className="absolute inset-0 bg-[#c9a87a]/20 flex items-center justify-center z-10">
                         <span className="bg-[#c9a87a] text-[#1f1f1d] text-xs font-bold px-2 py-1 rounded">
@@ -1341,7 +1423,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                   </div>
                 ))}
               </div>
-              
+
               {/* Pagination Controls */}
               {videoGallery.length > itemsPerPage && (
                 <div className="mt-6 flex items-center justify-center gap-2">
@@ -1359,11 +1441,10 @@ Based on the image, write a prompt that describes exactly enough action to reali
                       <button
                         key={i}
                         onClick={() => setCurrentPage(i + 1)}
-                        className={`h-8 w-8 rounded-lg text-xs font-medium transition ${
-                          currentPage === i + 1
-                            ? 'bg-[#c9a87a] text-[#1f1f1d]'
-                            : 'border border-[#4a4944] bg-[#262624] text-[#bcb6aa] hover:border-[#5a554a] hover:text-[#edeae2]'
-                        }`}
+                        className={`h-8 w-8 rounded-lg text-xs font-medium transition ${currentPage === i + 1
+                          ? 'bg-[#c9a87a] text-[#1f1f1d]'
+                          : 'border border-[#4a4944] bg-[#262624] text-[#bcb6aa] hover:border-[#5a554a] hover:text-[#edeae2]'
+                          }`}
                       >
                         {i + 1}
                       </button>
