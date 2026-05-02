@@ -11,20 +11,27 @@ interface VideoUpscaleDialogProps {
     subfolder?: string;
     prompt: string;
     resolution?: string;
+    width?: number;
+    height?: number;
   };
   onSuccess: (newVideo: any) => void;
 }
 
 const UPSCALE_MODELS = [
-  { 
-    id: 'RealESRGAN_x2plus.pth', 
-    label: 'RealESRGAN x2+', 
-    desc: 'Faster, 2x enlargement. Great for moderate resolution increases.' 
+  {
+    id: 'ultra',
+    label: 'RTX Video SR (Ultra)',
+    desc: 'Highest quality NVIDIA AI enhancement. Best for 4K output.'
   },
-  { 
-    id: 'RealESRGAN_x4plus.safetensors', 
-    label: 'RealESRGAN x4+', 
-    desc: 'Highest quality, 4x enlargement. Best for low-res sources.' 
+  {
+    id: 'high',
+    label: 'RTX Video SR (High)',
+    desc: 'Professional grade upscaling with excellent detail retention.'
+  },
+  {
+    id: 'medium',
+    label: 'RTX Video SR (Medium)',
+    desc: 'Faster processing while still providing AI sharpening.'
   },
 ];
 
@@ -40,7 +47,7 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, onSuccess }
 
     try {
       toast.loading('Upscaling video... this may take a few minutes', { id: toastId });
-      
+
       const response = await fetch('/api/comfy/upscale', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -48,6 +55,8 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, onSuccess }
           filename: video.filename,
           subfolder: video.subfolder || 'video',
           upscale_model: upscaleModel,
+          width: video.width,
+          height: video.height,
         }),
       });
 
@@ -67,9 +76,7 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, onSuccess }
       }
 
       const modelLabel = UPSCALE_MODELS.find(m => m.id === upscaleModel)?.label || upscaleModel;
-      const upscaleFactor = upscaleModel.includes('x2') ? 2 : 4;
-      const baseRes = video.resolution ? parseInt(video.resolution) : 0;
-      const newRes = baseRes ? `${baseRes * upscaleFactor}p` : `${upscaleFactor}x Upscale`;
+      const newRes = "2x Upscale"; // Changed to 2x multiplier
 
       const newVideo = {
         id: `upscale_${Date.now()}`,
@@ -78,6 +85,8 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, onSuccess }
         timestamp: Date.now(),
         subfolder: result.subfolder || '',
         resolution: newRes,
+        width: video.width ? video.width * 4 : undefined,
+        height: video.height ? video.height * 4 : undefined,
       };
 
       onSuccess(newVideo);
@@ -92,11 +101,11 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, onSuccess }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div 
+      <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={!isProcessing ? onClose : undefined}
       />
-      
+
       <div className="relative w-full max-w-lg overflow-hidden rounded-[24px] border border-[#3f3e3a] bg-[#2a2a28] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
         {/* Header */}
         <div className="border-b border-[#3a3936] bg-[#2f2f2d] px-6 py-4">
@@ -118,15 +127,26 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, onSuccess }
           <div className="rounded-xl bg-[#1a1a18] p-3 border border-[#3a3936]">
             <div className="flex items-center gap-4">
               <div className="h-16 w-16 overflow-hidden rounded-lg bg-black shrink-0">
-                <video 
-                  src={`/generated/${video.filename}`} 
-                  className="h-full w-full object-cover opacity-60" 
-                  muted 
+                <video
+                  src={`/generated/${video.filename}`}
+                  className="h-full w-full object-cover opacity-60"
+                  muted
                 />
               </div>
               <div className="flex-1 overflow-hidden">
                 <p className="text-xs text-[#6b6560] uppercase tracking-wider mb-1 font-semibold text-[9px]">Source Video</p>
                 <p className="text-sm text-[#bcb6aa] truncate">{video.prompt}</p>
+                <div className="mt-1 flex items-center gap-2">
+                  <span className="text-[10px] bg-[#1f1f1d] px-1.5 py-0.5 rounded text-[#9f988c] border border-[#3a3936]">
+                    {video.width || '?'} × {video.height || '?'}
+                  </span>
+                  <svg className="h-3 w-3 text-[#6b6560]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                  <span className="text-[10px] bg-[#c9a87a]/10 px-1.5 py-0.5 rounded text-[#c9a87a] border border-[#c9a87a]/20 font-bold">
+                    {video.width ? video.width * 4 : '?'} × {video.height ? video.height * 4 : '?'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -139,15 +159,13 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, onSuccess }
                 <button
                   key={m.id}
                   onClick={() => setUpscaleModel(m.id)}
-                  className={`group flex items-start gap-4 rounded-xl border p-4 text-left transition ${
-                    upscaleModel === m.id
-                      ? 'border-[#c9a87a] bg-[#3a352e] ring-1 ring-[#c9a87a]'
-                      : 'border-[#3f3e3a] bg-[#262624] hover:border-[#5a554a] hover:bg-[#2d2d2b]'
-                  }`}
+                  className={`group flex items-start gap-4 rounded-xl border p-4 text-left transition ${upscaleModel === m.id
+                    ? 'border-[#c9a87a] bg-[#3a352e] ring-1 ring-[#c9a87a]'
+                    : 'border-[#3f3e3a] bg-[#262624] hover:border-[#5a554a] hover:bg-[#2d2d2b]'
+                    }`}
                 >
-                  <div className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors ${
-                    upscaleModel === m.id ? 'border-[#c9a87a] bg-[#c9a87a]' : 'border-[#494741]'
-                  }`}>
+                  <div className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors ${upscaleModel === m.id ? 'border-[#c9a87a] bg-[#c9a87a]' : 'border-[#494741]'
+                    }`}>
                     {upscaleModel === m.id && (
                       <svg className="h-3 w-3 text-[#1f1f1d]" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L7 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />

@@ -11,6 +11,8 @@ interface VideoGalleryItem {
   timestamp: number;
   subfolder?: string;
   resolution?: string;
+  width?: number;
+  height?: number;
 }
 
 interface VideoWorkspaceProps {
@@ -620,6 +622,8 @@ Based on the image, write a prompt that describes exactly enough action to reali
         timestamp: Date.now(),
         subfolder: videoSubfolder,
         resolution: `${videoSize}p`,
+        width: finalWidth,
+        height: finalHeight,
       };
 
       console.log('[VIDEO] New video created:', newVideo);
@@ -747,6 +751,8 @@ Based on the image, write a prompt that describes exactly enough action to reali
         timestamp: Date.now(),
         subfolder: result.subfolder || 'video',
         resolution: orderedVideos[0]?.resolution, // Assume resolution matches first video
+        width: orderedVideos[0]?.width,
+        height: orderedVideos[0]?.height,
       };
 
       setVideoResult(newVideo);

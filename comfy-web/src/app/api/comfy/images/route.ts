@@ -209,23 +209,29 @@ export async function DELETE(request: NextRequest) {
 
       // Handle ComfyUI output directories
       if (type === 'video') {
-        const videoOutputDir = path.join(COMFY_OUTPUT_DIR, 'video');
-        if (existsSync(videoOutputDir)) {
-          const comfyFiles = await readdir(videoOutputDir);
-          const results = await Promise.all(
-            comfyFiles.map(async file => {
-              try {
-                const fullPath = path.join(videoOutputDir, file);
-                const stats = await lstat(fullPath);
-                if (stats.isDirectory()) return false;
-                await unlink(fullPath);
-                return true;
-              } catch {
-                return false;
-              }
-            })
-          );
-          deletedFromComfy = results.filter(Boolean).length;
+        const dirsToClear = [
+          path.join(COMFY_OUTPUT_DIR, 'video'),
+          path.join(COMFY_OUTPUT_DIR, 'Upscale')
+        ];
+
+        for (const dir of dirsToClear) {
+          if (existsSync(dir)) {
+            const comfyFiles = await readdir(dir);
+            const results = await Promise.all(
+              comfyFiles.map(async file => {
+                try {
+                  const fullPath = path.join(dir, file);
+                  const stats = await lstat(fullPath);
+                  if (stats.isDirectory()) return false;
+                  await unlink(fullPath);
+                  return true;
+                } catch {
+                  return false;
+                }
+              })
+            );
+            deletedFromComfy += results.filter(Boolean).length;
+          }
         }
       } else {
         // Image or generic library clear
@@ -266,8 +272,8 @@ export async function DELETE(request: NextRequest) {
     const subfolder = subfolderParam || (isVideo ? 'video' : '');
     const localPath = path.join(LOCAL_IMAGES_DIR, imageName);
     const comfyPath = subfolder
-      ? path.join(COMFY_OUTPUT_DIR, subfolder, imageName)
-      : path.join(COMFY_OUTPUT_DIR, imageName);
+      ? path.join(COMFY_OUTPUT_DIR, subfolder, filename)
+      : path.join(COMFY_OUTPUT_DIR, filename);
 
     let deletedFromLocal = 0;
     let deletedFromComfy = 0;
@@ -283,7 +289,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     if (isVideo) {
-      const pngFilename = imageName.replace(/\.(mp4|webm|mov)$/i, '.png');
+      // Handle associated PNG
+      const pngFilename = filename.replace(/\.(mp4|webm|mov)$/i, '.png');
       const comfyPngPath = subfolder
         ? path.join(COMFY_OUTPUT_DIR, subfolder, pngFilename)
         : path.join(COMFY_OUTPUT_DIR, pngFilename);
@@ -291,10 +298,30 @@ export async function DELETE(request: NextRequest) {
         await unlink(comfyPngPath);
         deletedFromComfy++;
       }
+
+      // Handle -audio version or non-audio version
+      const isAudioVersion = filename.includes('-audio');
+      const alternateFilename = isAudioVersion 
+        ? filename.replace('-audio', '')
+        : filename.replace(/\.(mp4|webm|mov)$/i, (match) => `-audio${match}`);
+      
+      const alternateLocalPath = path.join(LOCAL_IMAGES_DIR, extractFilename(alternateFilename));
+      const alternateComfyPath = subfolder
+        ? path.join(COMFY_OUTPUT_DIR, subfolder, alternateFilename)
+        : path.join(COMFY_OUTPUT_DIR, alternateFilename);
+
+      if (existsSync(alternateLocalPath)) {
+        await unlink(alternateLocalPath);
+        deletedFromLocal++;
+      }
+      if (existsSync(alternateComfyPath)) {
+        await unlink(alternateComfyPath);
+        deletedFromComfy++;
+      }
     }
 
     return NextResponse.json({ 
-      message: `Deleted image`,
+      message: `Deleted video`,
       details: {
         local: deletedFromLocal,
         comfy: deletedFromComfy
