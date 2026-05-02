@@ -1327,6 +1327,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
           isOpen={isUpscaleOpen}
           onClose={() => setIsUpscaleOpen(false)}
           video={videoToUpscale}
+          selectedModel={selectedModel}
           onSuccess={handleUpscaleSuccess}
         />
       )}

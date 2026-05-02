@@ -97,20 +97,22 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
 
       console.log(`[UPSCALE API] ComfyUI reported finished for prefix ${prefix}. Waiting for file...`);
 
-      // Delay to ensure FFmpeg and file combine nodes are fully done
-      await new Promise(resolve => setTimeout(resolve, 10000));
-
-      resolved = true;
-
+      // 1. Trust the SDK data if it has a filename (especially important for VHS nodes with audio)
       const outputNode = data?.["4"];
-      // VHS_VideoCombine can return filenames in various fields depending on version/format
-      // Use the first available valid filename from any of the common fields
       const videoData = outputNode?.videos?.[0] ||
         outputNode?.gifs?.[0] ||
         (outputNode?.filenames ? { filename: outputNode.filenames[0] } : null);
 
+      console.log(`[UPSCALE API] Output data from node 4:`, videoData);
+
+      // Delay to ensure FFmpeg and file combine nodes are fully done
+      // Increased from 10s to 12s for safer high-res muxing
+      await new Promise(resolve => setTimeout(resolve, 12000));
+
+      resolved = true;
+
       // Fix fallback to include the RTX_SR_ prefix that we defined in filename_prefix
-      const fullFilename = videoData?.filename || `RTX_SR_${prefix}_00001.mp4`;
+      let fullFilename = videoData?.filename || `RTX_SR_${prefix}_00001.mp4`;
 
       // If the filename contains a subfolder (like "Upscale/RTX_SR..."), extract them
       let videoFile = fullFilename;
@@ -119,7 +121,6 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
       if (fullFilename.includes('/') || fullFilename.includes('\\')) {
         const parts = fullFilename.split(/[/\\]/);
         videoFile = parts.pop() || fullFilename;
-        // If there are parts left, they form the subfolder relative to output/
         if (parts.length > 0) {
           videoSubfolder = parts.join('/');
         }
@@ -130,12 +131,15 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
       const audioBasename = videoFile.replace(/\.(mp4|webm|mov)$/i, (match) => `-audio${match}`);
       const audioPath = path.join(COMFY_OUTPUT_DIR, videoSubfolder, audioBasename);
 
+      console.log(`[UPSCALE API] Checking for audio version at: ${audioPath}`);
       if (existsSync(audioPath)) {
         console.log(`[UPSCALE API] Found audio version: ${audioBasename}`);
         videoFile = audioBasename;
+      } else {
+        console.log(`[UPSCALE API] Audio version not found, using: ${videoFile}`);
       }
 
-      console.log(`[UPSCALE API] Result for ${prefix}:`, { videoFile, videoSubfolder, fullFilename, videoData });
+      console.log(`[UPSCALE API] Final result for ${prefix}:`, { videoFile, videoSubfolder });
 
       resolve({
         prompt_id: prefix,
@@ -172,7 +176,11 @@ export async function POST(request: NextRequest) {
 
         console.log(`[UPSCALE API] Dimensions missing, probing: ${videoPath}`);
         const { execSync } = require('child_process');
-        const ffprobeOutput = execSync(`ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "${videoPath}"`).toString().trim();
+        // Added 5s timeout and better error handling to prevent blocking
+        const ffprobeOutput = execSync(
+          `ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "${videoPath}"`,
+          { timeout: 5000, encoding: 'utf8' }
+        ).toString().trim();
         const [w, h] = ffprobeOutput.split('x').map(Number);
 
         if (w && h) {
@@ -181,10 +189,10 @@ export async function POST(request: NextRequest) {
           console.log(`[UPSCALE API] Probed dimensions: ${width}x${height}`);
         }
       } catch (probeError) {
-        console.warn('[UPSCALE API] ffprobe failed:', probeError);
-        // Fallback to 4K if probe fails and no dimensions provided
-        width = width || 3840;
-        height = height || 2160;
+        console.warn('[UPSCALE API] ffprobe failed or timed out:', probeError);
+        // Fallback to 1080p if probe fails and no dimensions provided
+        width = width || 1920;
+        height = height || 1080;
       }
     }
 

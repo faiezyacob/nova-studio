@@ -309,7 +309,7 @@ async function generateLtxVideo(options: {
   // Sampler unchanged
   nodes["52"] = {
     class_type: "KSamplerSelect",
-    inputs: { sampler_name: "euler_ancestral" },
+    inputs: { sampler_name: "euler" },
   };
 
   nodes["53"] = {
@@ -472,7 +472,7 @@ async function generateLtxVideo(options: {
       tile_size: 512,
       overlap: 64,
       temporal_size: 2048,
-      temporal_overlap: 16,
+      temporal_overlap: 32,
     },
   };
 

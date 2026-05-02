@@ -266,62 +266,58 @@ export async function DELETE(request: NextRequest) {
       });
     }
 
-    const imageName = extractFilename(filename);
     const subfolderParam = searchParams.get('subfolder');
     const isVideo = /\.(mp4|webm|mov)$/i.test(filename);
     const subfolder = subfolderParam || (isVideo ? 'video' : '');
-    const localPath = path.join(LOCAL_IMAGES_DIR, imageName);
-    const comfyPath = subfolder
-      ? path.join(COMFY_OUTPUT_DIR, subfolder, filename)
-      : path.join(COMFY_OUTPUT_DIR, filename);
+
+    // Identify potential targets for deletion (the file itself, plus associated previews/versions)
+    const targets = [filename];
+    if (isVideo) {
+      // 1. Associated PNG preview
+      targets.push(filename.replace(/\.(mp4|webm|mov)$/i, '.png'));
+
+      // 2. Alternate audio/non-audio version
+      const isAudioVersion = filename.includes('-audio');
+      const alternateFilename = isAudioVersion
+        ? filename.replace('-audio', '')
+        : filename.replace(/\.(mp4|webm|mov)$/i, (match) => `-audio${match}`);
+      targets.push(alternateFilename);
+
+      // 3. Associated PNG for the alternate version
+      targets.push(alternateFilename.replace(/\.(mp4|webm|mov)$/i, '.png'));
+    }
 
     let deletedFromLocal = 0;
     let deletedFromComfy = 0;
 
-    if (existsSync(localPath)) {
-      await unlink(localPath);
-      deletedFromLocal = 1;
-    }
+    // Delete all identified targets from both local cache and ComfyUI output
+    for (const target of targets) {
+      const localTarget = path.join(LOCAL_IMAGES_DIR, extractFilename(target));
+      const comfyTarget = subfolder
+        ? path.join(COMFY_OUTPUT_DIR, subfolder, target)
+        : path.join(COMFY_OUTPUT_DIR, target);
 
-    if (existsSync(comfyPath)) {
-      await unlink(comfyPath);
-      deletedFromComfy = 1;
-    }
-
-    if (isVideo) {
-      // Handle associated PNG
-      const pngFilename = filename.replace(/\.(mp4|webm|mov)$/i, '.png');
-      const comfyPngPath = subfolder
-        ? path.join(COMFY_OUTPUT_DIR, subfolder, pngFilename)
-        : path.join(COMFY_OUTPUT_DIR, pngFilename);
-      if (existsSync(comfyPngPath)) {
-        await unlink(comfyPngPath);
-        deletedFromComfy++;
+      try {
+        if (existsSync(localTarget)) {
+          await unlink(localTarget);
+          deletedFromLocal++;
+        }
+      } catch (e) {
+        console.warn(`[DELETE] Failed to delete local file: ${localTarget}`, e);
       }
 
-      // Handle -audio version or non-audio version
-      const isAudioVersion = filename.includes('-audio');
-      const alternateFilename = isAudioVersion 
-        ? filename.replace('-audio', '')
-        : filename.replace(/\.(mp4|webm|mov)$/i, (match) => `-audio${match}`);
-      
-      const alternateLocalPath = path.join(LOCAL_IMAGES_DIR, extractFilename(alternateFilename));
-      const alternateComfyPath = subfolder
-        ? path.join(COMFY_OUTPUT_DIR, subfolder, alternateFilename)
-        : path.join(COMFY_OUTPUT_DIR, alternateFilename);
-
-      if (existsSync(alternateLocalPath)) {
-        await unlink(alternateLocalPath);
-        deletedFromLocal++;
-      }
-      if (existsSync(alternateComfyPath)) {
-        await unlink(alternateComfyPath);
-        deletedFromComfy++;
+      try {
+        if (existsSync(comfyTarget)) {
+          await unlink(comfyTarget);
+          deletedFromComfy++;
+        }
+      } catch (e) {
+        console.warn(`[DELETE] Failed to delete comfy file: ${comfyTarget}`, e);
       }
     }
 
-    return NextResponse.json({ 
-      message: `Deleted video`,
+    return NextResponse.json({
+      message: `Deleted ${isVideo ? 'video and associated files' : 'image'}`,
       details: {
         local: deletedFromLocal,
         comfy: deletedFromComfy

@@ -14,6 +14,7 @@ interface VideoUpscaleDialogProps {
     width?: number;
     height?: number;
   };
+  selectedModel?: string;
   onSuccess: (newVideo: any) => void;
 }
 
@@ -35,7 +36,7 @@ const UPSCALE_MODELS = [
   },
 ];
 
-export default function VideoUpscaleDialog({ isOpen, onClose, video, onSuccess }: VideoUpscaleDialogProps) {
+export default function VideoUpscaleDialog({ isOpen, onClose, video, selectedModel, onSuccess }: VideoUpscaleDialogProps) {
   const [upscaleModel, setUpscaleModel] = useState(UPSCALE_MODELS[0].id);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -44,8 +45,22 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, onSuccess }
   const handleUpscale = async () => {
     setIsProcessing(true);
     const toastId = toast.loading('Initiating upscale...');
-
     try {
+      if (selectedModel) {
+        try {
+          toast.loading("Unloading LM Studio to free VRAM...", { id: toastId });
+          await fetch('/api/lmstudio/unload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: selectedModel }),
+          });
+          // Wait for VRAM to settle
+          await new Promise(r => setTimeout(r, 1000));
+        } catch (err) {
+          console.warn('Unload request failed:', err);
+        }
+      }
+
       toast.loading('Upscaling video... this may take a few minutes', { id: toastId });
 
       const response = await fetch('/api/comfy/upscale', {
@@ -76,7 +91,7 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, onSuccess }
       }
 
       const modelLabel = UPSCALE_MODELS.find(m => m.id === upscaleModel)?.label || upscaleModel;
-      const newRes = "2x Upscale"; // Changed to 2x multiplier
+      const newRes = "4x Upscale"; // Changed to 4x multiplier
 
       const newVideo = {
         id: `upscale_${Date.now()}`,
