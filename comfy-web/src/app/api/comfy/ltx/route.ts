@@ -472,7 +472,7 @@ async function generateLtxVideo(options: {
       tile_size: 512,
       overlap: 64,
       temporal_size: 2048,
-      temporal_overlap: 32,
+      temporal_overlap: 16,
     },
   };
 
