@@ -1016,7 +1016,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                   <input
                     type="range"
                     min="17"
-                    max={activeWorkflow === 'ltx-2.3-i2v' ? 241 : 81}
+                    max={activeWorkflow === 'ltx-2.3-i2v' ? 241 : 129}
                     step="16"
                     value={durationFrames}
                     onChange={(e) => updateWorkspaceState({ durationFrames: parseInt(e.target.value) })}
@@ -1296,7 +1296,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                       ? selectedForDeletion.has(video.id) ? "border-[#c9a87a] ring-2 ring-[#c9a87a]/50" : "border-[#3f3e3a] hover:border-[#5a5550]"
                       : isCombineMode && selectedVideos.includes(video.id) ? 'ring-2 ring-[#c9a87a]' : ''}`}
                   >
-                    {isSelectMode && selectedForDeletion.has(video.id) && (
+                    {isSelectMode && (
                       <div className={`absolute top-2 left-2 z-10 flex h-5 w-5 items-center justify-center rounded-md border-2 transition ${selectedForDeletion.has(video.id)
                         ? "border-[#c9a87a] bg-[#c9a87a]" : "border-white/50 bg-black/30"
                         }`}>

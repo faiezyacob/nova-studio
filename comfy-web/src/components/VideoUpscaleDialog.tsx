@@ -37,8 +37,14 @@ const UPSCALE_MODELS = [
   },
 ];
 
+const SCALE_OPTIONS = [
+  { value: 2, label: '2x' },
+  { value: 4, label: '4x' },
+];
+
 export default function VideoUpscaleDialog({ isOpen, onClose, video, selectedModel, onSuccess }: VideoUpscaleDialogProps) {
   const [upscaleModel, setUpscaleModel] = useState(UPSCALE_MODELS[0].id);
+  const [scale, setScale] = useState(2);
   const [isProcessing, setIsProcessing] = useState(false);
 
   if (!isOpen) return null;
@@ -73,6 +79,7 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, selectedMod
           upscale_model: upscaleModel,
           width: video.width,
           height: video.height,
+          scale,
         }),
       });
 
@@ -92,7 +99,7 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, selectedMod
       }
 
       const modelLabel = UPSCALE_MODELS.find(m => m.id === upscaleModel)?.label || upscaleModel;
-      const newRes = "4x Upscale"; // Changed to 4x multiplier
+      const newRes = `${scale}x Upscale`;
 
       const newVideo = {
         id: `upscale_${Date.now()}`,
@@ -101,8 +108,8 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, selectedMod
         timestamp: Date.now(),
         subfolder: result.subfolder || '',
         resolution: newRes,
-        width: video.width ? video.width * 4 : undefined,
-        height: video.height ? video.height * 4 : undefined,
+        width: video.width ? video.width * scale : undefined,
+        height: video.height ? video.height * scale : undefined,
         thumbnail: video.thumbnail,
       };
 
@@ -169,10 +176,29 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, selectedMod
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
                   <span className="text-[10px] bg-[#c9a87a]/10 px-1.5 py-0.5 rounded text-[#c9a87a] border border-[#c9a87a]/20 font-bold">
-                    {video.width ? video.width * 4 : '?'} × {video.height ? video.height * 4 : '?'}
+                    {video.width ? video.width * scale : '?'} × {video.height ? video.height * scale : '?'}
                   </span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Scale Selection */}
+          <div className="space-y-3">
+            <p className="text-[10px] uppercase tracking-widest text-[#6b6560] font-bold">Scale Factor</p>
+            <div className="flex gap-3">
+              {SCALE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setScale(opt.value)}
+                  className={`flex-1 rounded-xl border py-3 text-sm font-semibold transition ${scale === opt.value
+                    ? 'border-[#c9a87a] bg-[#3a352e] text-[#f2dbc0] ring-1 ring-[#c9a87a]'
+                    : 'border-[#3f3e3a] bg-[#262624] text-[#edeae2] hover:border-[#5a554a] hover:bg-[#2d2d2b]'
+                    }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
           </div>
 

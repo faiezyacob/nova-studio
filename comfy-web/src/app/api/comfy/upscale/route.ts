@@ -11,13 +11,14 @@ const api = new ComfyApi(COMFYUI_URL);
 interface UpscaleOptions {
   filename: string;
   subfolder?: string;
-  upscale_model: string; // This will now represent the quality (ULTRA, HIGH, etc)
+  upscale_model: string;
   width?: number;
   height?: number;
+  scale?: number;
 }
 
 async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: string; video_path: string; subfolder: string }> {
-  const { filename, subfolder, upscale_model, width, height } = options;
+  const { filename, subfolder, upscale_model, width, height, scale = 2 } = options;
 
   // Construct absolute path for VHS_LoadVideo
   const videoPath = subfolder
@@ -44,15 +45,15 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
 
   // Node 2: RTX Video Super Resolution
   // Based on @[workflows/RTX SR Upscaler Video.json]
-  // We use "target dimensions" to allow precise 2x scaling from stored metadata
+  // We use "target dimensions" to allow precise scaling from stored metadata
   nodes["2"] = {
     class_type: "RTXVideoSuperResolution",
     inputs: {
       images: ["1", 0],
       resize_type: "target dimensions",
-      "resize_type.width": width ? width * 4 : 3840,
-      "resize_type.height": height ? height * 4 : 2160,
-      quality: upscale_model.toUpperCase(), // Map model ID to quality string
+      "resize_type.width": width ? width * scale : 3840,
+      "resize_type.height": height ? height * scale : 2160,
+      quality: upscale_model.toUpperCase(),
     }
   };
 
@@ -161,7 +162,7 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    let { filename, subfolder, upscale_model, width, height } = body;
+    let { filename, subfolder, upscale_model, width, height, scale } = body;
 
     if (!filename) {
       return NextResponse.json({ error: 'Filename is required' }, { status: 400 });
@@ -204,6 +205,7 @@ export async function POST(request: NextRequest) {
       upscale_model: upscale_model || 'ultra',
       width,
       height,
+      scale,
     });
 
     return NextResponse.json(result);

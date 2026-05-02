@@ -28,7 +28,7 @@ async function generateLtxVideo(options: {
 
   const nodes: Record<string, any> = {};
 
-  // ── IMAGE UPLOAD (unchanged) ──────────────────────────────────────────────
+  // ── IMAGE UPLOAD ──────────────────────────────────────────────
 
   let imageFilename = "";
 
@@ -93,7 +93,6 @@ async function generateLtxVideo(options: {
     inputs: { unet_name: "ltx-2-3-22b-dev-Q4_K_M.gguf" },
   };
 
-  // SageAttention - unchanged, this is good
   nodes["8"] = {
     class_type: "PathchSageAttentionKJ",
     inputs: {
@@ -102,7 +101,6 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // Torch settings - unchanged, this is good
   nodes["9"] = {
     class_type: "ModelPatchTorchSettings",
     inputs: {
@@ -111,11 +109,6 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // FIX: Single LoRA application at correct strength.
-  // Node 42 was loading the same LoRA again at 1.0 on top of this 0.6,
-  // creating an effective strength of ~1.6 which over-sharpens and
-  // causes ringing artifacts especially on edges and text.
-  // The distilled LoRA is designed to run at 1.0 as a single application.
   nodes["3"] = {
     class_type: "LoraLoaderModelOnly",
     inputs: {
@@ -190,11 +183,6 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // FIX: Match resize to actual latent resolution instead of 1024.
-  // At 1024 the image is larger than the 768x512 latent which means
-  // LTXVPreprocess has to downsample, discarding detail that was never
-  // recoverable in stage 1. Stage 2 spatial upscaler handles the 2x
-  // enlargement so stage 1 input should match stage 1 latent size.
   nodes["21"] = {
     class_type: "ResizeImagesByLongerEdge",
     inputs: {
@@ -203,7 +191,6 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // mode and img_compression unchanged - these are fine as-is
   nodes["22"] = {
     class_type: "LTXVPreprocess",
     inputs: {
@@ -237,7 +224,6 @@ async function generateLtxVideo(options: {
 
   // ── MODEL PATCHING - STAGE 1 ──────────────────────────────────────────────
 
-  // Chunk settings unchanged - these were fine and fast
   nodes["40"] = {
     class_type: "LTXVChunkFeedForward",
     inputs: {
@@ -249,11 +235,6 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // FIX: preview_rate 8 -> 60.
-  // Every preview decodes the TAE VAE mid-step which causes a VRAM spike.
-  // With SageAttention already reducing attention memory, the bottleneck
-  // shifts to these frequent preview decodes. 60 = max allowed = fewest
-  // possible previews without disabling the node entirely.
   nodes["41"] = {
     class_type: "LTX2SamplingPreviewOverride",
     inputs: {
@@ -265,9 +246,6 @@ async function generateLtxVideo(options: {
 
   // ── MODEL PATCHING - STAGE 2 ──────────────────────────────────────────────
 
-  // FIX: Removed node 42 (duplicate LoRA).
-  // Node 43 now references node 3 directly since LoRA is already
-  // correctly applied there at 1.0.
   nodes["43"] = {
     class_type: "LTXVChunkFeedForward",
     inputs: {
@@ -284,8 +262,6 @@ async function generateLtxVideo(options: {
     inputs: {
       model: ["43", 0],
       vae: ["7", 0],
-      // Stage 2 operates on 2x upscaled latent - even more reason
-      // to avoid frequent TAE decodes on 16GB VRAM
       preview_rate: 60,
     },
   };
@@ -297,7 +273,6 @@ async function generateLtxVideo(options: {
     inputs: { noise_seed: seed },
   };
 
-  // Sigmas unchanged - these are correct for the distilled model
   nodes["51"] = {
     class_type: "ManualSigmas",
     inputs: {
@@ -306,10 +281,9 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // Sampler unchanged
   nodes["52"] = {
     class_type: "KSamplerSelect",
-    inputs: { sampler_name: "euler" },
+    inputs: { sampler_name: "euler_ancestral" },
   };
 
   nodes["53"] = {
@@ -318,26 +292,17 @@ async function generateLtxVideo(options: {
       model: ["41", 0],
       positive: ["12", 0],
       negative: ["12", 1],
-      // cfg 1 is intentional for distilled LTX - do not raise this,
-      // the distilled model bakes guidance in during training
       cfg: 1,
     },
   };
 
-  // FIX: strength 0.8 -> 0.65, interpolate false -> true.
-  // strength 0.8 clamps the first frame so rigidly that the model
-  // cannot smoothly transition to frame 1, causing a visible
-  // color/brightness pop on the first frame of every generation.
-  // interpolate: true tells LTXVImgToVideoInplace to blend the
-  // image conditioning across nearby frames rather than hard-clamping
-  // only frame 0, which eliminates the discontinuity.
   nodes["54"] = {
     class_type: "LTXVImgToVideoInplace",
     inputs: {
       vae: ["4", 0],
       image: ["22", 0],
       latent: ["32", 0],
-      strength: 0.75,
+      strength: 0.65,
       interpolate: true,
       bypass: false,
     },
@@ -378,19 +343,13 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // FIX: strength 0.8 -> 0.5, interpolate false -> true.
-  // The upscaled latent from node 58 already has good structure from
-  // stage 1. Re-injecting at 0.8 partially overwrites that structure
-  // with the raw encoded image, fighting the stage 1 result and causing
-  // frame 0 to look different from all other frames in the final video.
-  // 0.5 lets stage 1's motion structure survive into stage 2.
   nodes["59"] = {
     class_type: "LTXVImgToVideoInplace",
     inputs: {
       vae: ["4", 0],
       image: ["22", 0],
       latent: ["58", 0],
-      strength: 0.7,
+      strength: 0.5,
       interpolate: true,
       bypass: false,
     },
@@ -406,7 +365,6 @@ async function generateLtxVideo(options: {
 
   // ── STAGE 2 SAMPLING ──────────────────────────────────────────────────────
 
-  // Sigmas unchanged - correct for stage 2 refinement pass
   nodes["61"] = {
     class_type: "ManualSigmas",
     inputs: {
@@ -414,18 +372,10 @@ async function generateLtxVideo(options: {
     },
   };
 
-  // FIX: Fixed seed 42 -> random seed derived from stage 1 seed.
-  // Using the hardcoded seed 42 for every single generation means
-  // the stage 2 noise pattern is always identical regardless of what
-  // stage 1 produced. When stage 1 generates varied motion, stage 2
-  // always applies the same noise on top, creating a consistent
-  // "fingerprint" artifact pattern visible across all outputs.
-  // Deriving from stage 1 seed keeps it deterministic per-generation
-  // while being unique to each run.
   nodes["65"] = {
     class_type: "RandomNoise",
     inputs: {
-      noise_seed: seed,
+      noise_seed: (seed + 1) % 10000000000000,
     },
   };
 
@@ -462,8 +412,6 @@ async function generateLtxVideo(options: {
     inputs: { av_latent: ["64", 0] },
   };
 
-  // temporal_overlap 8 -> 16: slightly more blending at tile boundaries
-  // reduces the faint horizontal banding sometimes visible in motion
   nodes["71"] = {
     class_type: "VAEDecodeTiled",
     inputs: {
