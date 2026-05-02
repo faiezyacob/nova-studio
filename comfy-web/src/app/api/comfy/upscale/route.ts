@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ComfyApi, PromptBuilder, CallWrapper } from "@saintno/comfyui-sdk";
 import path from 'path';
-import { existsSync } from 'fs';
 
 const COMFYUI_URL = process.env.COMFYUI_URL || "http://127.0.0.1:8188";
 const COMFY_OUTPUT_DIR = path.join(process.cwd(), '..', 'ComfyUI', 'output');
@@ -12,21 +11,18 @@ interface UpscaleOptions {
   filename: string;
   subfolder?: string;
   upscale_model: string;
-  width?: number;
-  height?: number;
-  scale?: number;
 }
 
 async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: string; video_path: string; subfolder: string }> {
-  const { filename, subfolder, upscale_model, width, height, scale = 2 } = options;
+  const { filename, subfolder, upscale_model } = options;
 
   // Construct absolute path for VHS_LoadVideo
-  const videoPath = subfolder
+  const videoPath = subfolder 
     ? path.join(COMFY_OUTPUT_DIR, subfolder, filename)
     : path.join(COMFY_OUTPUT_DIR, filename);
 
   const prefix = `upscale_${Math.floor(Date.now() / 1000)}`;
-
+  
   const nodes: Record<string, any> = {};
 
   // Node 1: Load Video
@@ -35,45 +31,61 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
     inputs: {
       video: videoPath,
       force_rate: 0,
+      force_size: "Disabled",
       custom_width: 0,
       custom_height: 0,
       frame_load_cap: 0,
       skip_first_frames: 0,
       select_every_nth: 1,
+      "choose video to upload": "image",
+      meta_batch: ["2", 0],
     }
   };
 
-  // Node 2: RTX Video Super Resolution
-  // Based on @[workflows/RTX SR Upscaler Video.json]
-  // We use "target dimensions" to allow precise scaling from stored metadata
+  // Node 2: Batch Manager
   nodes["2"] = {
-    class_type: "RTXVideoSuperResolution",
+    class_type: "VHS_BatchManager",
     inputs: {
-      images: ["1", 0],
-      resize_type: "target dimensions",
-      "resize_type.width": width ? width * scale : 3840,
-      "resize_type.height": height ? height * scale : 2160,
-      quality: upscale_model.toUpperCase(),
+      frames_per_batch: 32,
+      count: 0,
     }
   };
 
-  // Node 3: Video Info (to get frame rate)
+  // Node 3: Image Upscale With Model
   nodes["3"] = {
+    class_type: "ImageUpscaleWithModel",
+    inputs: {
+      upscale_model: ["4", 0],
+      image: ["1", 0],
+    }
+  };
+
+  // Node 4: Upscale Model Loader
+  nodes["4"] = {
+    class_type: "UpscaleModelLoader",
+    inputs: {
+      model_name: upscale_model,
+    }
+  };
+
+  // Node 5: Video Info
+  nodes["5"] = {
     class_type: "VHS_VideoInfo",
     inputs: {
       video_info: ["1", 3],
     }
   };
 
-  // Node 4: Video Combine
-  nodes["4"] = {
+  // Node 6: Video Combine
+  nodes["6"] = {
     class_type: "VHS_VideoCombine",
     inputs: {
-      images: ["2", 0],
-      audio: ["1", 2], // Pass audio from loader
-      frame_rate: ["3", 0], // Use original frame rate
+      images: ["3", 0],
+      frame_rate: ["5", 0],
+      width: ["5", 1],
+      height: ["5", 2],
       loop_count: 0,
-      filename_prefix: `Upscale/RTX_SR_${prefix}`,
+      filename_prefix: `video/${prefix}`,
       format: "video/h264-mp4",
       pix_fmt: "yuv420p",
       crf: 19,
@@ -81,66 +93,39 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
       trim_to_audio: false,
       pingpong: false,
       save_output: true,
+      meta_batch: ["2", 0],
     }
   };
 
   return new Promise((resolve, reject) => {
     let resolved = false;
 
-    // Output is from node 4
+    // Output is from node 6
     const builder = new PromptBuilder(nodes as any, [], ["video_path"]);
-    builder.setOutputNode("video_path", "4");
+    builder.setOutputNode("video_path", "6");
 
     const wrapper = new CallWrapper(api, builder);
 
     wrapper.onFinished(async (data: any) => {
       if (resolved) return;
-
+      
       console.log(`[UPSCALE API] ComfyUI reported finished for prefix ${prefix}. Waiting for file...`);
-
-      // 1. Trust the SDK data if it has a filename (especially important for VHS nodes with audio)
-      const outputNode = data?.["4"];
-      const videoData = outputNode?.videos?.[0] ||
-        outputNode?.gifs?.[0] ||
-        (outputNode?.filenames ? { filename: outputNode.filenames[0] } : null);
-
-      console.log(`[UPSCALE API] Output data from node 4:`, videoData);
-
+      
       // Delay to ensure FFmpeg and file combine nodes are fully done
-      // Increased from 10s to 12s for safer high-res muxing
-      await new Promise(resolve => setTimeout(resolve, 12000));
-
+      // Increased to 10s for long videos (>100 frames)
+      await new Promise(resolve => setTimeout(resolve, 10000));
+      
       resolved = true;
-
-      // Fix fallback to include the RTX_SR_ prefix that we defined in filename_prefix
-      let fullFilename = videoData?.filename || `RTX_SR_${prefix}_00001.mp4`;
-
-      // If the filename contains a subfolder (like "Upscale/RTX_SR..."), extract them
-      let videoFile = fullFilename;
-      let videoSubfolder = videoData?.subfolder || "Upscale";
-
-      if (fullFilename.includes('/') || fullFilename.includes('\\')) {
-        const parts = fullFilename.split(/[/\\]/);
-        videoFile = parts.pop() || fullFilename;
-        if (parts.length > 0) {
-          videoSubfolder = parts.join('/');
-        }
-      }
-
-      // VHS_VideoCombine with audio often appends '-audio' to the filename
-      // Check if a version with '-audio' exists and use it instead
-      const audioBasename = videoFile.replace(/\.(mp4|webm|mov)$/i, (match) => `-audio${match}`);
-      const audioPath = path.join(COMFY_OUTPUT_DIR, videoSubfolder, audioBasename);
-
-      console.log(`[UPSCALE API] Checking for audio version at: ${audioPath}`);
-      if (existsSync(audioPath)) {
-        console.log(`[UPSCALE API] Found audio version: ${audioBasename}`);
-        videoFile = audioBasename;
-      } else {
-        console.log(`[UPSCALE API] Audio version not found, using: ${videoFile}`);
-      }
-
-      console.log(`[UPSCALE API] Final result for ${prefix}:`, { videoFile, videoSubfolder });
+      
+      const outputNode = data?.["6"];
+      // VHS_VideoCombine can return filenames in various fields depending on version/format
+      const videoData = outputNode?.videos?.[0] || 
+                        outputNode?.gifs?.[0] || 
+                        (outputNode?.filenames ? { filename: outputNode.filenames[0] } : null);
+      
+      const videoFilename = videoData?.filename || `${prefix}_00001.mp4`;
+      const videoFile = videoFilename.split(/[/\\]/).pop() || videoFilename;
+      const videoSubfolder = videoData?.subfolder || "video";
 
       resolve({
         prompt_id: prefix,
@@ -162,39 +147,10 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    let { filename, subfolder, upscale_model, width, height, scale } = body;
+    const { filename, subfolder, upscale_model } = body;
 
     if (!filename) {
       return NextResponse.json({ error: 'Filename is required' }, { status: 400 });
-    }
-
-    // Fallback: If width/height are missing, try to get them using ffprobe
-    if (!width || !height) {
-      try {
-        const videoPath = subfolder
-          ? path.join(COMFY_OUTPUT_DIR, subfolder, filename)
-          : path.join(COMFY_OUTPUT_DIR, filename);
-
-        console.log(`[UPSCALE API] Dimensions missing, probing: ${videoPath}`);
-        const { execSync } = require('child_process');
-        // Added 5s timeout and better error handling to prevent blocking
-        const ffprobeOutput = execSync(
-          `ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "${videoPath}"`,
-          { timeout: 5000, encoding: 'utf8' }
-        ).toString().trim();
-        const [w, h] = ffprobeOutput.split('x').map(Number);
-
-        if (w && h) {
-          width = w;
-          height = h;
-          console.log(`[UPSCALE API] Probed dimensions: ${width}x${height}`);
-        }
-      } catch (probeError) {
-        console.warn('[UPSCALE API] ffprobe failed or timed out:', probeError);
-        // Fallback to 1080p if probe fails and no dimensions provided
-        width = width || 1920;
-        height = height || 1080;
-      }
     }
 
     await api.init(5, 2000).waitForReady();
@@ -202,10 +158,7 @@ export async function POST(request: NextRequest) {
     const result = await upscaleVideo({
       filename,
       subfolder,
-      upscale_model: upscale_model || 'ultra',
-      width,
-      height,
-      scale,
+      upscale_model: upscale_model || 'RealESRGAN_x2plus.pth',
     });
 
     return NextResponse.json(result);
