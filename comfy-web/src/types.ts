@@ -30,6 +30,9 @@ export interface VideoGalleryItem {
   timestamp: number;
   subfolder?: string;
   resolution?: string;
+  thumbnail?: string;
+  width?: number;
+  height?: number;
 }
 
 export interface HistoryEntry {

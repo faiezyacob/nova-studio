@@ -13,6 +13,7 @@ interface VideoUpscaleDialogProps {
     resolution?: string;
     width?: number;
     height?: number;
+    thumbnail?: string;
   };
   selectedModel?: string;
   onSuccess: (newVideo: any) => void;
@@ -102,6 +103,7 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, selectedMod
         resolution: newRes,
         width: video.width ? video.width * 4 : undefined,
         height: video.height ? video.height * 4 : undefined,
+        thumbnail: video.thumbnail,
       };
 
       onSuccess(newVideo);
@@ -142,11 +144,19 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, selectedMod
           <div className="rounded-xl bg-[#1a1a18] p-3 border border-[#3a3936]">
             <div className="flex items-center gap-4">
               <div className="h-16 w-16 overflow-hidden rounded-lg bg-black shrink-0">
-                <video
-                  src={`/generated/${video.filename}`}
-                  className="h-full w-full object-cover opacity-60"
-                  muted
-                />
+                {video.thumbnail ? (
+                  <img
+                    src={video.thumbnail}
+                    alt=""
+                    className="h-full w-full object-cover opacity-60"
+                  />
+                ) : (
+                  <video
+                    src={`/generated/${video.filename}`}
+                    className="h-full w-full object-cover opacity-60"
+                    muted
+                  />
+                )}
               </div>
               <div className="flex-1 overflow-hidden">
                 <p className="text-xs text-[#6b6560] uppercase tracking-wider mb-1 font-semibold text-[9px]">Source Video</p>

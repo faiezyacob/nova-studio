@@ -337,7 +337,7 @@ async function generateLtxVideo(options: {
       vae: ["4", 0],
       image: ["22", 0],
       latent: ["32", 0],
-      strength: 0.65,
+      strength: 0.75,
       interpolate: true,
       bypass: false,
     },
@@ -390,7 +390,7 @@ async function generateLtxVideo(options: {
       vae: ["4", 0],
       image: ["22", 0],
       latent: ["58", 0],
-      strength: 0.5,
+      strength: 0.7,
       interpolate: true,
       bypass: false,
     },
@@ -425,7 +425,7 @@ async function generateLtxVideo(options: {
   nodes["65"] = {
     class_type: "RandomNoise",
     inputs: {
-      noise_seed: (seed + 1) % 10000000000000,
+      noise_seed: seed,
     },
   };
 

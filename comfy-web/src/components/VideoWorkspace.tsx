@@ -13,6 +13,7 @@ interface VideoGalleryItem {
   resolution?: string;
   width?: number;
   height?: number;
+  thumbnail?: string;
 }
 
 interface VideoWorkspaceProps {
@@ -95,6 +96,8 @@ export default function VideoWorkspace({
   const [isCombineMode, setIsCombineMode] = useState(false);
   const [selectedVideos, setSelectedVideos] = useState<string[]>([]);
   const [isCombining, setIsCombining] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   const WORKFLOW_OPTIONS = [
     { value: 'wan-2.2-i2v', label: 'Wan 2.2 I2V' },
@@ -133,6 +136,13 @@ export default function VideoWorkspace({
       setSelectedModel(availableModels[0]);
     }
   }, [availableModels, selectedModel]);
+
+  useEffect(() => {
+    const maxFrames = activeWorkflow === 'ltx-2.3-i2v' ? 241 : 81;
+    if (durationFrames > maxFrames) {
+      updateWorkspaceState({ durationFrames: maxFrames });
+    }
+  }, [activeWorkflow, durationFrames]);
 
   useEffect(() => {
     if (uploadedImage) {
@@ -615,6 +625,8 @@ Based on the image, write a prompt that describes exactly enough action to reali
         console.warn('Failed to cache video locally', e);
       }
 
+      const thumbnail = await createImageThumbnail(uploadedImage, 320);
+
       const newVideo: VideoGalleryItem = {
         id: result.prompt_id || `video_${Date.now()}`,
         filename: videoFilename,
@@ -624,6 +636,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
         resolution: `${videoSize}p`,
         width: finalWidth,
         height: finalHeight,
+        thumbnail: thumbnail,
       };
 
       console.log('[VIDEO] New video created:', newVideo);
@@ -753,6 +766,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
         resolution: orderedVideos[0]?.resolution, // Assume resolution matches first video
         width: orderedVideos[0]?.width,
         height: orderedVideos[0]?.height,
+        thumbnail: orderedVideos[0]?.thumbnail,
       };
 
       setVideoResult(newVideo);
@@ -957,7 +971,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                   <input
                     type="range"
                     min="17"
-                    max="161"
+                    max={activeWorkflow === 'ltx-2.3-i2v' ? 241 : 81}
                     step="16"
                     value={durationFrames}
                     onChange={(e) => updateWorkspaceState({ durationFrames: parseInt(e.target.value) })}
@@ -980,7 +994,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                   </span>
                 </div>
                 <p className="text-[11px] text-[#6b6560] leading-none">
-                  ~{(durationFrames / (WORKFLOW_FPS[activeWorkflow] || 16)).toFixed(1)}s at {WORKFLOW_FPS[activeWorkflow] || 16}fps (81 frames is optimal)
+                  ~{(durationFrames / (WORKFLOW_FPS[activeWorkflow] || 16)).toFixed(1)}s at {WORKFLOW_FPS[activeWorkflow] || 16}fps ({activeWorkflow === 'ltx-2.3-i2v' ? '241 frames is 10s' : '81 frames is optimal'})
                 </p>
               </div>
             </div>
@@ -1197,7 +1211,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                 )}
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                {videoGallery.map((video) => (
+                {videoGallery.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((video) => (
                   <div
                     key={video.id}
                     onClick={() => isCombineMode ? toggleVideoSelection(video.id) : setVideoResult(video)}
@@ -1218,12 +1232,22 @@ Based on the image, write a prompt that describes exactly enough action to reali
                         </span>
                       </div>
                     )}
-                    <video
-                      src={`/generated/${video.filename}`}
-                      className="h-full w-full object-cover"
-                      muted
-                      preload="metadata"
-                    />
+                    {video.thumbnail ? (
+                      <img
+                        src={video.thumbnail}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <video
+                        src={`/generated/${video.filename}`}
+                        className="h-full w-full object-cover"
+                        muted
+                        preload="none"
+                        poster={video.thumbnail}
+                      />
+                    )}
                     <div className="absolute inset-x-0 top-0 -translate-y-full p-2 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                       <div className="flex items-center justify-end">
                         <div className="flex items-center gap-1">
@@ -1317,6 +1341,45 @@ Based on the image, write a prompt that describes exactly enough action to reali
                   </div>
                 ))}
               </div>
+              
+              {/* Pagination Controls */}
+              {videoGallery.length > itemsPerPage && (
+                <div className="mt-6 flex items-center justify-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#4a4944] bg-[#262624] text-[#bcb6aa] transition hover:border-[#5a554a] hover:text-[#edeae2] disabled:opacity-30"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.ceil(videoGallery.length / itemsPerPage) }).map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentPage(i + 1)}
+                        className={`h-8 w-8 rounded-lg text-xs font-medium transition ${
+                          currentPage === i + 1
+                            ? 'bg-[#c9a87a] text-[#1f1f1d]'
+                            : 'border border-[#4a4944] bg-[#262624] text-[#bcb6aa] hover:border-[#5a554a] hover:text-[#edeae2]'
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(Math.ceil(videoGallery.length / itemsPerPage), p + 1))}
+                    disabled={currentPage === Math.ceil(videoGallery.length / itemsPerPage)}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#4a4944] bg-[#262624] text-[#bcb6aa] transition hover:border-[#5a554a] hover:text-[#edeae2] disabled:opacity-30"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

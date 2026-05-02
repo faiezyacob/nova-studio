@@ -429,10 +429,19 @@ export default function App() {
                             }}
                             className="flex w-full items-center gap-2 rounded-lg border border-transparent px-2 py-1.5 text-left transition hover:border-[#4b4740] hover:bg-[#343330]"
                           >
-                            <video
-                              src={`/generated/${video.filename}`}
-                              className="h-9 w-9 aspect-square rounded object-cover"
-                            />
+                            {video.thumbnail ? (
+                              <img
+                                src={video.thumbnail}
+                                alt=""
+                                className="h-9 w-9 aspect-square rounded object-cover"
+                              />
+                            ) : (
+                              <video
+                                src={`/generated/${video.filename}`}
+                                className="h-9 w-9 aspect-square rounded object-cover"
+                                preload="none"
+                              />
+                            )}
                             <span className="truncate text-xs text-[#cec8bb]">{video.prompt}</span>
                           </button>
                         ))}
