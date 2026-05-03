@@ -259,6 +259,8 @@ export default function ChatWorkspace({
   const sendMessage = async () => {
     if (!chatInput.trim() || !activeSession || isChatLoading) return;
 
+    window.dispatchEvent(new Event('vram-stats-request'));
+
     const userMessage: ChatMessage = {
       id: `msg_${Date.now()}`,
       role: "user",

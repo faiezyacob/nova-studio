@@ -205,6 +205,7 @@ export default function ImageWorkspace({
   const generateImage = async () => {
     if (!prompt.trim()) return;
 
+    window.dispatchEvent(new Event('vram-stats-request'));
     setIsGenerating(true);
 
     try {

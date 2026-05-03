@@ -196,7 +196,7 @@ async function generateLtxVideo(options: {
     inputs: {
       image: ["21", 0],
       mode: 0,
-      img_compression: 1,
+      img_compression: 0,
     },
   };
 
@@ -277,7 +277,7 @@ async function generateLtxVideo(options: {
     class_type: "ManualSigmas",
     inputs: {
       sigmas:
-        "1.0, 0.96, 0.92, 0.88, 0.84, 0.80, 0.72, 0.60, 0.42, 0.24, 0.0",
+        "1., 0.99375, 0.9875, 0.98125, 0.975, 0.909375, 0.725, 0.421875, 0.0",
     },
   };
 
@@ -292,7 +292,7 @@ async function generateLtxVideo(options: {
       model: ["41", 0],
       positive: ["12", 0],
       negative: ["12", 1],
-      cfg: 2.0,
+      cfg: 1,
     },
   };
 
@@ -302,7 +302,7 @@ async function generateLtxVideo(options: {
       vae: ["4", 0],
       image: ["22", 0],
       latent: ["32", 0],
-      strength: 0.75,
+      strength: 0.65,
       interpolate: true,
       bypass: false,
     },
@@ -349,7 +349,7 @@ async function generateLtxVideo(options: {
       vae: ["4", 0],
       image: ["22", 0],
       latent: ["58", 0],
-      strength: 0.7,
+      strength: 0.5,
       interpolate: true,
       bypass: false,
     },
@@ -368,7 +368,7 @@ async function generateLtxVideo(options: {
   nodes["61"] = {
     class_type: "ManualSigmas",
     inputs: {
-      sigmas: "0.85, 0.72, 0.58, 0.42, 0.28, 0.12, 0.0",
+      sigmas: "0.8025, 0.6332, 0.4525, 0.2425, 0.0",
     },
   };
 
@@ -390,7 +390,7 @@ async function generateLtxVideo(options: {
       model: ["44", 0],
       positive: ["12", 0],
       negative: ["12", 1],
-      cfg: 2.0,
+      cfg: 1,
     },
   };
 
@@ -419,8 +419,8 @@ async function generateLtxVideo(options: {
       vae: ["4", 0],
       tile_size: 512,
       overlap: 64,
-      temporal_size: 1024,
-      temporal_overlap: 8,
+      temporal_size: 2048,
+      temporal_overlap: 16,
     },
   };
 

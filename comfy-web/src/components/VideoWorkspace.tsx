@@ -539,6 +539,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
   const generateVideo = async () => {
     if (!uploadedImage || !prompt.trim()) return;
 
+    window.dispatchEvent(new Event('vram-stats-request'));
     setIsGenerating(true);
     setError('');
     setVideoResult(null);

@@ -100,9 +100,22 @@ export default function App() {
   };
 
   useEffect(() => {
-    fetchVramStats();
-    const interval = setInterval(fetchVramStats, 3000);
-    return () => clearInterval(interval);
+    let timeoutIds: NodeJS.Timeout[] = [];
+
+    const handleVramStatsRequest = () => {
+      fetchVramStats();
+      timeoutIds.forEach(clearTimeout);
+      timeoutIds = [
+        setTimeout(fetchVramStats, 2000),
+        setTimeout(fetchVramStats, 5000)
+      ];
+    };
+
+    window.addEventListener('vram-stats-request', handleVramStatsRequest);
+    return () => {
+      window.removeEventListener('vram-stats-request', handleVramStatsRequest);
+      timeoutIds.forEach(clearTimeout);
+    };
   }, []);
 
   const purgeVRAM = async () => {
