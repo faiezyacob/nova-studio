@@ -1,9 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import os from 'os';
 
 const execAsync = promisify(exec);
 const COMFYUI_URL = process.env.COMFYUI_URL || "http://127.0.0.1:8188";
+
+function getRamStats() {
+  const total = os.totalmem();
+  const free = os.freemem();
+  const used = total - free;
+  return {
+    total,
+    used,
+    free,
+    percent: Math.round((used / total) * 100)
+  };
+}
 
 async function getNvidiaStats() {
   try {
@@ -21,7 +34,8 @@ async function getNvidiaStats() {
       used: usedNum * 1024 * 1024,
       free: freeNum * 1024 * 1024,
       percent: Math.round((usedNum / totalNum) * 100),
-      device_name: name
+      device_name: name,
+      ram: getRamStats()
     };
   } catch (e) {
     return null;
@@ -62,7 +76,8 @@ export async function GET() {
       free,
       used,
       percent,
-      device_name: gpu.name
+      device_name: gpu.name,
+      ram: getRamStats()
     });
   } catch (err) {
     return NextResponse.json({ error: 'Failed to connect' }, { status: 500 });

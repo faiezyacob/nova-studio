@@ -384,6 +384,8 @@ After analyzing the image and motion, identify the 3-5 most likely failure modes
 Base failures to always include:
 "blurry, low quality, watermark, overlay, titles, subtitles, flickering, distorted"
 
+Avoid adding "skin imperfections, pimples, pores, texture" unless the user specifically requests it.
+
 Add specific ones based on the scene, for example:
 - Human subject: "morphing face, extra limbs, floating hands, deformed fingers"
 - Outdoor/nature: "static background, frozen trees, unnatural sky"
@@ -629,8 +631,6 @@ Based on the image, write a prompt that describes exactly enough action to reali
         console.warn('Failed to cache video locally', e);
       }
 
-      const thumbnail = await createImageThumbnail(uploadedImage, 320);
-
       const newVideo: VideoGalleryItem = {
         id: result.prompt_id || `video_${Date.now()}`,
         filename: videoFilename,
@@ -640,7 +640,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
         resolution: `${videoSize}p`,
         width: finalWidth,
         height: finalHeight,
-        thumbnail: thumbnail,
+        thumbnail: '',
         noFrames: durationFrames,
       };
 
@@ -697,18 +697,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
   };
 
   const useVideoAsInput = async (video: VideoGalleryItem) => {
-    try {
-      toast.loading('Extracting last frame...', { id: 'extract-frame' });
-      const frameDataUrl = await extractLastFrame(`/generated/${video.filename}`);
-      updateWorkspaceState({
-        uploadedImage: frameDataUrl,
-        uploadedImageName: `frame_${video.filename.replace(/\.[^.]+$/, '.png')}`
-      });
-      toast.success('Last frame extracted. Ready for video generation.', { id: 'extract-frame' });
-    } catch (err) {
-      console.error('Extract failed:', err);
-      toast.error('Failed to extract last frame', { id: 'extract-frame' });
-    }
+    toast.info('Use video as input is disabled', { id: 'extract-frame' });
   };
 
   const toggleCombineMode = () => {

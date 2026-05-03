@@ -65,7 +65,8 @@ export default function App() {
   const [isChatLoading, setIsChatLoading] = useState(false);
 
   const [isPurging, setIsPurging] = useState(false);
-  const [vramStats, setVramStats] = useState<{ used: number; total: number; percent: number } | null>(null);
+  const [isRestarting, setIsRestarting] = useState(false);
+  const [vramStats, setVramStats] = useState<{ used: number; total: number; percent: number, ram?: { used: number; total: number; percent: number } } | null>(null);
   const modeManuallySet = useRef(false);
 
   const [confirmModal, setConfirmModal] = useState<{
@@ -91,7 +92,12 @@ export default function App() {
         setVramStats({
           used: data.used / (1024 ** 3), // B to GB
           total: data.total / (1024 ** 3),
-          percent: data.percent
+          percent: data.percent,
+          ram: data.ram ? {
+            used: data.ram.used / (1024 ** 3),
+            total: data.ram.total / (1024 ** 3),
+            percent: data.ram.percent
+          } : undefined
         });
       }
     } catch {
@@ -100,6 +106,7 @@ export default function App() {
   };
 
   useEffect(() => {
+    fetchVramStats();
     let timeoutIds: NodeJS.Timeout[] = [];
 
     const handleVramStatsRequest = () => {
@@ -141,6 +148,23 @@ export default function App() {
       toast.error("Cleanup failed", { id: "vram-purge" });
     } finally {
       setIsPurging(false);
+    }
+  };
+
+  const restartComfy = async () => {
+    setIsRestarting(true);
+    toast.loading("Restarting ComfyUI...", { id: "comfy-restart" });
+    try {
+      const res = await fetch("/api/comfy/restart", { method: "POST" });
+      if (!res.ok) {
+        throw new Error("Failed to restart");
+      }
+      toast.success("ComfyUI Restarted", { id: "comfy-restart" });
+    } catch (err) {
+      console.error("Restart failed:", err);
+      toast.error("Restart failed", { id: "comfy-restart" });
+    } finally {
+      setIsRestarting(false);
     }
   };
 
@@ -507,22 +531,51 @@ export default function App() {
                 </a>
 
                 {vramStats && (
-                  <div className="mt-4 px-3">
-                    <div className="mb-1.5 flex items-center justify-between text-[10px] uppercase tracking-wider text-[#6b6560]">
-                      <span>VRAM Usage</span>
-                      <span className={vramStats.percent > 85 ? "text-red-400" : "text-[#c9a87a]"}>
-                        {vramStats.used.toFixed(1)} / {vramStats.total.toFixed(1)} GB
-                      </span>
-                    </div>
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#1a1a18]">
-                      <div
-                        className={`h-full transition-all duration-500 ${vramStats.percent > 85 ? "bg-red-500" : "bg-[#c9a87a]"
-                          }`}
-                        style={{ width: `${vramStats.percent}%` }}
-                      />
+                  <div className="mt-4 px-3 space-y-3">
+                    {vramStats.ram && (
+                      <div>
+                        <div className="mb-1.5 flex items-center justify-between text-[10px] uppercase tracking-wider text-[#6b6560]">
+                          <span>RAM Usage</span>
+                          <span className={vramStats.ram.percent > 85 ? "text-red-400" : "text-[#c9a87a]"}>
+                            {vramStats.ram.used.toFixed(1)} / {vramStats.ram.total.toFixed(1)} GB
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#1a1a18]">
+                          <div
+                            className={`h-full transition-all duration-500 ${vramStats.ram.percent > 85 ? "bg-red-500" : "bg-[#c9a87a]"}`}
+                            style={{ width: `${vramStats.ram.percent}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <div>
+                      <div className="mb-1.5 flex items-center justify-between text-[10px] uppercase tracking-wider text-[#6b6560]">
+                        <span>VRAM Usage</span>
+                        <span className={vramStats.percent > 85 ? "text-red-400" : "text-[#c9a87a]"}>
+                          {vramStats.used.toFixed(1)} / {vramStats.total.toFixed(1)} GB
+                        </span>
+                      </div>
+                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#1a1a18]">
+                        <div
+                          className={`h-full transition-all duration-500 ${vramStats.percent > 85 ? "bg-red-500" : "bg-[#c9a87a]"
+                            }`}
+                          style={{ width: `${vramStats.percent}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
+
+                <button
+                  onClick={restartComfy}
+                  disabled={isRestarting}
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-[#4a4944] bg-[#262624] px-3 py-2 text-[11px] font-medium text-[#c9a87a] transition hover:bg-[#2d2d2b] hover:text-[#d8bb92] disabled:opacity-50"
+                >
+                  <svg className={`h-3 w-3 ${isRestarting ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  {isRestarting ? 'Restarting...' : 'Restart ComfyUI'}
+                </button>
 
                 <button
                   onClick={purgeVRAM}

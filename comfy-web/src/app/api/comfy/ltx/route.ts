@@ -90,7 +90,7 @@ async function generateLtxVideo(options: {
 
   nodes["2"] = {
     class_type: "UnetLoaderGGUF",
-    inputs: { unet_name: "ltx-2-3-22b-dev-Q4_K_M.gguf" },
+    inputs: { unet_name: "ltx-2.3-22b-dev-Q5_K_M.gguf" },
   };
 
   nodes["8"] = {
@@ -115,7 +115,7 @@ async function generateLtxVideo(options: {
       model: ["9", 0],
       lora_name:
         "ltx-2.3-22b-distilled-1.1_lora-dynamic_fro09_avg_rank_111_bf16.safetensors",
-      strength_model: 1.0,
+      strength_model: 0.85,
     },
   };
 
@@ -343,6 +343,7 @@ async function generateLtxVideo(options: {
     },
   };
 
+  // Bypass node 59
   nodes["59"] = {
     class_type: "LTXVImgToVideoInplace",
     inputs: {
@@ -358,7 +359,7 @@ async function generateLtxVideo(options: {
   nodes["60"] = {
     class_type: "LTXVConcatAVLatent",
     inputs: {
-      video_latent: ["59", 0],
+      video_latent: ["58", 0],  // ← was ["59", 0], now points directly to LTXVLatentUpsampler
       audio_latent: ["57", 1],
     },
   };

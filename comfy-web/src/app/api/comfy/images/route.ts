@@ -17,7 +17,7 @@ async function waitForFileToBeReady(filePath: string, maxAttempts = 120, delayMs
   let lastSize = 0;
   let stableCount = 0;
   const MIN_VIDEO_SIZE = 100000;
-  
+
   for (let i = 0; i < maxAttempts; i++) {
     try {
       const stats = await stat(filePath);
@@ -65,25 +65,25 @@ export async function GET(request: NextRequest) {
   const imageName = extractFilename(filename);
   const contentType = getContentType(imageName);
   const isVideo = contentType.startsWith('video/');
-  
+
   console.log('[IMAGES] Detected:', { imageName, contentType, isVideo, subfolder });
-  
+
   try {
     // Videos from Wan2.2 are saved in "video/" subfolder in ComfyUI
     // For local storage, we store them directly in public/generated without subfolder
     let effectiveSubfolder = subfolder;
-    
+
     if (isVideo && subfolder === 'video') {
       // Convert "video" subfolder to empty for local storage
       // But still fetch from ComfyUI's video/ subfolder
       effectiveSubfolder = '';
     }
-    
+
     const subfolderParts = effectiveSubfolder ? effectiveSubfolder.split('/').map(s => extractFilename(s)) : [];
     const subfolderPath = subfolderParts.join(path.sep);
     const flatLocalPath = path.join(LOCAL_IMAGES_DIR, extractFilename(imageName));
-    const localPath = subfolderPath 
-      ? path.join(LOCAL_IMAGES_DIR, subfolderPath, imageName) 
+    const localPath = subfolderPath
+      ? path.join(LOCAL_IMAGES_DIR, subfolderPath, imageName)
       : flatLocalPath;
 
     console.log('[IMAGES] Paths:', { localPath, flatLocalPath, subfolder, effectiveSubfolder });
@@ -122,10 +122,10 @@ export async function GET(request: NextRequest) {
 
       console.log('[IMAGES] Found file locally, copying to flat path...');
       const imageBuffer = await readFile(comfyLocalPath);
-      
+
       await ensureDirectory(path.dirname(flatLocalPath));
       await writeFile(flatLocalPath, imageBuffer);
-      
+
       return new NextResponse(imageBuffer, {
         headers: {
           'Content-Type': contentType,
@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
     if (subfolder) {
       comfyUrl.searchParams.append('subfolder', subfolder);
     }
-    
+
     console.log('[IMAGES] Fetching from ComfyUI:', comfyUrl.toString());
     const response = await fetch(comfyUrl.toString());
 
@@ -192,7 +192,7 @@ export async function DELETE(request: NextRequest) {
             const ext = path.extname(file).toLowerCase();
             if (type === 'video' && !videoExts.includes(ext)) return false;
             if (type === 'image' && !imageExts.includes(ext)) return false;
-            
+
             try {
               const fullPath = path.join(LOCAL_IMAGES_DIR, file);
               const stats = await lstat(fullPath);
@@ -211,7 +211,6 @@ export async function DELETE(request: NextRequest) {
       if (type === 'video') {
         const dirsToClear = [
           path.join(COMFY_OUTPUT_DIR, 'video'),
-          path.join(COMFY_OUTPUT_DIR, 'Upscale')
         ];
 
         for (const dir of dirsToClear) {
@@ -241,7 +240,7 @@ export async function DELETE(request: NextRequest) {
             comfyFiles.map(async file => {
               const ext = path.extname(file).toLowerCase();
               if (type === 'image' && !imageExts.includes(ext)) return false;
-              
+
               try {
                 const fullPath = path.join(COMFY_OUTPUT_DIR, file);
                 const stats = await lstat(fullPath);
@@ -257,7 +256,7 @@ export async function DELETE(request: NextRequest) {
         }
       }
 
-      return NextResponse.json({ 
+      return NextResponse.json({
         message: `Cleared ${type || 'library'}`,
         details: {
           local: deletedFromLocal,
