@@ -11,18 +11,22 @@ interface UpscaleOptions {
   filename: string;
   subfolder?: string;
   upscale_model: string;
+  no_frames?: number;
 }
 
 async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: string; video_path: string; subfolder: string }> {
-  const { filename, subfolder, upscale_model } = options;
+  const { filename, subfolder, upscale_model, no_frames } = options;
+
+  const framesToProcess = no_frames || 81;
 
   // Construct absolute path for VHS_LoadVideo
-  const videoPath = subfolder 
+  const videoPath = subfolder
     ? path.join(COMFY_OUTPUT_DIR, subfolder, filename)
     : path.join(COMFY_OUTPUT_DIR, filename);
 
   const prefix = `upscale_${Math.floor(Date.now() / 1000)}`;
-  
+  const FRAMES_PER_BATCH = 32;
+
   const nodes: Record<string, any> = {};
 
   // Node 1: Load Video
@@ -46,7 +50,7 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
   nodes["2"] = {
     class_type: "VHS_BatchManager",
     inputs: {
-      frames_per_batch: 32,
+      frames_per_batch: FRAMES_PER_BATCH,
       count: 0,
     }
   };
@@ -106,23 +110,33 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
 
     const wrapper = new CallWrapper(api, builder);
 
+    // Geet initial timer per batch
+    let startTime = Date.now();
+
     wrapper.onFinished(async (data: any) => {
       if (resolved) return;
-      
+
       console.log(`[UPSCALE API] ComfyUI reported finished for prefix ${prefix}. Waiting for file...`);
-      
+
+      let endTime = Date.now();
+      let duration = endTime - startTime;
+      console.log(`[UPSCALE API] ComfyUI finished first batch in ${duration}ms`);
+
       // Delay to ensure FFmpeg and file combine nodes are fully done
       // Increased to 10s for long videos (>100 frames)
-      await new Promise(resolve => setTimeout(resolve, 10000));
-      
+      let noOfBatches = Math.ceil(framesToProcess / FRAMES_PER_BATCH);
+      let durationToWait = noOfBatches * duration;
+
+      await new Promise(resolve => setTimeout(resolve, durationToWait));
+
       resolved = true;
-      
+
       const outputNode = data?.["6"];
       // VHS_VideoCombine can return filenames in various fields depending on version/format
-      const videoData = outputNode?.videos?.[0] || 
-                        outputNode?.gifs?.[0] || 
-                        (outputNode?.filenames ? { filename: outputNode.filenames[0] } : null);
-      
+      const videoData = outputNode?.videos?.[0] ||
+        outputNode?.gifs?.[0] ||
+        (outputNode?.filenames ? { filename: outputNode.filenames[0] } : null);
+
       const videoFilename = videoData?.filename || `${prefix}_00001.mp4`;
       const videoFile = videoFilename.split(/[/\\]/).pop() || videoFilename;
       const videoSubfolder = videoData?.subfolder || "video";
@@ -147,7 +161,7 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { filename, subfolder, upscale_model } = body;
+    const { filename, subfolder, upscale_model, no_frames } = body;
 
     if (!filename) {
       return NextResponse.json({ error: 'Filename is required' }, { status: 400 });
@@ -159,6 +173,7 @@ export async function POST(request: NextRequest) {
       filename,
       subfolder,
       upscale_model: upscale_model || 'RealESRGAN_x2plus.pth',
+      no_frames,
     });
 
     return NextResponse.json(result);

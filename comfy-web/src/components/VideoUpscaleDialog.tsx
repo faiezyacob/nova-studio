@@ -11,6 +11,7 @@ interface VideoUpscaleDialogProps {
     subfolder?: string;
     prompt: string;
     resolution?: string;
+    noFrames?: number;
   };
   onSuccess: (newVideo: any) => void;
 }
@@ -48,6 +49,7 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, onSuccess }
           filename: video.filename,
           subfolder: video.subfolder || 'video',
           upscale_model: upscaleModel,
+          no_frames: video.noFrames,
         }),
       });
 
