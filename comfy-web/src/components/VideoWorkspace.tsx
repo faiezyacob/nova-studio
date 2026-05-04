@@ -220,7 +220,7 @@ export default function VideoWorkspace({
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
         // Use JPEG with 80% quality → much smaller than PNG
-        resolve(canvas.toDataURL('image/jpeg', 0.8));
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
       };
       img.src = imageUrl;
     });
@@ -602,7 +602,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
           }
 
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          resolve(canvas.toDataURL('image/jpeg', 0.8));
+          resolve(canvas.toDataURL('image/png'));
         }, 100);
       };
 
@@ -613,7 +613,18 @@ Based on the image, write a prompt that describes exactly enough action to reali
   };
 
   const useVideoAsInput = async (video: VideoGalleryItem) => {
-    toast.info('Use video as input is disabled', { id: 'extract-frame' });
+    try {
+      toast.loading('Extracting last frame...', { id: 'extract-frame' });
+      const videoUrl = `/generated/${video.filename}`;
+      const lastFrameDataUrl = await extractLastFrame(videoUrl);
+      const frameFileName = video.filename.replace(/\.[^/.]+$/, '_last_frame.jpg');
+      updateWorkspaceState({ uploadedImage: lastFrameDataUrl, uploadedImageName: frameFileName });
+      setVideoResult(null);
+      toast.success('Last frame set as input', { id: 'extract-frame' });
+    } catch (err) {
+      console.error('Extract frame error:', err);
+      toast.error(err instanceof Error ? err.message : 'Failed to extract frame', { id: 'extract-frame' });
+    }
   };
 
   const toggleCombineMode = () => {
