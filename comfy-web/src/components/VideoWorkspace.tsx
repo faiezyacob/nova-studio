@@ -15,6 +15,7 @@ interface VideoGalleryItem {
   height?: number;
   thumbnail?: string;
   noFrames?: number;
+  model?: string;
 }
 
 interface VideoWorkspaceProps {
@@ -555,6 +556,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
         height: finalHeight,
         thumbnail: thumbnailBase64,
         noFrames: durationFrames,
+        model: activeWorkflow.includes('wan') ? 'WAN' : activeWorkflow.includes('ltx') ? 'LTX' : undefined,
       };
 
       console.log('[VIDEO] New video created:', newVideo);
@@ -675,6 +677,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
         width: orderedVideos[0]?.width,
         height: orderedVideos[0]?.height,
         thumbnail: orderedVideos[0]?.thumbnail,
+        model: orderedVideos[0]?.model,
       };
 
       setVideoResult(newVideo);
@@ -1318,11 +1321,18 @@ Based on the image, write a prompt that describes exactly enough action to reali
                       </div>
                     </div>
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent p-3 pt-12">
-                      {video.resolution && (
-                        <span className="mb-2 inline-block rounded-md border border-[#c9a87a]/20 bg-black/70 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-[#c9a87a] backdrop-blur-sm">
-                          {video.resolution}
-                        </span>
-                      )}
+                      <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                        {video.resolution && (
+                          <span className="inline-block rounded-md border border-[#c9a87a]/20 bg-black/70 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-[#c9a87a] backdrop-blur-sm">
+                            {video.resolution}
+                          </span>
+                        )}
+                        {video.model && (
+                          <span className="inline-block rounded-md border border-[#8b9bb4]/20 bg-black/70 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-[#8b9bb4] backdrop-blur-sm">
+                            {video.model}
+                          </span>
+                        )}
+                      </div>
                       <p className="line-clamp-2 text-[11px] font-medium leading-snug text-[#edeae2] drop-shadow-md opacity-90">
                         {video.prompt}
                       </p>

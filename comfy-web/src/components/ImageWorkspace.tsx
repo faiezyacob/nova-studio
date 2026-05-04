@@ -154,7 +154,7 @@ export default function ImageWorkspace({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const itemsPerPage = 12;
 
-  const pollForResult = async (promptId: string, promptText: string, seed: number) => {
+  const pollForResult = async (promptId: string, promptText: string, seed: number, width: number, height: number) => {
     const maxAttempts = 90;
     let attempts = 0;
 
@@ -175,6 +175,8 @@ export default function ImageWorkspace({
               timestamp: Date.now(),
               style: imageStyle,
               seed: seed,
+              width: width,
+              height: height,
             }));
 
             await Promise.all(
@@ -262,6 +264,8 @@ export default function ImageWorkspace({
           timestamp: Date.now(),
           style: imageStyle,
           seed: generatedSeed,
+          width: finalWidth,
+          height: finalHeight,
         }));
 
         await Promise.all(
@@ -276,7 +280,7 @@ export default function ImageWorkspace({
 
         toast.success("Image ready", { id: "generation" });
       } else {
-        await pollForResult(result.prompt_id, prompt.trim(), generatedSeed);
+        await pollForResult(result.prompt_id, prompt.trim(), generatedSeed, finalWidth, finalHeight);
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Generation failed";

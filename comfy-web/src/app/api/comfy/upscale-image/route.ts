@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ComfyApi, PromptBuilder, CallWrapper } from "@saintno/comfyui-sdk";
 import path from 'path';
+import { existsSync, mkdirSync } from 'fs';
+import { copyFile, unlink } from 'fs/promises';
 
 const COMFYUI_URL = process.env.COMFYUI_URL || "http://127.0.0.1:8188";
 const COMFY_OUTPUT_DIR = path.join(process.cwd(), '..', 'ComfyUI', 'output');
+const LOCAL_GENERATED_DIR = path.join(process.cwd(), 'public', 'generated');
 
 const api = new ComfyApi(COMFYUI_URL);
 
@@ -11,19 +14,22 @@ interface UpscaleOptions {
   filename: string;
   subfolder?: string;
   upscale_model: string;
+  width?: number;
+  height?: number;
+  scale?: number;
 }
 
 async function upscaleImage(options: UpscaleOptions): Promise<{ prompt_id: string; image_path: string; subfolder: string }> {
-  const { filename, subfolder, upscale_model } = options;
+  const { filename, subfolder, upscale_model, width, height, scale = 2 } = options;
 
-  const imagePath = subfolder
-    ? path.join(COMFY_OUTPUT_DIR, subfolder, filename)
-    : path.join(COMFY_OUTPUT_DIR, filename);
+  // Construct absolute path for LoadImage from public/generated
+  const imagePath = path.join(LOCAL_GENERATED_DIR, filename);
 
   const prefix = `upscale_${Math.floor(Date.now() / 1000)}`;
 
   const nodes: Record<string, any> = {};
 
+  // Node 1: Load Image
   nodes["1"] = {
     class_type: "LoadImage",
     inputs: {
@@ -31,25 +37,23 @@ async function upscaleImage(options: UpscaleOptions): Promise<{ prompt_id: strin
     }
   };
 
+  // Node 2: RTX Video Super Resolution
   nodes["2"] = {
-    class_type: "UpscaleModelLoader",
+    class_type: "RTXVideoSuperResolution",
     inputs: {
-      model_name: upscale_model,
+      images: ["1", 0],
+      resize_type: "target dimensions",
+      "resize_type.width": width ? width * scale : 3840,
+      "resize_type.height": height ? height * scale : 2160,
+      quality: upscale_model.toUpperCase(),
     }
   };
 
+  // Node 3: Save Image
   nodes["3"] = {
-    class_type: "ImageUpscaleWithModel",
-    inputs: {
-      upscale_model: ["2", 0],
-      image: ["1", 0],
-    }
-  };
-
-  nodes["4"] = {
     class_type: "SaveImage",
     inputs: {
-      images: ["3", 0],
+      images: ["2", 0],
       filename_prefix: prefix,
     }
   };
@@ -57,25 +61,69 @@ async function upscaleImage(options: UpscaleOptions): Promise<{ prompt_id: strin
   return new Promise((resolve, reject) => {
     let resolved = false;
 
+    // Output is from node 3
     const builder = new PromptBuilder(nodes as any, [], ["image"]);
-    builder.setOutputNode("image", "4");
+    builder.setOutputNode("image", "3");
 
     const wrapper = new CallWrapper(api, builder);
 
     wrapper.onFinished(async (data: any) => {
       if (resolved) return;
+
+      console.log(`[UPSCALE IMAGE API] ComfyUI reported finished for prefix ${prefix}. Waiting for file...`);
+
+      const outputNode = data?.["3"];
+      const imageData = outputNode?.images?.[0] || (outputNode?.filenames ? { filename: outputNode.filenames[0] } : null);
+
+      console.log(`[UPSCALE IMAGE API] Output data from node 3:`, imageData);
+
+      // Short delay for image file saving
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
       resolved = true;
 
-      const outputNode = data?.["4"];
-      const imageData = outputNode?.images?.[0] || outputNode?.filenames?.[0];
+      let fullFilename = imageData?.filename || `${prefix}_00001_.png`;
 
-      const imageFilename = imageData?.filename || `${prefix}_00001_.png`;
-      const imageFile = imageFilename.split(/[/\\]/).pop() || imageFilename;
+      let imageFile = fullFilename;
+      let imageSubfolder = imageData?.subfolder || "";
+
+      if (fullFilename.includes('/') || fullFilename.includes('\\')) {
+        const parts = fullFilename.split(/[/\\]/);
+        imageFile = parts.pop() || fullFilename;
+        if (parts.length > 0) {
+          imageSubfolder = parts.join('/');
+        }
+      }
+
+      console.log(`[UPSCALE IMAGE API] Final result for ${prefix}:`, { imageFile, imageSubfolder });
+
+      let sourcePath = path.join(COMFY_OUTPUT_DIR, imageSubfolder, imageFile);
+      if (!existsSync(sourcePath)) {
+        sourcePath = path.join(COMFY_OUTPUT_DIR, imageFile);
+      }
+      const destPath = path.join(LOCAL_GENERATED_DIR, imageFile);
+
+      try {
+        if (existsSync(sourcePath)) {
+          if (!existsSync(LOCAL_GENERATED_DIR)) {
+            mkdirSync(LOCAL_GENERATED_DIR, { recursive: true });
+          }
+          await copyFile(sourcePath, destPath);
+          console.log(`[UPSCALE IMAGE API] Copied to public/generated: ${destPath}`);
+
+          await unlink(sourcePath);
+          console.log(`[UPSCALE IMAGE API] Deleted from ComfyUI: ${sourcePath}`);
+        } else {
+          console.log(`[UPSCALE IMAGE API] Source file not found: ${sourcePath}`);
+        }
+      } catch (copyError) {
+        console.warn('[UPSCALE IMAGE API] Failed to copy/delete:', copyError);
+      }
 
       resolve({
         prompt_id: prefix,
         image_path: imageFile,
-        subfolder: '',
+        subfolder: imageSubfolder,
       });
     });
 
@@ -92,10 +140,34 @@ async function upscaleImage(options: UpscaleOptions): Promise<{ prompt_id: strin
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { filename, subfolder, upscale_model } = body;
+    let { filename, subfolder, upscale_model, width, height, scale } = body;
 
     if (!filename) {
       return NextResponse.json({ error: 'Filename is required' }, { status: 400 });
+    }
+
+    if (!width || !height) {
+      try {
+        const imagePath = path.join(LOCAL_GENERATED_DIR, filename);
+
+        console.log(`[UPSCALE IMAGE API] Dimensions missing, probing: ${imagePath}`);
+        const { execSync } = require('child_process');
+        const ffprobeOutput = execSync(
+          `ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "${imagePath}"`,
+          { timeout: 5000, encoding: 'utf8' }
+        ).toString().trim();
+        const [w, h] = ffprobeOutput.split('x').map(Number);
+
+        if (w && h) {
+          width = w;
+          height = h;
+          console.log(`[UPSCALE IMAGE API] Probed dimensions: ${width}x${height}`);
+        }
+      } catch (probeError) {
+        console.warn('[UPSCALE IMAGE API] ffprobe failed or timed out:', probeError);
+        width = width || 1920;
+        height = height || 1080;
+      }
     }
 
     await api.init(5, 2000).waitForReady();
@@ -103,7 +175,10 @@ export async function POST(request: NextRequest) {
     const result = await upscaleImage({
       filename,
       subfolder,
-      upscale_model: upscale_model || 'RealESRGAN_x2plus.pth',
+      upscale_model: upscale_model || 'ultra',
+      width,
+      height,
+      scale,
     });
 
     return NextResponse.json(result);

@@ -21,6 +21,8 @@ export interface GalleryItem {
   style: string;
   seed?: number;
   hidden?: boolean;
+  width?: number;
+  height?: number;
 }
 
 export interface VideoGalleryItem {

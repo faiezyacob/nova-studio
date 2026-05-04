@@ -11,25 +11,39 @@ interface ImageUpscaleDialogProps {
     filename: string;
     subfolder?: string;
     prompt: string;
+    width?: number;
+    height?: number;
   };
+  selectedModel?: string;
   onSuccess: (newImage: GalleryItem) => void;
 }
 
 const UPSCALE_MODELS = [
   {
-    id: 'RealESRGAN_x2plus.pth',
-    label: 'RealESRGAN x2+',
-    desc: 'Faster, 2x enlargement. Great for moderate resolution increases.'
+    id: 'ultra',
+    label: 'RTX Video SR (Ultra)',
+    desc: 'Highest quality NVIDIA AI enhancement. Best for 4K output.'
   },
   {
-    id: 'RealESRGAN_x4plus.safetensors',
-    label: 'RealESRGAN x4+',
-    desc: 'Highest quality, 4x enlargement. Best for low-res sources.'
+    id: 'high',
+    label: 'RTX Video SR (High)',
+    desc: 'Professional grade upscaling with excellent detail retention.'
+  },
+  {
+    id: 'medium',
+    label: 'RTX Video SR (Medium)',
+    desc: 'Faster processing while still providing AI sharpening.'
   },
 ];
 
-export default function ImageUpscaleDialog({ isOpen, onClose, image, onSuccess }: ImageUpscaleDialogProps) {
+const SCALE_OPTIONS = [
+  { value: 2, label: '2x' },
+  { value: 4, label: '4x' },
+];
+
+export default function ImageUpscaleDialog({ isOpen, onClose, image, selectedModel, onSuccess }: ImageUpscaleDialogProps) {
   const [upscaleModel, setUpscaleModel] = useState(UPSCALE_MODELS[0].id);
+  const [scale, setScale] = useState(2);
   const [isProcessing, setIsProcessing] = useState(false);
 
   if (!isOpen) return null;
@@ -39,6 +53,23 @@ export default function ImageUpscaleDialog({ isOpen, onClose, image, onSuccess }
     const toastId = toast.loading('Initiating upscale...');
 
     try {
+      if (selectedModel) {
+        try {
+          toast.loading("Unloading LM Studio to free VRAM...", { id: toastId });
+          await fetch('/api/lmstudio/unload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: selectedModel }),
+          });
+          // Wait for VRAM to settle
+          await new Promise(r => setTimeout(r, 1000));
+        } catch (err) {
+          console.warn('Unload request failed:', err);
+        }
+      }
+
+      toast.loading('Upscaling image... this may take a moment', { id: toastId });
+
       const response = await fetch('/api/comfy/upscale-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -46,6 +77,9 @@ export default function ImageUpscaleDialog({ isOpen, onClose, image, onSuccess }
           filename: image.filename,
           subfolder: image.subfolder || '',
           upscale_model: upscaleModel,
+          width: image.width,
+          height: image.height,
+          scale,
         }),
       });
 
@@ -55,17 +89,17 @@ export default function ImageUpscaleDialog({ isOpen, onClose, image, onSuccess }
       }
 
       const result = await response.json();
-      toast.loading('Upscaling image...', { id: toastId });
 
-      try {
-        const cacheUrl = `/api/comfy/images?filename=${encodeURIComponent(result.image_path)}&subfolder=${encodeURIComponent(result.subfolder || '')}`;
-        await fetch(cacheUrl);
-      } catch (e) {
-        console.warn('Failed to cache upscaled image', e);
-      }
+      // try {
+      //   const cacheUrl = `/api/comfy/images?filename=${encodeURIComponent(result.image_path)}&subfolder=${encodeURIComponent(result.subfolder || '')}`;
+      //   await fetch(cacheUrl);
+      // } catch (e) {
+      //   console.warn('Failed to cache upscaled image', e);
+      // }
 
       const modelLabel = UPSCALE_MODELS.find(m => m.id === upscaleModel)?.label || upscaleModel;
       const newImage: GalleryItem = {
+        id: `upscale_${Date.now()}`,
         filename: result.image_path,
         prompt: `[${modelLabel}] ${image.prompt}`,
         timestamp: Date.now(),
@@ -75,8 +109,8 @@ export default function ImageUpscaleDialog({ isOpen, onClose, image, onSuccess }
       onSuccess(newImage);
       toast.success('Upscale complete!', { id: toastId });
       onClose();
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Upscale failed', { id: toastId });
+    } catch (err: any) {
+      toast.error(err.message || 'Upscale failed', { id: toastId });
     } finally {
       setIsProcessing(false);
       window.dispatchEvent(new Event('vram-stats-request'));
@@ -91,6 +125,7 @@ export default function ImageUpscaleDialog({ isOpen, onClose, image, onSuccess }
       />
 
       <div className="relative w-full max-w-lg overflow-hidden rounded-[24px] border border-[#3f3e3a] bg-[#2a2a28] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+        {/* Header */}
         <div className="border-b border-[#3a3936] bg-[#2f2f2d] px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#c9a87a]/10 text-[#c9a87a]">
@@ -106,6 +141,7 @@ export default function ImageUpscaleDialog({ isOpen, onClose, image, onSuccess }
         </div>
 
         <div className="p-6 space-y-6">
+          {/* Source Image Preview */}
           <div className="rounded-xl bg-[#1a1a18] p-3 border border-[#3a3936]">
             <div className="flex items-center gap-4">
               <div className="h-16 w-16 overflow-hidden rounded-lg bg-black shrink-0">
@@ -118,10 +154,41 @@ export default function ImageUpscaleDialog({ isOpen, onClose, image, onSuccess }
               <div className="flex-1 overflow-hidden">
                 <p className="text-[9px] uppercase tracking-wider mb-1 font-semibold text-[#6b6560]">Source Image</p>
                 <p className="text-sm text-[#bcb6aa] truncate">{image.prompt}</p>
+                <div className="mt-1 flex items-center gap-2">
+                  <span className="text-[10px] bg-[#1f1f1d] px-1.5 py-0.5 rounded text-[#9f988c] border border-[#3a3936]">
+                    {image.width || '?'} × {image.height || '?'}
+                  </span>
+                  <svg className="h-3 w-3 text-[#6b6560]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                  <span className="text-[10px] bg-[#c9a87a]/10 px-1.5 py-0.5 rounded text-[#c9a87a] border border-[#c9a87a]/20 font-bold">
+                    {image.width ? image.width * scale : '?'} × {image.height ? image.height * scale : '?'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
+          {/* Scale Selection */}
+          <div className="space-y-3">
+            <p className="text-[10px] uppercase tracking-widest text-[#6b6560] font-bold">Scale Factor</p>
+            <div className="flex gap-3">
+              {SCALE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setScale(opt.value)}
+                  className={`flex-1 rounded-xl border py-3 text-sm font-semibold transition ${scale === opt.value
+                    ? 'border-[#c9a87a] bg-[#3a352e] text-[#f2dbc0] ring-1 ring-[#c9a87a]'
+                    : 'border-[#3f3e3a] bg-[#262624] text-[#edeae2] hover:border-[#5a554a] hover:bg-[#2d2d2b]'
+                    }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Model Selection */}
           <div className="space-y-3">
             <p className="text-[10px] uppercase tracking-widest text-[#6b6560] font-bold">Upscale Model</p>
             <div className="grid grid-cols-1 gap-3">
@@ -154,8 +221,24 @@ export default function ImageUpscaleDialog({ isOpen, onClose, image, onSuccess }
               ))}
             </div>
           </div>
+
+          {/* Disclaimer */}
+          <div className="rounded-xl border border-[#eab308]/30 bg-[#eab308]/10 p-4">
+            <div className="flex gap-3">
+              <svg className="h-5 w-5 shrink-0 text-[#eab308]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-[#edeae2]">High Memory Usage</p>
+                <p className="text-xs leading-relaxed text-[#9f988c]">
+                  It's not recommended to run Image Upscale simultaneously as this will cause RAM spike and system crash. Please release the memory first by clicking Clean All Memory.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
+        {/* Footer */}
         <div className="flex items-center justify-end gap-3 border-t border-[#3a3936] bg-[#2f2f2d] px-6 py-4">
           <button
             onClick={onClose}
