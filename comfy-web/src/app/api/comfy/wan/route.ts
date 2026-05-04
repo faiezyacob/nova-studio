@@ -327,7 +327,7 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
     class_type: "CreateVideo",
     inputs: {
       images: ["70", 0],
-      fps: 24,
+      fps: 16,
     },
   };
 

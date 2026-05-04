@@ -385,6 +385,7 @@ export default function ChatWorkspace({
       );
     } finally {
       setIsChatLoading(false);
+      window.dispatchEvent(new Event('vram-stats-request'));
     }
   };
 

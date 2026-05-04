@@ -79,6 +79,7 @@ export default function ImageUpscaleDialog({ isOpen, onClose, image, onSuccess }
       toast.error(err instanceof Error ? err.message : 'Upscale failed', { id: toastId });
     } finally {
       setIsProcessing(false);
+      window.dispatchEvent(new Event('vram-stats-request'));
     }
   };
 

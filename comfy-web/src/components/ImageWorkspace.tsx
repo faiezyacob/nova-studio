@@ -283,6 +283,7 @@ export default function ImageWorkspace({
       toast.error(message, { id: "generation" });
     } finally {
       setIsGenerating(false);
+      window.dispatchEvent(new Event('vram-stats-request'));
     }
   };
 
@@ -356,6 +357,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
       toast.error(err instanceof Error ? err.message : "Failed to enhance prompt");
     } finally {
       setIsEnhancing(false);
+      window.dispatchEvent(new Event('vram-stats-request'));
     }
   };
 

@@ -108,7 +108,7 @@ export default function VideoWorkspace({
   ];
 
   const WORKFLOW_FPS: Record<string, number> = {
-    'wan-2.2-i2v': 24,
+    'wan-2.2-i2v': 16,
     'ltx-2.3-i2v': 24,
   };
 
@@ -257,156 +257,68 @@ export default function VideoWorkspace({
 
       const isLTX = activeWorkflow === 'ltx-2.3-i2v';
 
-      const ltxSystemPrompt = `You are an expert prompt engineer for LTX 2.3 Image-to-Video (I2V) generation.
+      const ltxSystemPrompt = `You are an expert prompt engineer for LTX 2.3 Image-to-Video (I2V) generation, specialized in creating highly seductive, sensual, and cinematic results.
 
 You will receive:
-- An input image (the exact first frame of the video)
-- A raw user prompt describing desired motion
-- A target duration in seconds
+- An input image (exact first frame)
+- A raw user prompt
+- Target duration in seconds
 - Output resolution
 
-Your job:
-Generate a [VISUAL] motion description and [SOUNDS] audio description optimized for LTX 2.3's two-stage pipeline (stage 1 generates motion structure, stage 2 refines detail at 2x resolution).
+Your goal: Create a rich, seductive motion prompt that feels premium and visually captivating.
 
 ══════════════════════════════════════
 SECTION 1 — [VISUAL] RULES
 ══════════════════════════════════════
 
-STRUCTURE:
-Write one continuous paragraph. No bullet points, no numbered steps.
+Write **one continuous, highly descriptive paragraph**.
 
-FIRST SENTENCE — IMAGE ANCHOR (critical):
-- Must describe EXACTLY what is visible in the image
-- Match: subject position, pose, expression, lighting, background, clothing
-- Do NOT invent or alter anything from the first frame
-- This anchors the model to frame 0 and prevents first-frame artifacts
+**FIRST SENTENCE — PERFECT IMAGE ANCHOR** (Critical):
+Describe exactly what is visible in the input image: subject’s appearance, exact pose, expression, clothing, lighting, background, and framing. Do not add or change anything.
 
-MOTION LANGUAGE:
-- Use present continuous tense: "is turning", "continues rising", "slowly shifts"
-- Use gradual transition words: "begins to", "gradually", "subtly", "continues", "eases into"
-- Avoid: "suddenly", "quickly", "instantly", "snaps to"
+**MOTION STYLE**:
+- Use slow, sensual, seductive movements.
+- Heavy emphasis on eye contact, lip biting, hair movement, body sways, breathing, hand tracing on skin/curves.
+- Use words like: slowly, sensually, teasingly, seductively, breathy, languid, provocatively, intimately.
+- Maintain strong direct gaze at camera when possible.
 
-MOTION SCALE BY DURATION:
-- Under 2s: micro-movements only (breath, eye blink, hair settle, subtle sway)
-- 2-4s: single small action (head turn, hand raise, weight shift)
-- 4-6s: one full action with follow-through (standing up, picking something up)
-- 6s+: action with natural continuation into next beat
+**DIALOGUE / SPEECH** (Very Important):
+If the user wants dialogue:
+- Include the **exact words** said by the subject.
+- Use timestamp-style guidance for timing (e.g. "at 2 seconds", "while saying...", "as she whispers at the 4-second mark").
+- Describe lip movement, jaw motion, facial expression changes, and breath before/after speaking.
 
-CONTINUITY (most important for seamless looping/chaining):
-- The motion must feel ONGOING at the final frame, not completed
-- Never end with: action completed, subject idle, resting pose reached
-- Always end mid-motion or with motion that implies continuation
-
-Bad: "She places her hand on the table and stops"
-Good: "Her hand continues lowering toward the table, fingers beginning to spread as it nears the surface"
-
-PHYSICAL REALISM:
-- Respect inertia: objects slow before stopping, accelerate before moving fast
-- Clothing, hair, and soft objects lag slightly behind body movement
-- Eyes blink naturally during longer sequences
-
-FORBIDDEN:
-- Camera movement language (pan, zoom, dolly, rack focus, cut)
-- Cinematic terms (establishing shot, close-up, tracking)
-- Time references ("over 3 seconds", "at the 2 second mark")
-- Metaphors or emotional interpretation ("radiating confidence")
-- Completing the action fully unless duration is very long (6s+)
+**CONTINUITY**:
+End the motion mid-action or with subtle ongoing movement so it feels alive and loopable.
 
 ══════════════════════════════════════
-SECTION 2 — [SOUNDS] RULES  
+SECTION 2 — [SOUNDS] RULES
 ══════════════════════════════════════
 
-LTX 2.3 has dedicated audio conditioning that directly affects video temporal consistency.
-Better sound descriptions = more coherent motion timing.
+One paragraph, 2-4 sentences.
 
-STRUCTURE: One paragraph, 2-3 sentences.
+Include:
+1. Voice (tone: breathy, husky, seductive, whispering, sultry)
+2. Subject sounds (fabric rustle, breathing, lip sounds, skin contact)
+3. Ambient/room tone
 
-LAYER ORDER (always include all three):
-1. Environment/ambient: the acoustic space (room, outdoor, indoor, crowd noise, silence)
-2. Subject sounds: sounds the subject's motion creates (fabric, footsteps, breath, object handling)
-3. Texture/detail: subtle ongoing sounds that establish rhythm (HVAC hum, distant traffic, wind)
-
-MATCHING SOUNDS TO MOTION:
-- Slow motion = quieter, more ambient-heavy
-- Fast motion = more distinct impact/movement sounds
-- Static subject = pure ambient with very subtle body sounds (breath, slight cloth shift)
-
-FORBIDDEN in SOUNDS:
-- Music or musical instruments (unless explicitly in the scene)
-- Dramatic sound effects not implied by the image
-- Emotional sound descriptors ("tense silence", "peaceful ambiance")
-
-══════════════════════════════════════
-SPEECH AND DIALOGUE RULES
-══════════════════════════════════════
-
-If the user's prompt contains spoken words, dialogue, or implies the subject is speaking:
-
-ALWAYS include the exact dialogue in the [VISUAL] section using this format:
-  She says, "[exact words here]"
-  or
-  He speaks the words, "[exact words here]"
-
-PLACEMENT:
-- Place the dialogue line at the moment in the motion when the speech occurs
-- If the clip is short, the speech starts near the beginning
-- Never paraphrase or summarize — preserve the user's exact intended words
-
-SPEECH MOTION:
-Describe the physical speech motion alongside the dialogue:
-- Lip movement, jaw motion, breath before speaking
-- Natural facial expression shifts during speech
-- Eye contact changes (direct to camera = addressing viewer)
-
-EXAMPLE:
-
-User prompt: "woman saying hello everyone welcome to my channel"
-
-Bad (paraphrased, no dialogue):
-"Her lips begin to move as she addresses the camera, forming words with subtle facial shifts."
-
-Good (exact dialogue preserved):
-"She looks directly into the camera with a warm expression and says, 'Hello everyone, welcome to my channel,' 
-her lips moving clearly with each word, her jaw dropping naturally on the open vowels, 
-a slight smile returning between phrases as she holds the product toward the lens."
-
-SOUNDS for speech scenes:
-- Lead with the voice as the PRIMARY sound, not ambient
-- Describe voice tone/quality: clear, warm, enthusiastic, soft, firm
-- Ambient comes second as background context
-
-══════════════════════════════════════
-SECTION 3 — NEGATIVE PROMPT
-══════════════════════════════════════
-
-After analyzing the image and motion, identify the 3-5 most likely failure modes for this specific generation and add them to the negative prompt.
-
-Base failures to always include:
-"blurry, low quality, watermark, overlay, titles, subtitles, flickering, distorted"
-
-Avoid adding "skin imperfections, pimples, pores, texture" unless the user specifically requests it.
-
-Add specific ones based on the scene, for example:
-- Human subject: "morphing face, extra limbs, floating hands, deformed fingers"
-- Outdoor/nature: "static background, frozen trees, unnatural sky"
-- Object interaction: "object clipping, physics violation, teleporting object"
-- Camera-fixed scene: "camera shake, unwanted zoom, scene cut"
+Make voice the dominant sound when dialogue is present.
 
 ══════════════════════════════════════
 OUTPUT FORMAT — STRICT
 ══════════════════════════════════════
 
-Return ONLY this exact structure inside the tags. No explanation, no commentary.
+Return ONLY this exact structure:
 
 <prompt>
 [VISUAL]:
-{one continuous paragraph}
+One flowing, detailed paragraph starting with exact image description, then seductive motion + exact dialogue with timing.
 
 [SOUNDS]:
-{one paragraph, 2-3 sentences}
+One paragraph describing voice, body sounds, and ambient.
 
 [NEGATIVE]:
-{comma separated terms}
+comma,separated,terms
 </prompt>`;
 
       const wanSystemPrompt = `You are an expert prompt engineer for Wan 2.2 Image-to-Video (I2V) generation. 
@@ -429,12 +341,10 @@ Return ONLY the final optimized prompt inside <prompt></prompt> tags.`;
       const ltxUserPrompt = `User's raw prompt: "${prompt}"
 Target duration: ${durationSeconds} seconds
 Output resolution: ${resolutionContext}
-          ${prompt.match(/["']|saying|says|speaks|shouts|whispers|tells/i)
-          ? `\n⚠️ SPEECH DETECTED: The user's prompt contains dialogue or speaking intent.\nYou MUST include the exact spoken words in the [VISUAL] section using the speech format.\nDo NOT paraphrase or omit the dialogue.\n`
-          : ''
-        }
-Analyze the image carefully — the subject's exact pose, expression, lighting, and environment.
-Then write the [VISUAL], [SOUNDS], and [NEGATIVE] sections describing motion that fills this duration naturally without completing the action.`;
+
+Analyze the image carefully (pose, expression, clothing, lighting).
+Create a highly seductive version of the requested motion.
+If dialogue is requested, integrate the exact spoken words with natural timing.`;
       const wanUserPrompt = `User's raw prompt: "${prompt}"
 Target Video Duration: ${durationSeconds} seconds.
 
@@ -535,6 +445,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
       toast.error(message);
     } finally {
       setIsEnhancing(false);
+      window.dispatchEvent(new Event('vram-stats-request'));
     }
   };
 
@@ -631,6 +542,8 @@ Based on the image, write a prompt that describes exactly enough action to reali
         console.warn('Failed to cache video locally', e);
       }
 
+      const thumbnailBase64 = await createImageThumbnail(uploadedImage, 400);
+
       const newVideo: VideoGalleryItem = {
         id: result.prompt_id || `video_${Date.now()}`,
         filename: videoFilename,
@@ -640,7 +553,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
         resolution: `${videoSize}p`,
         width: finalWidth,
         height: finalHeight,
-        thumbnail: '',
+        thumbnail: thumbnailBase64,
         noFrames: durationFrames,
       };
 
@@ -659,6 +572,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
       toast.error(err instanceof Error ? err.message : 'Generation failed', { id: 'video-gen' });
     } finally {
       setIsGenerating(false);
+      window.dispatchEvent(new Event('vram-stats-request'));
     }
   };
 
@@ -778,6 +692,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
       toast.error(err instanceof Error ? err.message : 'Failed to combine videos', { id: 'combine' });
     } finally {
       setIsCombining(false);
+      window.dispatchEvent(new Event('vram-stats-request'));
     }
   };
 
