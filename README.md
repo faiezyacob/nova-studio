@@ -33,9 +33,53 @@ npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## Enhance Prompt Guide
+
+### Enhance prompt for image gen
+- **Recommended:** `gemma-4-26b-a4b-it-heretic-ara`
+- **For low VRAM:** `qwen3.5-9b-uncensored-hauhaucs-aggressive`
+
+### Enhance prompt for video gen
+- **Recommended:** `gemma-4-26b-a4b-it-heretic-ara`
+- **For low VRAM:** `qwen3.5-9b-uncensored-hauhaucs-aggressive`
+- **NOTE**: For video generation it is required to use model that supports vision
+
+## 🖼️ Image Generation Guide
+
+### 1. Generating Images
+1. Navigate to the **Image Workspace**.
+2. Enter a descriptive prompt for the image you want to create.
+3. Click **Generate Image**.
+4. Once generated, the image will appear in the gallery.
+
+### 2. Using LoRAs for Style Transfer
+Nova Studio supports LoRAs for applying different artistic styles to your images.
+
+1. In the Image Workspace, locate the **LoRA** dropdown (this is hardcoded inside code you may need to update `src/components/ImageWorkspace.tsx` file to include new LoRAs) and LoRAs must be placed inside `ComfyUI/models/loras` folder.
+2. Select one of the available LoRAs (e.g., `zimage_anadearmas`, etc.).
+3. Adjust the LoRA weight if needed (default is typically 1.0).
+4. Generate your image with the selected style applied.
+
+### 3. Upscaling Images
+To increase the resolution of your generated images:
+
+1. Generate or select an image in the **Image Workspace**.
+2. Click the **Upscale** button on the image.
+3. Select the scale factor (x2 or x4).
+4. Select upcale model RTX Video SR (Ultra), RTX Video SR (High) or RTX Video SR (Medium)
+5. Click **Upscale** to process the image.
+
 ## 🎥 Video Generation Guide
 
-### 1. Generating Continuation Videos (First Frame to Next)
+### 1. Generating Video From Image
+1. Generate or import an image in the **Image Workspace**.
+2. Click the **"Use for Video"** button on the image.
+3. Navigate to the **Video Workspace**
+4. The image will appear as the input image.
+5. Or you can upload an image manually
+5. Add a descriptive prompt for the video and generate.
+
+### 2. Generating Continuation Videos (First Frame to Next)
 Nova Studio allows you to create seamless video continuations by using the last frame of a generated video as the starting point for the next one.
 
 1.  Generate a video in the **Video Workspace**.
@@ -43,7 +87,7 @@ Nova Studio allows you to create seamless video continuations by using the last 
 3.  The application will automatically extract the **last frame** of that video and set it as the input image for your next generation.
 4.  Modify your prompt to describe the next sequence of action and click **Generate Video**.
 
-### 2. Combining Videos
+### 3. Combining Videos
 Once you have generated multiple segments of a video, you can stitch them together directly in the app.
 
 1.  Click the **"Combine Mode"** button in the Video Gallery.
@@ -54,18 +98,18 @@ Once you have generated multiple segments of a video, you can stitch them togeth
 > [!NOTE]
 > **FFmpeg** must be installed and available in your system PATH for the combine feature to work.
 
+### Upscaling Videos
+To increase the resolution of your generated videos:
+
+1. Generate or select an video in the **Video Workspace**.
+2. Click the **Upscale** button on the video.
+3. Select the scale factor (x2 or x4).
+4. Select upcale model RTX Video SR (Ultra), RTX Video SR (High) or RTX Video SR (Medium)
+5. Click **Upscale** to process the video.
+
 ## 📦 Model Requirements
 
 To use all features, ensure the following models are downloaded and placed in your ComfyUI `models` directories.
-
-### Enhance prompt for image gen
-**Recommended:** `gemma-4-26b-a4b-it-heretic-ara`
-**For low VRAM:** `qwen3.5-9b-uncensored-hauhaucs-aggressive`
-
-### Enhance prompt for video gen
-**Recommended:** `gemma-4-26b-a4b-it-heretic-ara`
-**For low VRAM:** `qwen3.5-9b-uncensored-hauhaucs-aggressive`
-**NOTE**: For video generation it is required to use model that suppors vision
 
 ### Image Generation (z-image-turbo)
 | Model Type | Filename | Path in ComfyUI |
@@ -92,15 +136,7 @@ To use all features, ensure the following models are downloaded and placed in yo
 | **VAE** | `LTX23_video_vae_bf16.safetensors` | `models/vae` |
 | **VAE** | `LTX23_audio_vae_bf16.safetensors` | `models/vae` |
 | **Distill LoRA** | `ltx-2.3-22b-distilled-1.1_lora-dynamic_fro09_avg_rank_111_bf16.safetensors` | `models/loras` |
-| **Distill LoRA** | `ltx-2.3-22b-distilled-1.1_lora-dynamic_fro09_avg_rank_111_bf16.safetensors` | `models/upscale` |
 | **Latent Upscale** | `ltx-2.3-spatial-upscaler-x2-1.1.safetensors` | `models/latent_upscale_models` |
-
-### Video Upscaling
-Video upscaling is now handled through the upscale workflow directly within the workspace. Load a video, configure your upscale settings, and run the workflow from within the app.
-| Model Type | Filename | Path in ComfyUI |
-| :--- | :--- | :--- |
-| **Upscale Model** | `RealESRGAN_x2plus.pth` | `models/upscale_models` |
-| **Upscale Model** | `RealESRGAN_x4plus.safetensors` | `models/upscale_models` |
 
 ### Recommended LoRAs (Image)
 Place these in `models/loras` (Download from [malcolmrey/zimage](https://huggingface.co/malcolmrey/zimage/tree/main)):
