@@ -106,7 +106,7 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, selectedMod
         filename: result.video_path,
         prompt: `[${modelLabel}] ${video.prompt}`,
         timestamp: Date.now(),
-        subfolder: result.subfolder || '',
+        subfolder: result.subfolder || 'video',
         resolution: newRes,
         width: video.width ? video.width * scale : undefined,
         height: video.height ? video.height * scale : undefined,

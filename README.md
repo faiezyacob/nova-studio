@@ -58,6 +58,15 @@ Once you have generated multiple segments of a video, you can stitch them togeth
 
 To use all features, ensure the following models are downloaded and placed in your ComfyUI `models` directories.
 
+### Enhance prompt for image gen
+**Recommended:** `gemma-4-26b-a4b-it-heretic-ara`
+**For low VRAM:** `qwen3.5-9b-uncensored-hauhaucs-aggressive`
+
+### Enhance prompt for video gen
+**Recommended:** `gemma-4-26b-a4b-it-heretic-ara`
+**For low VRAM:** `qwen3.5-9b-uncensored-hauhaucs-aggressive`
+**NOTE**: For video generation it is required to use model that suppors vision
+
 ### Image Generation (z-image-turbo)
 | Model Type | Filename | Path in ComfyUI |
 | :--- | :--- | :--- |
@@ -74,7 +83,20 @@ To use all features, ensure the following models are downloaded and placed in yo
 | **CLIP** | `umt5_xxl_fp8_e4m3fn_scaled.safetensors` | `models/clip` |
 | **Distill LoRA** | `lightx2v_I2V_14B_480p_cfg_step_distill_rank32_bf16.safetensors` | `models/loras` |
 
+### Video Generation (LTX)
+| Model Type | Filename | Path in ComfyUI |
+| :--- | :--- | :--- |
+| **UNET** | `ltx-2-3-22b-dev-Q4_K_M.gguf` | `models/unet` |
+| **CLIP** | `gemma_3_12B_it_fp4_mixed.safetensors` | `models/clip` |
+| **CLIP** | `ltx-2.3_text_projection_bf16.safetensors` | `models/clip` |
+| **VAE** | `LTX23_video_vae_bf16.safetensors` | `models/vae` |
+| **VAE** | `LTX23_audio_vae_bf16.safetensors` | `models/vae` |
+| **Distill LoRA** | `ltx-2.3-22b-distilled-1.1_lora-dynamic_fro09_avg_rank_111_bf16.safetensors` | `models/loras` |
+| **Distill LoRA** | `ltx-2.3-22b-distilled-1.1_lora-dynamic_fro09_avg_rank_111_bf16.safetensors` | `models/upscale` |
+| **Latent Upscale** | `ltx-2.3-spatial-upscaler-x2-1.1.safetensors` | `models/latent_upscale_models` |
+
 ### Video Upscaling
+Video upscaling is now handled through the upscale workflow directly within the workspace. Load a video, configure your upscale settings, and run the workflow from within the app.
 | Model Type | Filename | Path in ComfyUI |
 | :--- | :--- | :--- |
 | **Upscale Model** | `RealESRGAN_x2plus.pth` | `models/upscale_models` |

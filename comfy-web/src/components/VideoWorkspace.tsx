@@ -586,7 +586,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
       video.muted = true;
 
       video.onloadedmetadata = () => {
-        video.currentTime = video.duration;
+        video.currentTime = video.duration - 0.1;
       };
 
       video.onloadeddata = () => {
@@ -673,6 +673,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
 
       if (!response.ok) {
         const data = await response.json();
+        console.error('[COMBINE] Not found:', data.notFoundPaths, 'Checked:', data.checkedPaths);
         throw new Error(data.error || 'Failed to combine videos');
       }
 

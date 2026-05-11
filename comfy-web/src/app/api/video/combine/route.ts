@@ -27,21 +27,41 @@ export async function POST(request: NextRequest) {
     const outputPath = path.join(LOCAL_IMAGES_DIR, outputFilename);
 
     const videoPaths = videos.map((v: { filename: string; subfolder?: string }) => {
-      const subfolder = v.subfolder || 'video';
-      const comfyOutputDir = path.join(process.cwd(), '..', 'ComfyUI', 'output', subfolder);
-      return path.join(comfyOutputDir, v.filename);
+      const subfolder = v.subfolder || '';
+      const comfyOutputDir = subfolder 
+        ? path.join(process.cwd(), '..', 'ComfyUI', 'output', subfolder)
+        : path.join(process.cwd(), '..', 'ComfyUI', 'output');
+      
+      let videoPath = path.join(comfyOutputDir, v.filename);
+      
+      if (!existsSync(videoPath)) {
+        const publicGeneratedPath = path.join(process.cwd(), 'public', 'generated', v.filename);
+        if (existsSync(publicGeneratedPath)) {
+          videoPath = publicGeneratedPath;
+        }
+      }
+      
+      return videoPath;
     });
 
     const validPaths = [];
+    const notFoundPaths = [];
     for (const vp of videoPaths) {
       if (existsSync(vp)) {
         validPaths.push(vp);
+      } else {
+        notFoundPaths.push(vp);
       }
     }
 
+    console.log('[COMBINE] Checking paths:', videoPaths);
+    console.log('[COMBINE] Valid paths:', validPaths);
+    console.log('[COMBINE] Not found paths:', notFoundPaths);
+
     if (validPaths.length !== videos.length) {
+      console.log('[COMBINE] Full paths checked:', videoPaths);
       return NextResponse.json(
-        { error: 'Some videos not found on server' },
+        { error: 'Some videos not found on server', notFoundPaths, checkedPaths: videoPaths },
         { status: 404 }
       );
     }

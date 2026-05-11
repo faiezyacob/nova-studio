@@ -15,8 +15,9 @@ const AVAILABLE_LORAS = [
   "zimage_gigihadid_v2_onetrainer.safetensors",
   "zimage_jenniferlawrence_v2_onetrainer.safetensors",
   "zimage_madisonbeer_v2_onetrainer.safetensors",
-  "zimage_miakhalifa_v2_onetrainer.safetensors",
+  // "zimage_miakhalifa_v2_onetrainer.safetensors",
   "zimage_sydneysweeney_v1.safetensors",
+  "zimage_amandaseyfried_v2_onetrainer.safetensors"
 ];
 
 const STYLE_DESCRIPTIONS: Record<string, string> = {
