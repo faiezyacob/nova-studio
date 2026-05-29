@@ -140,6 +140,7 @@ To use all features, ensure the following models are downloaded and placed in yo
 
 ### Video Upscale 2x Frame Interpolation
 | Model Type | Filename | Path in ComfyUI |
+| :--- | :--- | :--- |
 | **Frame interpolation** | `film_net_fp16.safetensors` | `models/frame_interpolation` |
 
 ### Recommended LoRAs (Image)
