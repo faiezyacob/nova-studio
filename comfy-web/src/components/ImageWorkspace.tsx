@@ -212,18 +212,20 @@ export default function ImageWorkspace({
     setIsGenerating(true);
 
     try {
-      try {
-        toast.loading("Unloading LM Studio...", { id: "generation" });
-        const unloadRes = await fetch("/api/lmstudio/unload", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ model: currentModel }),
-        });
-        if (unloadRes.ok) {
-          await new Promise(r => setTimeout(r, 1000));
+      if (currentModel) {
+        try {
+          toast.loading("Unloading LM Studio...", { id: "generation" });
+          const unloadRes = await fetch("/api/lmstudio/unload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ model: currentModel }),
+          });
+          if (unloadRes.ok) {
+            await new Promise(r => setTimeout(r, 1000));
+          }
+        } catch (err) {
+          console.warn("Unload request failed:", err);
         }
-      } catch (err) {
-        console.warn("Unload request failed:", err);
       }
 
       let finalWidth = imageWidth;

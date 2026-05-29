@@ -166,18 +166,19 @@ export async function generateWithSDK(
 
     const wrapper = new CallWrapper(api, builder);
 
-    wrapper.onFinished(async (data: any) => {
+    wrapper.onFinished((data: any, promptId?: string) => {
       if (resolved) return;
       resolved = true;
-      
-      const images = data.images?.images?.map((img: any) => {
-        // getPathImage returns URL like: http://host/view?filename=xxx&type=output&subfolder=
-        // We need just the filename
-        const url = api.getPathImage(img);
-        const urlObj = new URL(url);
-        return urlObj.searchParams.get('filename') || img.filename || `${prefix}_00001_.png`;
-      }) || [];
-      resolve({ prompt_id: prefix, images, seed: generationSeed });
+      try {
+        const images = data.images?.images?.map((img: any) => {
+          const url = api.getPathImage(img);
+          const urlObj = new URL(url);
+          return urlObj.searchParams.get('filename') || img.filename || `${prefix}_00001_.png`;
+        }) || [];
+        resolve({ prompt_id: promptId || prefix, images, seed: generationSeed });
+      } catch (err) {
+        reject(err);
+      }
     });
 
     wrapper.onFailed((err: Error) => {

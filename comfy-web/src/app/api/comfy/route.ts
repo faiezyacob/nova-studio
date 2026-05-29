@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateWithSDK, api } from '@/lib/comfy-sdk';
+import { generateWithSDK } from '@/lib/comfy-sdk';
 
 interface Lora {
   name: string;
   strength_model: number;
   strength_clip: number;
 }
+
+const COMFYUI_URL = process.env.COMFYUI_URL || 'http://127.0.0.1:8188';
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,8 +40,9 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    await api.init(5, 2000).waitForReady();
-    const history = await api.getHistories();
+    const res = await fetch(`${COMFYUI_URL}/history?max_items=200`);
+    if (!res.ok) throw new Error(`ComfyUI history returned ${res.status}`);
+    const history = await res.json();
     return NextResponse.json(history);
   } catch (error) {
     return NextResponse.json(
