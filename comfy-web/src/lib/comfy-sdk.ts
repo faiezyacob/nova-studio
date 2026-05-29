@@ -2,7 +2,7 @@ import { ComfyApi, PromptBuilder, CallWrapper } from "@saintno/comfyui-sdk";
 
 const COMFYUI_URL = process.env.COMFYUI_URL || "http://127.0.0.1:8188";
 
-const api = new ComfyApi(COMFYUI_URL);
+const api = new ComfyApi(COMFYUI_URL, undefined, { wsTimeout: 300000 });
 
 export interface ComfyClient {
   init(): Promise<void>;

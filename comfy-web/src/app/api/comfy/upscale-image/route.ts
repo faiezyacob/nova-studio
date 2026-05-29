@@ -8,7 +8,7 @@ const COMFYUI_URL = process.env.COMFYUI_URL || "http://127.0.0.1:8188";
 const COMFY_OUTPUT_DIR = path.join(process.cwd(), '..', 'ComfyUI', 'output');
 const LOCAL_GENERATED_DIR = path.join(process.cwd(), 'public', 'generated');
 
-const api = new ComfyApi(COMFYUI_URL);
+const api = new ComfyApi(COMFYUI_URL, undefined, { wsTimeout: 300000 });
 
 interface UpscaleOptions {
   filename: string;

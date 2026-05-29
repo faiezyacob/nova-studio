@@ -45,6 +45,7 @@ const SCALE_OPTIONS = [
 export default function VideoUpscaleDialog({ isOpen, onClose, video, selectedModel, onSuccess }: VideoUpscaleDialogProps) {
   const [upscaleModel, setUpscaleModel] = useState(UPSCALE_MODELS[0].id);
   const [scale, setScale] = useState(2);
+  const [doubleFps, setDoubleFps] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
   if (!isOpen) return null;
@@ -80,6 +81,7 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, selectedMod
           width: video.width,
           height: video.height,
           scale,
+          double_fps: doubleFps,
         }),
       });
 
@@ -125,13 +127,13 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, selectedMod
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={!isProcessing ? onClose : undefined}
       />
 
-      <div className="relative w-full max-w-lg overflow-hidden rounded-[24px] border border-[#3f3e3a] bg-[#2a2a28] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+      <div className="relative w-full max-w-lg rounded-[24px] border border-[#3f3e3a] bg-[#2a2a28] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
         {/* Header */}
         <div className="border-b border-[#3a3936] bg-[#2f2f2d] px-6 py-4">
           <div className="flex items-center gap-3">
@@ -147,7 +149,7 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, selectedMod
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="max-h-[60vh] overflow-y-auto p-6 space-y-6">
           {/* Source Video Preview */}
           <div className="rounded-xl bg-[#1a1a18] p-3 border border-[#3a3936]">
             <div className="flex items-center gap-4">
@@ -200,6 +202,22 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, selectedMod
                   {opt.label}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Double FPS Toggle */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between rounded-xl border border-[#3f3e3a] bg-[#262624] p-4">
+              <div>
+                <p className="text-sm font-semibold text-[#edeae2]">Double Frame Rate (RIFE)</p>
+                <p className="text-[11px] leading-relaxed text-[#6b6560]">Interpolates frames to smoothly double the original frame rate</p>
+              </div>
+              <button
+                onClick={() => setDoubleFps(!doubleFps)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors ${doubleFps ? 'bg-[#c9a87a]' : 'bg-[#494741]'}`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${doubleFps ? 'translate-x-[1.375rem]' : 'translate-x-[3px]'}`} />
+              </button>
             </div>
           </div>
 

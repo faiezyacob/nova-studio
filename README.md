@@ -138,6 +138,10 @@ To use all features, ensure the following models are downloaded and placed in yo
 | **Distill LoRA** | `ltx-2.3-22b-distilled-1.1_lora-dynamic_fro09_avg_rank_111_bf16.safetensors` | `models/loras` |
 | **Latent Upscale** | `ltx-2.3-spatial-upscaler-x2-1.1.safetensors` | `models/latent_upscale_models` |
 
+### Video Upscale 2x Frame Interpolation
+| Model Type | Filename | Path in ComfyUI |
+| **Frame interpolation** | `film_net_fp16.safetensors` | `models/frame_interpolation` |
+
 ### Recommended LoRAs (Image)
 Place these in `models/loras` (Download from [malcolmrey/zimage](https://huggingface.co/malcolmrey/zimage/tree/main)):
 - `pixel_art_style_z_image_turbo.safetensors`

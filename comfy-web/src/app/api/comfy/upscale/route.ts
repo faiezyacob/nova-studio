@@ -8,7 +8,7 @@ const COMFYUI_URL = process.env.COMFYUI_URL || "http://127.0.0.1:8188";
 const COMFY_OUTPUT_DIR = path.join(process.cwd(), '..', 'ComfyUI', 'output');
 const LOCAL_GENERATED_DIR = path.join(process.cwd(), 'public', 'generated');
 
-const api = new ComfyApi(COMFYUI_URL);
+const api = new ComfyApi(COMFYUI_URL, undefined, { wsTimeout: 300000 });
 
 interface UpscaleOptions {
   filename: string;
@@ -17,10 +17,11 @@ interface UpscaleOptions {
   width?: number;
   height?: number;
   scale?: number;
+  double_fps?: boolean;
 }
 
 async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: string; video_path: string; subfolder: string }> {
-  const { filename, subfolder, upscale_model, width, height, scale = 2 } = options;
+  const { filename, subfolder, upscale_model, width, height, scale = 2, double_fps } = options;
 
   // Construct absolute path for VHS_LoadVideo from public/generated
   const videoPath = path.join(LOCAL_GENERATED_DIR, filename);
@@ -65,13 +66,49 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
     }
   };
 
+  // Determine frame rate source and image source
+  let imagesSource: [string, number] = ["2", 0];
+  let frameRateSource: [string, number] = ["3", 0];
+
+  if (double_fps) {
+    // Node 5: Frame Interpolation Model Loader
+    nodes["5"] = {
+      class_type: "FrameInterpolationModelLoader",
+      inputs: {
+        model_name: "film_net_fp16.safetensors",
+      }
+    };
+
+    // Node 6: Frame Interpolate (RIFE/FILM) - multiplier 2x
+    nodes["6"] = {
+      class_type: "FrameInterpolate",
+      inputs: {
+        interp_model: ["5", 0],
+        images: ["2", 0],
+        multiplier: 2,
+      }
+    };
+
+    // Node 7: Math expression to double the frame rate
+    nodes["7"] = {
+      class_type: "ComfyMathExpression",
+      inputs: {
+        "values.a": ["3", 0],
+        expression: "a * 2",
+      }
+    };
+
+    imagesSource = ["6", 0];
+    frameRateSource = ["7", 0];
+  }
+
   // Node 4: Video Combine
   nodes["4"] = {
     class_type: "VHS_VideoCombine",
     inputs: {
-      images: ["2", 0],
+      images: imagesSource,
       audio: ["1", 2], // Pass audio from loader
-      frame_rate: ["3", 0], // Use original frame rate
+      frame_rate: frameRateSource,
       loop_count: 0,
       filename_prefix: prefix,
       format: "video/h264-mp4",
@@ -237,7 +274,7 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    let { filename, subfolder, upscale_model, width, height, scale } = body;
+    let { filename, subfolder, upscale_model, width, height, scale, double_fps } = body;
 
     if (!filename) {
       return NextResponse.json({ error: 'Filename is required' }, { status: 400 });
@@ -279,6 +316,7 @@ export async function POST(request: NextRequest) {
       width,
       height,
       scale,
+      double_fps: double_fps === true,
     });
 
     return NextResponse.json(result);
