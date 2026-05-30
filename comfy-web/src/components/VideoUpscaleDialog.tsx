@@ -133,7 +133,7 @@ export default function VideoUpscaleDialog({ isOpen, onClose, video, selectedMod
         onClick={!isProcessing ? onClose : undefined}
       />
 
-      <div className="relative w-full max-w-lg rounded-[24px] border border-[#3f3e3a] bg-[#2a2a28] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+      <div className="relative w-full max-w-lg rounded-[24px] border border-[#3f3e3a] bg-[#2a2a28] shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
         {/* Header */}
         <div className="border-b border-[#3a3936] bg-[#2f2f2d] px-6 py-4">
           <div className="flex items-center gap-3">

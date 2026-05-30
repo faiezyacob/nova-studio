@@ -92,6 +92,7 @@ export default function VideoWorkspace({
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
   const [progress, setProgress] = useState<{ value: number; max: number; text?: string } | null>(null);
+  const [showProgressBar, setShowProgressBar] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -147,6 +148,15 @@ export default function VideoWorkspace({
       updateWorkspaceState({ durationFrames: maxFrames });
     }
   }, [activeWorkflow, durationFrames]);
+
+  useEffect(() => {
+    if (isGenerating) {
+      const timer = setTimeout(() => setShowProgressBar(true), 2000);
+      return () => { clearTimeout(timer); setShowProgressBar(false); };
+    } else {
+      setShowProgressBar(false);
+    }
+  }, [isGenerating]);
 
   useEffect(() => {
     if (uploadedImage) {
@@ -485,73 +495,69 @@ Based on the image, write a prompt that describes exactly enough action to reali
       const imageFile = new File([imageBlob], uploadedImageName || 'image.png', { type: 'image/png' });
       const { width: finalWidth, height: finalHeight } = targetDimensions;
 
-      eventSource = new EventSource(`/api/comfy/progress?generationId=${generationId}`);
-
-      const ssePromise = new Promise<{ video_path: string; subfolder: string; prompt_id: string }>((resolve, reject) => {
-        eventSource!.onmessage = (event) => {
+      try {
+        eventSource = new EventSource(`/api/comfy/progress?generationId=${generationId}`);
+        eventSource.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
             if (data.type === 'progress') {
               setProgress({ value: data.value, max: data.max });
-            } else if (data.type === 'complete') {
-              resolve(data);
-            } else if (data.type === 'error') {
-              reject(new Error(data.error));
             }
           } catch { /* ignore malformed messages */ }
         };
-
-        eventSource!.onerror = () => {};
-      });
+        eventSource.onerror = () => {
+          console.warn('[VIDEO] SSE connection failed, continuing without progress bar');
+        };
+      } catch (e) {
+        console.warn('[VIDEO] Failed to create SSE connection:', e);
+      }
 
       const isLtxWorkflow = activeWorkflow === 'ltx-2.3-i2v';
 
-      const postPromise = (async (): Promise<{ video_path?: string; subfolder?: string }> => {
-        if (isLtxWorkflow) {
-          const ltxFormData = new FormData();
-          const currentFps = WORKFLOW_FPS[activeWorkflow] || 24;
-          ltxFormData.append('image', imageFile);
-          ltxFormData.append('prompt', prompt);
-          ltxFormData.append('negative_prompt', negative_prompt || '');
-          ltxFormData.append('width', String(finalWidth));
-          ltxFormData.append('height', String(finalHeight));
-          ltxFormData.append('frames', String(durationFrames));
-          ltxFormData.append('fps', String(currentFps));
-          const ltxResponse = await fetch('/api/comfy/ltx', {
-            method: 'POST',
-            headers: { 'X-Generation-Id': generationId },
-            body: ltxFormData,
-          });
-          if (!ltxResponse.ok) {
-            const data = await ltxResponse.json();
-            throw new Error(data.error || 'Failed to generate LTX video');
-          }
-          return await ltxResponse.json();
-        } else {
-          const formData = new FormData();
-          formData.append('image', imageFile);
-          formData.append('prompt', prompt);
-          formData.append('negative_prompt', negative_prompt || '');
-          formData.append('width', String(finalWidth));
-          formData.append('height', String(finalHeight));
-          formData.append('frames', String(durationFrames));
-          const response = await fetch('/api/comfy/wan', {
-            method: 'POST',
-            headers: { 'X-Generation-Id': generationId },
-            body: formData,
-          });
-          if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.error || 'Failed to generate video');
-          }
-          return await response.json();
+      let result: { video_path?: string; subfolder?: string; prompt_id?: string } = {};
+
+      if (isLtxWorkflow) {
+        const ltxFormData = new FormData();
+        const currentFps = WORKFLOW_FPS[activeWorkflow] || 24;
+        ltxFormData.append('image', imageFile);
+        ltxFormData.append('prompt', prompt);
+        ltxFormData.append('negative_prompt', negative_prompt || '');
+        ltxFormData.append('width', String(finalWidth));
+        ltxFormData.append('height', String(finalHeight));
+        ltxFormData.append('frames', String(durationFrames));
+        ltxFormData.append('fps', String(currentFps));
+        const ltxResponse = await fetch('/api/comfy/ltx', {
+          method: 'POST',
+          headers: { 'X-Generation-Id': generationId },
+          body: ltxFormData,
+        });
+        if (!ltxResponse.ok) {
+          const data = await ltxResponse.json();
+          throw new Error(data.error || 'Failed to generate LTX video');
         }
-      })();
+        result = await ltxResponse.json();
+      } else {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+        formData.append('prompt', prompt);
+        formData.append('negative_prompt', negative_prompt || '');
+        formData.append('width', String(finalWidth));
+        formData.append('height', String(finalHeight));
+        formData.append('frames', String(durationFrames));
+        const response = await fetch('/api/comfy/wan', {
+          method: 'POST',
+          headers: { 'X-Generation-Id': generationId },
+          body: formData,
+        });
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to generate video');
+        }
+        result = await response.json();
+      }
 
-      const [sseResult, postResult] = await Promise.all([ssePromise, postPromise]);
-
-      const videoFilename = sseResult.video_path || postResult.video_path || '';
-      const videoSubfolder = sseResult.subfolder || postResult.subfolder || 'video';
+      const videoFilename = result.video_path || '';
+      const videoSubfolder = result.subfolder || 'video';
 
       try {
         const cacheUrl = `/api/comfy/images?filename=${encodeURIComponent(videoFilename)}&subfolder=${encodeURIComponent(videoSubfolder)}`;
@@ -570,7 +576,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
       const thumbnailBase64 = await createImageThumbnail(uploadedImage, 400);
 
       const newVideo: VideoGalleryItem = {
-        id: sseResult.prompt_id || `video_${Date.now()}`,
+        id: result.prompt_id || `video_${Date.now()}`,
         filename: videoFilename,
         prompt: prompt,
         timestamp: Date.now(),
@@ -1002,16 +1008,16 @@ Based on the image, write a prompt that describes exactly enough action to reali
             </div>
 
             <div className="mt-3 flex flex-col gap-3">
-              {isGenerating && progress && (
+              {isGenerating && (
                 <div className="rounded-lg border border-[#494741] bg-[#262624] p-3">
                   <div className="mb-1.5 flex items-center justify-between text-xs text-[#bcb6aa]">
-                    <span>Generating... {progress.value}/{progress.max}</span>
-                    <span>{Math.round((progress.value / progress.max) * 100)}%</span>
+                    <span>{progress ? `Generating... ${progress.value}/${progress.max}` : 'Starting generation...'}</span>
+                    {progress && <span>{Math.round((progress.value / progress.max) * 100)}%</span>}
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-[#3a3936]">
                     <div
-                      className="h-full rounded-full bg-[#c9a87a] transition-all duration-500 ease-out"
-                      style={{ width: `${Math.min(100, (progress.value / progress.max) * 100)}%` }}
+                      className={`h-full rounded-full bg-[#c9a87a] ${progress ? 'transition-all duration-500 ease-out' : 'animate-pulse'}`}
+                      style={progress ? { width: `${Math.min(100, (progress.value / progress.max) * 100)}%` } : { width: '30%' }}
                     />
                   </div>
                 </div>

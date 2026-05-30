@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { toast } from "sonner";
 import { GalleryItem, HistoryEntry, Lora } from "@/types";
 import ImageUpscaleDialog from "./ImageUpscaleDialog";
@@ -17,7 +17,8 @@ const AVAILABLE_LORAS = [
   "zimage_madisonbeer_v2_onetrainer.safetensors",
   // "zimage_miakhalifa_v2_onetrainer.safetensors",
   "zimage_sydneysweeney_v1.safetensors",
-  "zimage_amandaseyfried_v2_onetrainer.safetensors"
+  "zimage_amandaseyfried_v2_onetrainer.safetensors",
+  "RealisticSnapshot-Zimage-Turbov5.safetensors",
 ];
 
 const STYLE_DESCRIPTIONS: Record<string, string> = {
@@ -153,8 +154,18 @@ export default function ImageWorkspace({
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const [progress, setProgress] = useState<{ value: number; max: number } | null>(null);
+  const [showProgressBar, setShowProgressBar] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const itemsPerPage = 12;
+
+  useEffect(() => {
+    if (isGenerating) {
+      const timer = setTimeout(() => setShowProgressBar(true), 2000);
+      return () => { clearTimeout(timer); setShowProgressBar(false); };
+    } else {
+      setShowProgressBar(false);
+    }
+  }, [isGenerating]);
 
   const pollForResult = async (promptId: string, promptText: string, seed: number, width: number, height: number) => {
     const maxAttempts = 90;
@@ -250,46 +261,40 @@ export default function ImageWorkspace({
 
       toast.loading("Generating...", { id: "generation" });
 
-      eventSource = new EventSource(`/api/comfy/progress?generationId=${generationId}`);
-
-      const ssePromise = new Promise<void>((resolve, reject) => {
-        eventSource!.onmessage = (event) => {
+      try {
+        eventSource = new EventSource(`/api/comfy/progress?generationId=${generationId}`);
+        eventSource.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
             if (data.type === 'progress') {
               setProgress({ value: data.value, max: data.max });
-            } else if (data.type === 'complete') {
-              resolve();
-            } else if (data.type === 'error') {
-              reject(new Error(data.error));
             }
           } catch { /* ignore malformed messages */ }
         };
+        eventSource.onerror = () => {
+          console.warn('[IMAGE] SSE connection failed, continuing without progress bar');
+        };
+      } catch (e) {
+        console.warn('[IMAGE] Failed to create SSE connection:', e);
+      }
 
-        eventSource!.onerror = () => {};
+      const response = await fetch("/api/comfy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Generation-Id": generationId,
+        },
+        body: JSON.stringify({
+          prompt: prompt.trim(),
+          width: finalWidth,
+          height: finalHeight,
+          loras: selectedLora.name ? [selectedLora] : [],
+          seed: imageSeed ? parseInt(imageSeed) : undefined
+        }),
       });
 
-      const postPromise = (async () => {
-        const response = await fetch("/api/comfy", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Generation-Id": generationId,
-          },
-          body: JSON.stringify({
-            prompt: prompt.trim(),
-            width: finalWidth,
-            height: finalHeight,
-            loras: selectedLora.name ? [selectedLora] : [],
-            seed: imageSeed ? parseInt(imageSeed) : undefined
-          }),
-        });
-
-        if (!response.ok) throw new Error("Failed to start generation");
-        return await response.json();
-      })();
-
-      const [_, result] = await Promise.all([ssePromise, postPromise]);
+      if (!response.ok) throw new Error("Failed to start generation");
+      const result = await response.json();
       const generatedSeed = result.seed;
 
       let newItems: GalleryItem[] = [];
@@ -768,16 +773,16 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
               />
 
               <div className="mt-2 flex flex-col gap-3">
-                {isGenerating && progress && (
+                {(isGenerating && (progress || showProgressBar)) && (
                   <div className="rounded-lg border border-[#494741] bg-[#262624] p-3">
                     <div className="mb-1.5 flex items-center justify-between text-xs text-[#bcb6aa]">
-                      <span>Generating... {progress.value}/{progress.max}</span>
-                      <span>{Math.round((progress.value / progress.max) * 100)}%</span>
+                      <span>{progress ? `Generating... ${progress.value}/${progress.max}` : 'Starting generation...'}</span>
+                      {progress && <span>{Math.round((progress.value / progress.max) * 100)}%</span>}
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-[#3a3936]">
                       <div
-                        className="h-full rounded-full bg-[#c9a87a] transition-all duration-500 ease-out"
-                        style={{ width: `${Math.min(100, (progress.value / progress.max) * 100)}%` }}
+                        className={`h-full rounded-full bg-[#c9a87a] ${progress ? 'transition-all duration-500 ease-out' : 'animate-pulse'}`}
+                        style={progress ? { width: `${Math.min(100, (progress.value / progress.max) * 100)}%` } : { width: '30%' }}
                       />
                     </div>
                   </div>

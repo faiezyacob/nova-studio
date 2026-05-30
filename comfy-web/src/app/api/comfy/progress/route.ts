@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
 import { onProgress, onComplete, onError, removeAllListeners } from '@/lib/progress-events';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   const generationId = request.nextUrl.searchParams.get('generationId');
   if (!generationId) {
