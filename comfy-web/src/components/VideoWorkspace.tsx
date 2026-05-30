@@ -586,7 +586,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
       video.muted = true;
 
       video.onloadedmetadata = () => {
-        video.currentTime = video.duration - 0.1;
+        video.currentTime = video.duration - 0.01;
       };
 
       video.onseeked = () => {
