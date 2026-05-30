@@ -277,12 +277,15 @@ export default function ChatWorkspace({
       ),
     );
 
+    const capturedSessionId = activeSessionId;
+    const capturedChatInput = chatInput;
+
     setChatInput("");
     setSelectedImages([]);
     setIsChatLoading(true);
 
     try {
-      const currentSession = chatSessions.find((session) => session.id === activeSessionId);
+      const currentSession = chatSessions.find((session) => session.id === capturedSessionId);
       const modelToUse = currentSession?.model || selectedModel || availableModels[0];
 
       if (modelToUse && currentModel !== modelToUse) {
@@ -323,32 +326,77 @@ export default function ChatWorkspace({
           : { role: "user", content: userMessage.content },
       ];
 
-      const response = await fetch("/api/lmstudio/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: modelToUse, messages, temperature: 0.7 }),
-      });
-
-      if (!response.ok) throw new Error("Failed to get response");
-
-      const data = await response.json();
-      const assistantMessage: ChatMessage = {
-        id: `msg_${Date.now()}_assistant`,
-        role: "assistant",
-        content:
-          data.choices?.[0]?.message?.content ||
-          data.choices?.[0]?.message?.reasoning_content ||
-          "No response",
-        timestamp: Date.now(),
-      };
+      const assistantMsgId = `msg_${Date.now()}_assistant`;
 
       setChatSessions((prev) =>
         prev.map((session) =>
-          session.id === activeSessionId
-            ? { ...session, messages: [...session.messages, assistantMessage] }
+          session.id === capturedSessionId
+            ? {
+              ...session,
+              messages: [
+                ...session.messages,
+                { id: assistantMsgId, role: "assistant", content: "", timestamp: Date.now() },
+              ],
+            }
             : session,
         ),
       );
+
+      const response = await fetch("/api/lmstudio/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: modelToUse, messages, stream: true, temperature: 0.7 }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || `Server error: ${response.status}`);
+      }
+
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let accumulatedContent = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith("data: ")) continue;
+          const payload = trimmed.slice(6);
+          if (payload === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(payload);
+            const delta = parsed.choices?.[0]?.delta;
+            const chunk = delta?.content || delta?.reasoning_content || "";
+            if (chunk) {
+              accumulatedContent += chunk;
+              setChatSessions((prev) =>
+                prev.map((session) =>
+                  session.id === capturedSessionId
+                    ? {
+                      ...session,
+                      messages: session.messages.map((msg) =>
+                        msg.id === assistantMsgId
+                          ? { ...msg, content: accumulatedContent }
+                          : msg,
+                      ),
+                    }
+                    : session,
+                ),
+              );
+            }
+          } catch {
+            // Skip malformed SSE lines
+          }
+        }
+      }
 
       const firstUserMsg = [...(currentSession?.messages || []), userMessage].find(
         (m) => m.role === "user",
@@ -358,7 +406,7 @@ export default function ChatWorkspace({
         const title =
           firstUserMsg.content.slice(0, 30) + (firstUserMsg.content.length > 30 ? "..." : "");
         setChatSessions((prev) =>
-          prev.map((session) => (session.id === activeSessionId ? { ...session, title } : session)),
+          prev.map((session) => (session.id === capturedSessionId ? { ...session, title } : session)),
         );
       }
     } catch (err: unknown) {
@@ -367,7 +415,7 @@ export default function ChatWorkspace({
 
       setChatSessions((prev) =>
         prev.map((session) =>
-          session.id === activeSessionId
+          session.id === capturedSessionId
             ? {
               ...session,
               messages: [
