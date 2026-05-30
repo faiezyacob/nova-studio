@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Toaster, toast } from 'sonner';
 import VideoUpscaleDialog from './VideoUpscaleDialog';
+import VideoEditorDialog from './VideoEditorDialog';
 
 interface VideoGalleryItem {
   id: string;
@@ -95,9 +96,7 @@ export default function VideoWorkspace({
   const [isCalculating, setIsCalculating] = useState(false);
   const [isUpscaleOpen, setIsUpscaleOpen] = useState(false);
   const [videoToUpscale, setVideoToUpscale] = useState<VideoGalleryItem | null>(null);
-  const [isCombineMode, setIsCombineMode] = useState(false);
-  const [selectedVideos, setSelectedVideos] = useState<string[]>([]);
-  const [isCombining, setIsCombining] = useState(false);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
@@ -625,88 +624,13 @@ Based on the image, write a prompt that describes exactly enough action to reali
     }
   };
 
-  const toggleCombineMode = () => {
-    if (isCombineMode) {
-      setIsCombineMode(false);
-      setSelectedVideos([]);
-    } else {
-      setIsCombineMode(true);
-      setSelectedVideos([]);
-    }
-  };
-
-  const toggleVideoSelection = (videoId: string) => {
-    setSelectedVideos(prev => {
-      if (prev.includes(videoId)) {
-        return prev.filter(id => id !== videoId);
-      }
-      return [...prev, videoId];
+  const handleEditorSuccess = (newVideo: VideoGalleryItem) => {
+    setVideoResult(newVideo);
+    setVideoGallery(prev => {
+      const updated = [newVideo, ...prev];
+      localStorage.setItem(VIDEO_GALLERY_KEY, JSON.stringify(updated));
+      return updated;
     });
-  };
-
-  const combineVideos = async () => {
-    if (selectedVideos.length < 2) {
-      toast.error('Select at least 2 videos to combine');
-      return;
-    }
-
-    const orderedVideos = selectedVideos
-      .map(id => videoGallery.find(v => v.id === id))
-      .filter((v): v is VideoGalleryItem => v !== undefined);
-
-    setIsCombining(true);
-    try {
-      toast.loading('Combining videos...', { id: 'combine' });
-
-      const response = await fetch('/api/video/combine', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          videos: orderedVideos.map(v => ({
-            filename: v.filename,
-            subfolder: v.subfolder || 'video'
-          })),
-        })
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        console.error('[COMBINE] Not found:', data.notFoundPaths, 'Checked:', data.checkedPaths);
-        throw new Error(data.error || 'Failed to combine videos');
-      }
-
-      const result = await response.json();
-
-      const newVideo: VideoGalleryItem = {
-        id: result.prompt_id || `combined_${Date.now()}`,
-        filename: result.video_path || result.output_filename,
-        prompt: `Combined: ${orderedVideos.map(v => v.prompt).join(' → ')}`,
-        timestamp: Date.now(),
-        subfolder: result.subfolder || 'video',
-        resolution: orderedVideos[0]?.resolution, // Assume resolution matches first video
-        width: orderedVideos[0]?.width,
-        height: orderedVideos[0]?.height,
-        thumbnail: orderedVideos[0]?.thumbnail,
-        model: orderedVideos[0]?.model,
-      };
-
-      setVideoResult(newVideo);
-      setVideoGallery(prev => {
-        const updated = [newVideo, ...prev];
-        localStorage.setItem(VIDEO_GALLERY_KEY, JSON.stringify(updated));
-        return updated;
-      });
-
-      setIsCombineMode(false);
-      setSelectedVideos([]);
-      toast.success('Videos combined!', { id: 'combine' });
-    } catch (err) {
-      console.error('Combine failed:', err);
-      toast.error(err instanceof Error ? err.message : 'Failed to combine videos', { id: 'combine' });
-    } finally {
-      setIsCombining(false);
-      window.dispatchEvent(new Event('vram-stats-request'));
-    }
   };
 
   const deleteVideo = async (id: string) => {
@@ -1133,50 +1057,16 @@ Based on the image, write a prompt that describes exactly enough action to reali
                   <p className="text-[10px] uppercase tracking-widest text-[#6b6560]">Video History</p>
                   <span className="text-xs text-[#6b6560]">{videoGallery.length}</span>
                 </div>
-                {isCombineMode ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-[#c9a87a]">{selectedVideos.length} selected</span>
-                    <button
-                      onClick={combineVideos}
-                      disabled={isCombining || selectedVideos.length < 2}
-                      className="cursor-pointer flex items-center gap-1.5 rounded-lg bg-[#c9a87a] px-3 py-1.5 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      {isCombining ? (
-                        <>
-                          <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                          </svg>
-                          Combining...
-                        </>
-                      ) : (
-                        <>
-                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          Proceed
-                        </>
-                      )}
-                    </button>
-                    <button
-                      onClick={toggleCombineMode}
-                      className="rounded-lg border border-[#5a4a3d] px-3 py-1.5 text-xs text-[#e1bfa0] transition hover:border-[#775e4b] hover:text-[#f2cdae]"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    {!isSelectMode && (
-                      <button
-                        onClick={toggleCombineMode}
-                        className="rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-1.5 text-xs text-[#f2dbc0] transition hover:bg-[#4a433a]"
-                      >
-                        Combine
-                      </button>
-                    )}
-                  </>
+                {!isSelectMode && (
+                  <button
+                    onClick={() => setIsEditorOpen(true)}
+                    className="rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-1.5 text-xs text-[#f2dbc0] transition hover:bg-[#4a433a]"
+                  >
+                    <svg className="mr-1.5 inline-block h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 4a.5.5 0 01.5-.5h1a.5.5 0 01.5.5v1a.5.5 0 01-.5.5h-1a.5.5 0 01-.5-.5V4zM12.5 8.5a.5.5 0 00-1 0v3.793l-1.146-1.147a.5.5 0 00-.708.708l2 2a.5.5 0 00.708 0l2-2a.5.5 0 00-.708-.708L12.5 12.293V8.5zM4 5.5A2.5 2.5 0 016.5 3h1A1.5 1.5 0 019 4.5V5h6v-.5A1.5 1.5 0 0116.5 3h1A2.5 2.5 0 0120 5.5v12a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 012 17.5v-12z" />
+                    </svg>
+                    Video Editor
+                  </button>
                 )}
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
@@ -1194,8 +1084,6 @@ Based on the image, write a prompt that describes exactly enough action to reali
                           }
                           return next;
                         });
-                      } else if (isCombineMode) {
-                        toggleVideoSelection(video.id);
                       } else {
                         setVideoResult(video);
                       }
@@ -1203,18 +1091,14 @@ Based on the image, write a prompt that describes exactly enough action to reali
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
-                        if (isCombineMode) {
-                          toggleVideoSelection(video.id);
-                        } else {
-                          setVideoResult(video);
-                        }
+                        setVideoResult(video);
                       }
                     }}
                     role="button"
                     tabIndex={0}
                     className={`group relative aspect-[1/1] cursor-pointer overflow-hidden rounded-lg bg-[#1a1a18] transition hover:ring-2 hover:ring-[#c9a87a] outline-none ${isSelectMode
                       ? selectedForDeletion.has(video.id) ? "border-[#c9a87a] ring-2 ring-[#c9a87a]/50" : "border-[#3f3e3a] hover:border-[#5a5550]"
-                      : isCombineMode && selectedVideos.includes(video.id) ? 'ring-2 ring-[#c9a87a]' : ''}`}
+                      : ''}`}
                   >
                     {isSelectMode && (
                       <div className={`absolute top-2 left-2 z-10 flex h-5 w-5 items-center justify-center rounded-md border-2 transition ${selectedForDeletion.has(video.id)
@@ -1225,13 +1109,6 @@ Based on the image, write a prompt that describes exactly enough action to reali
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         )}
-                      </div>
-                    )}
-                    {isCombineMode && selectedVideos.includes(video.id) && (
-                      <div className="absolute inset-0 bg-[#c9a87a]/20 flex items-center justify-center z-10">
-                        <span className="bg-[#c9a87a] text-[#1f1f1d] text-xs font-bold px-2 py-1 rounded">
-                          {selectedVideos.indexOf(video.id) + 1}
-                        </span>
                       </div>
                     )}
                     {video.thumbnail ? (
@@ -1400,6 +1277,15 @@ Based on the image, write a prompt that describes exactly enough action to reali
           video={videoToUpscale}
           selectedModel={selectedModel}
           onSuccess={handleUpscaleSuccess}
+        />
+      )}
+
+      {isEditorOpen && (
+        <VideoEditorDialog
+          isOpen={isEditorOpen}
+          onClose={() => setIsEditorOpen(false)}
+          videoGallery={videoGallery}
+          onSuccess={handleEditorSuccess}
         />
       )}
     </>

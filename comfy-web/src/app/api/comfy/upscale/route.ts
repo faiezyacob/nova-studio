@@ -166,7 +166,7 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
 
       // VHS_VideoCombine with audio often appends '-audio' to the filename
       // Check if a version with '-audio' exists and use it instead
-      const audioBasename = videoFile.replace(/\.(mp4|webm|mov)$/i, (match) => `-audio${match}`);
+      const audioBasename = videoFile.replace(/\.(mp4|webm|mov)$/i, (match: string) => `-audio${match}`);
       let audioPath = path.join(COMFY_OUTPUT_DIR, videoSubfolder, audioBasename);
       if (!existsSync(audioPath)) {
         audioPath = path.join(COMFY_OUTPUT_DIR, audioBasename);
@@ -215,7 +215,7 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
           }
 
           // Also check for audio version and delete it from ComfyUI
-          const audioFile = videoFile.replace(/\.(mp4|webm|mov)$/i, (match) => `-audio${match}`);
+          const audioFile = videoFile.replace(/\.(mp4|webm|mov)$/i, (match: string) => `-audio${match}`);
           let audioSource = path.join(COMFY_OUTPUT_DIR, videoSubfolder, audioFile);
           if (!existsSync(audioSource)) {
             audioSource = path.join(COMFY_OUTPUT_DIR, audioFile);

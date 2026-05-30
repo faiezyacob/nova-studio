@@ -87,18 +87,16 @@ Nova Studio allows you to create seamless video continuations by using the last 
 3.  The application will automatically extract the **last frame** of that video and set it as the input image for your next generation.
 4.  Modify your prompt to describe the next sequence of action and click **Generate Video**.
 
-### 3. Combining Videos
-Once you have generated multiple segments of a video, you can stitch them together directly in the app.
+### 3. Video Editor (Timeline NLE)
+Once you have generated multiple video clips, you can edit them together using the built-in timeline editor.
 
-1.  Click the **"Combine Mode"** button in the Video Gallery.
-2.  Select the videos you want to combine in the order you want them to appear.
-3.  Click **"Combine Selected"**.
-4.  The app will use FFmpeg to merge the videos into a single file without re-encoding (preserving quality).
+1.  Click the **"Edit"** button on any video in the **Video Gallery**.
+2.  **Source Clips** panel on the left shows available clips — click to add them to the timeline.
+3.  Drag clips to rearrange, trim their start/end points, and select clips to delete.
+4.  Optionally add an **audio track** (upload a music file) and adjust volume/mix.
+5.  Click **"Render Video"** to produce the final edited video.
 
-> [!NOTE]
-> **FFmpeg** must be installed and available in your system PATH for the combine feature to work.
-
-### Upscaling Videos
+### 4. Upscaling Videos
 To increase the resolution of your generated videos:
 
 1. Generate or select an video in the **Video Workspace**.
@@ -152,6 +150,6 @@ Place these in `models/loras` (Download from [malcolmrey/zimage](https://hugging
 
 ## 🛠️ System Requirements
 - **ComfyUI**: Running with `--allow-code-cs --enable-cors-header`.
-- **FFmpeg**: Required for combining video segments.
+- **FFmpeg**: Required for video editing and all video processing features.
 - **LM Studio**: Required for prompt enhancement (vision models recommended for I2V).
 

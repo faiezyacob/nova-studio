@@ -99,7 +99,6 @@ export default function ImageUpscaleDialog({ isOpen, onClose, image, selectedMod
 
       const modelLabel = UPSCALE_MODELS.find(m => m.id === upscaleModel)?.label || upscaleModel;
       const newImage: GalleryItem = {
-        id: `upscale_${Date.now()}`,
         filename: result.image_path,
         prompt: `[${modelLabel}] ${image.prompt}`,
         timestamp: Date.now(),
