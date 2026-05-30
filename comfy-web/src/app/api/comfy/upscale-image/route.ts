@@ -3,6 +3,7 @@ import { ComfyApi, PromptBuilder, CallWrapper } from "@saintno/comfyui-sdk";
 import path from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import { copyFile, unlink } from 'fs/promises';
+import { emitProgress, emitComplete, emitError } from '@/lib/progress-events';
 
 const COMFYUI_URL = process.env.COMFYUI_URL || "http://127.0.0.1:8188";
 const COMFY_OUTPUT_DIR = path.join(process.cwd(), '..', 'ComfyUI', 'output');
@@ -17,10 +18,11 @@ interface UpscaleOptions {
   width?: number;
   height?: number;
   scale?: number;
+  generationId?: string;
 }
 
 async function upscaleImage(options: UpscaleOptions): Promise<{ prompt_id: string; image_path: string; subfolder: string }> {
-  const { filename, subfolder, upscale_model, width, height, scale = 2 } = options;
+  const { filename, subfolder, upscale_model, width, height, scale = 2, generationId } = options;
 
   // Construct absolute path for LoadImage from public/generated
   const imagePath = path.join(LOCAL_GENERATED_DIR, filename);
@@ -82,6 +84,10 @@ async function upscaleImage(options: UpscaleOptions): Promise<{ prompt_id: strin
 
       resolved = true;
 
+      if (generationId) {
+        emitProgress(generationId, { value: 100, max: 100, text: 'Finalizing...' });
+      }
+
       let fullFilename = imageData?.filename || `${prefix}_00001_.png`;
 
       let imageFile = fullFilename;
@@ -96,6 +102,14 @@ async function upscaleImage(options: UpscaleOptions): Promise<{ prompt_id: strin
       }
 
       console.log(`[UPSCALE IMAGE API] Final result for ${prefix}:`, { imageFile, imageSubfolder });
+
+      if (generationId) {
+        emitComplete(generationId, {
+          video_path: imageFile,
+          subfolder: imageSubfolder,
+          prompt_id: prefix,
+        });
+      }
 
       let sourcePath = path.join(COMFY_OUTPUT_DIR, imageSubfolder, imageFile);
       if (!existsSync(sourcePath)) {
@@ -130,7 +144,17 @@ async function upscaleImage(options: UpscaleOptions): Promise<{ prompt_id: strin
     wrapper.onFailed((err: any) => {
       if (resolved) return;
       resolved = true;
+      if (generationId) {
+        emitError(generationId, { error: typeof err === "string" ? err : JSON.stringify(err) });
+      }
       reject(new Error(typeof err === "string" ? err : JSON.stringify(err)));
+    });
+
+    wrapper.onProgress((progress: any) => {
+      console.log(`[UPSCALE IMAGE] Progress: ${progress?.value} / ${progress?.max}`);
+      if (generationId && progress) {
+        emitProgress(generationId, { value: progress.value, max: progress.max });
+      }
     });
 
     wrapper.run();
@@ -141,6 +165,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     let { filename, subfolder, upscale_model, width, height, scale } = body;
+    const generationId = request.headers.get('x-generation-id') || undefined;
 
     if (!filename) {
       return NextResponse.json({ error: 'Filename is required' }, { status: 400 });
@@ -179,6 +204,7 @@ export async function POST(request: NextRequest) {
       width,
       height,
       scale,
+      generationId,
     });
 
     return NextResponse.json(result);

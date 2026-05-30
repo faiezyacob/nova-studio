@@ -3,6 +3,7 @@ import { ComfyApi, PromptBuilder, CallWrapper } from "@saintno/comfyui-sdk";
 import path from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import { copyFile, unlink } from 'fs/promises';
+import { emitProgress, emitComplete, emitError } from '@/lib/progress-events';
 
 const COMFYUI_URL = process.env.COMFYUI_URL || "http://127.0.0.1:8188";
 const COMFY_OUTPUT_DIR = path.join(process.cwd(), '..', 'ComfyUI', 'output');
@@ -18,10 +19,11 @@ interface UpscaleOptions {
   height?: number;
   scale?: number;
   double_fps?: boolean;
+  generationId?: string;
 }
 
 async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: string; video_path: string; subfolder: string }> {
-  const { filename, subfolder, upscale_model, width, height, scale = 2, double_fps } = options;
+  const { filename, subfolder, upscale_model, width, height, scale = 2, double_fps, generationId } = options;
 
   // Construct absolute path for VHS_LoadVideo from public/generated
   const videoPath = path.join(LOCAL_GENERATED_DIR, filename);
@@ -149,6 +151,10 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
 
       resolved = true;
 
+      if (generationId) {
+        emitProgress(generationId, { value: 100, max: 100, text: 'Finalizing upscale...' });
+      }
+
       // Fix fallback to include the upscale_ prefix that we defined in filename_prefix
       let fullFilename = videoData?.filename || `${prefix}_00001.mp4`;
 
@@ -182,6 +188,14 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
       }
 
       console.log(`[UPSCALE API] Final result for ${prefix}:`, { videoFile, videoSubfolder });
+
+      if (generationId) {
+        emitComplete(generationId, {
+          video_path: videoFile,
+          subfolder: videoSubfolder,
+          prompt_id: prefix,
+        });
+      }
 
       // Copy to public/generated and delete from ComfyUI output
       // Check both video subfolder and root output folder (in case filename_prefix changed)
@@ -264,7 +278,17 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
     wrapper.onFailed((err: any) => {
       if (resolved) return;
       resolved = true;
+      if (generationId) {
+        emitError(generationId, { error: typeof err === "string" ? err : JSON.stringify(err) });
+      }
       reject(new Error(typeof err === "string" ? err : JSON.stringify(err)));
+    });
+
+    wrapper.onProgress((progress: any) => {
+      console.log(`[UPSCALE] Progress: ${progress?.value} / ${progress?.max}`);
+      if (generationId && progress) {
+        emitProgress(generationId, { value: progress.value, max: progress.max });
+      }
     });
 
     wrapper.run();
@@ -275,6 +299,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     let { filename, subfolder, upscale_model, width, height, scale, double_fps } = body;
+    const generationId = request.headers.get('x-generation-id') || undefined;
 
     if (!filename) {
       return NextResponse.json({ error: 'Filename is required' }, { status: 400 });
@@ -317,6 +342,7 @@ export async function POST(request: NextRequest) {
       height,
       scale,
       double_fps: double_fps === true,
+      generationId,
     });
 
     return NextResponse.json(result);

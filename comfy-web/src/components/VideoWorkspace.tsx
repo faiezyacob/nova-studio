@@ -91,6 +91,7 @@ export default function VideoWorkspace({
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
+  const [progress, setProgress] = useState<{ value: number; max: number; text?: string } | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -452,10 +453,15 @@ Based on the image, write a prompt that describes exactly enough action to reali
   const generateVideo = async () => {
     if (!uploadedImage || !prompt.trim()) return;
 
+    const generationId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
     window.dispatchEvent(new Event('vram-stats-request'));
     setIsGenerating(true);
     setError('');
     setVideoResult(null);
+    setProgress(null);
+
+    let eventSource: EventSource | null = null;
 
     try {
       try {
@@ -466,67 +472,86 @@ Based on the image, write a prompt that describes exactly enough action to reali
           body: JSON.stringify({ model: selectedModel }),
         });
         if (unloadRes.ok) {
-          // Wait for VRAM to settle
           await new Promise(r => setTimeout(r, 1000));
         }
       } catch (err) {
         console.warn('Unload request failed:', err);
       }
 
-      const formData = new FormData();
+      toast.loading('Generating video...', { id: 'video-gen' });
 
       const imageResponse = await fetch(uploadedImage);
       const imageBlob = await imageResponse.blob();
       const imageFile = new File([imageBlob], uploadedImageName || 'image.png', { type: 'image/png' });
-      formData.append('image', imageFile);
-      console.log('[VIDEO] Sending prompt:', prompt);
-      formData.append('prompt', prompt);
-      formData.append('negative_prompt', negative_prompt || '');
       const { width: finalWidth, height: finalHeight } = targetDimensions;
-      formData.append('width', String(finalWidth));
-      formData.append('height', String(finalHeight));
-      formData.append('frames', String(durationFrames));
+
+      eventSource = new EventSource(`/api/comfy/progress?generationId=${generationId}`);
+
+      const ssePromise = new Promise<{ video_path: string; subfolder: string; prompt_id: string }>((resolve, reject) => {
+        eventSource!.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'progress') {
+              setProgress({ value: data.value, max: data.max });
+            } else if (data.type === 'complete') {
+              resolve(data);
+            } else if (data.type === 'error') {
+              reject(new Error(data.error));
+            }
+          } catch { /* ignore malformed messages */ }
+        };
+
+        eventSource!.onerror = () => {};
+      });
 
       const isLtxWorkflow = activeWorkflow === 'ltx-2.3-i2v';
-      let result: { prompt_id?: string; video_path?: string; subfolder?: string } = {};
 
-      if (isLtxWorkflow) {
-        const ltxFormData = new FormData();
-        const currentFps = WORKFLOW_FPS[activeWorkflow] || 24;
-        ltxFormData.append('image', imageFile);
-        ltxFormData.append('prompt', prompt);
-        ltxFormData.append('negative_prompt', negative_prompt || '');
-        ltxFormData.append('width', String(finalWidth));
-        ltxFormData.append('height', String(finalHeight));
-        ltxFormData.append('frames', String(durationFrames));
-        ltxFormData.append('fps', String(currentFps));
-        const ltxResponse = await fetch('/api/comfy/ltx', {
-          method: 'POST',
-          body: ltxFormData,
-        });
-        if (!ltxResponse.ok) {
-          const data = await ltxResponse.json();
-          throw new Error(data.error || 'Failed to generate LTX video');
+      const postPromise = (async (): Promise<{ video_path?: string; subfolder?: string }> => {
+        if (isLtxWorkflow) {
+          const ltxFormData = new FormData();
+          const currentFps = WORKFLOW_FPS[activeWorkflow] || 24;
+          ltxFormData.append('image', imageFile);
+          ltxFormData.append('prompt', prompt);
+          ltxFormData.append('negative_prompt', negative_prompt || '');
+          ltxFormData.append('width', String(finalWidth));
+          ltxFormData.append('height', String(finalHeight));
+          ltxFormData.append('frames', String(durationFrames));
+          ltxFormData.append('fps', String(currentFps));
+          const ltxResponse = await fetch('/api/comfy/ltx', {
+            method: 'POST',
+            headers: { 'X-Generation-Id': generationId },
+            body: ltxFormData,
+          });
+          if (!ltxResponse.ok) {
+            const data = await ltxResponse.json();
+            throw new Error(data.error || 'Failed to generate LTX video');
+          }
+          return await ltxResponse.json();
+        } else {
+          const formData = new FormData();
+          formData.append('image', imageFile);
+          formData.append('prompt', prompt);
+          formData.append('negative_prompt', negative_prompt || '');
+          formData.append('width', String(finalWidth));
+          formData.append('height', String(finalHeight));
+          formData.append('frames', String(durationFrames));
+          const response = await fetch('/api/comfy/wan', {
+            method: 'POST',
+            headers: { 'X-Generation-Id': generationId },
+            body: formData,
+          });
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || 'Failed to generate video');
+          }
+          return await response.json();
         }
-        result = await ltxResponse.json();
-      } else {
-        const response = await fetch('/api/comfy/wan', {
-          method: 'POST',
-          body: formData,
-        });
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || 'Failed to generate video');
-        }
-        result = await response.json();
-      }
-      console.log('[VIDEO] Generation result:', result);
-      toast.loading('Generating video...', { id: 'video-gen' });
+      })();
 
-      await new Promise(resolve => setTimeout(resolve, 8000));
+      const [sseResult, postResult] = await Promise.all([ssePromise, postPromise]);
 
-      const videoFilename = result.video_path || '';
-      const videoSubfolder = result.subfolder || 'video';
+      const videoFilename = sseResult.video_path || postResult.video_path || '';
+      const videoSubfolder = sseResult.subfolder || postResult.subfolder || 'video';
 
       try {
         const cacheUrl = `/api/comfy/images?filename=${encodeURIComponent(videoFilename)}&subfolder=${encodeURIComponent(videoSubfolder)}`;
@@ -545,7 +570,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
       const thumbnailBase64 = await createImageThumbnail(uploadedImage, 400);
 
       const newVideo: VideoGalleryItem = {
-        id: result.prompt_id || `video_${Date.now()}`,
+        id: sseResult.prompt_id || `video_${Date.now()}`,
         filename: videoFilename,
         prompt: prompt,
         timestamp: Date.now(),
@@ -572,7 +597,12 @@ Based on the image, write a prompt that describes exactly enough action to reali
       setError(err instanceof Error ? err.message : 'Generation failed');
       toast.error(err instanceof Error ? err.message : 'Generation failed', { id: 'video-gen' });
     } finally {
+      if (eventSource) {
+        eventSource.close();
+        eventSource = null;
+      }
       setIsGenerating(false);
+      setProgress(null);
       window.dispatchEvent(new Event('vram-stats-request'));
     }
   };
@@ -971,32 +1001,48 @@ Based on the image, write a prompt that describes exactly enough action to reali
               />
             </div>
 
-            <div className="mt-3 flex items-center justify-between">
-              <p className="text-xs text-[#6b6560]">Describe how the image should animate</p>
+            <div className="mt-3 flex flex-col gap-3">
+              {isGenerating && progress && (
+                <div className="rounded-lg border border-[#494741] bg-[#262624] p-3">
+                  <div className="mb-1.5 flex items-center justify-between text-xs text-[#bcb6aa]">
+                    <span>Generating... {progress.value}/{progress.max}</span>
+                    <span>{Math.round((progress.value / progress.max) * 100)}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-[#3a3936]">
+                    <div
+                      className="h-full rounded-full bg-[#c9a87a] transition-all duration-500 ease-out"
+                      style={{ width: `${Math.min(100, (progress.value / progress.max) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-[#6b6560]">Describe how the image should animate</p>
 
-              <button
-                onClick={generateVideo}
-                disabled={isGenerating || !uploadedImage || !prompt.trim()}
-                className="cursor-pointer flex items-center gap-1.5 rounded-lg bg-[#c9a87a] px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {isGenerating ? (
-                  <>
-                    <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                    </svg>
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Generate Video
-                  </>
-                )}
-              </button>
+                <button
+                  onClick={generateVideo}
+                  disabled={isGenerating || !uploadedImage || !prompt.trim()}
+                  className="cursor-pointer flex items-center gap-1.5 rounded-lg bg-[#c9a87a] px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {isGenerating ? (
+                    <>
+                      <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                      </svg>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Generate Video
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 

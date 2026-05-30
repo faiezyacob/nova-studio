@@ -152,6 +152,7 @@ export default function ImageWorkspace({
   const [imageSeed, setImageSeed] = useState<string>("");
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
+  const [progress, setProgress] = useState<{ value: number; max: number } | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const itemsPerPage = 12;
 
@@ -208,8 +209,13 @@ export default function ImageWorkspace({
   const generateImage = async () => {
     if (!prompt.trim()) return;
 
+    const generationId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
     window.dispatchEvent(new Event('vram-stats-request'));
     setIsGenerating(true);
+    setProgress(null);
+
+    let eventSource: EventSource | null = null;
 
     try {
       if (currentModel) {
@@ -242,26 +248,54 @@ export default function ImageWorkspace({
         }
       }
 
-      const response = await fetch("/api/comfy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: prompt.trim(),
-          width: finalWidth,
-          height: finalHeight,
-          loras: selectedLora.name ? [selectedLora] : [],
-          seed: imageSeed ? parseInt(imageSeed) : undefined
-        }),
+      toast.loading("Generating...", { id: "generation" });
+
+      eventSource = new EventSource(`/api/comfy/progress?generationId=${generationId}`);
+
+      const ssePromise = new Promise<void>((resolve, reject) => {
+        eventSource!.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'progress') {
+              setProgress({ value: data.value, max: data.max });
+            } else if (data.type === 'complete') {
+              resolve();
+            } else if (data.type === 'error') {
+              reject(new Error(data.error));
+            }
+          } catch { /* ignore malformed messages */ }
+        };
+
+        eventSource!.onerror = () => {};
       });
 
-      if (!response.ok) throw new Error("Failed to start generation");
+      const postPromise = (async () => {
+        const response = await fetch("/api/comfy", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Generation-Id": generationId,
+          },
+          body: JSON.stringify({
+            prompt: prompt.trim(),
+            width: finalWidth,
+            height: finalHeight,
+            loras: selectedLora.name ? [selectedLora] : [],
+            seed: imageSeed ? parseInt(imageSeed) : undefined
+          }),
+        });
 
-      const result = await response.json();
-      toast.loading("Generating...", { id: "generation" });
+        if (!response.ok) throw new Error("Failed to start generation");
+        return await response.json();
+      })();
+
+      const [_, result] = await Promise.all([ssePromise, postPromise]);
       const generatedSeed = result.seed;
 
+      let newItems: GalleryItem[] = [];
+
       if (result.images && result.images.length > 0) {
-        const newItems: GalleryItem[] = result.images.map((imgUrl: string) => ({
+        newItems = result.images.map((imgUrl: string) => ({
           filename: imgUrl.split('/').pop() || `gen_${Date.now()}.png`,
           prompt: prompt.trim(),
           timestamp: Date.now(),
@@ -274,22 +308,28 @@ export default function ImageWorkspace({
         await Promise.all(
           newItems.map((item) => fetch(`/api/comfy/images?filename=${item.filename}`).catch(console.error)),
         );
-
-        setGallery((prev) => {
-          const updated = [...newItems, ...prev];
-          localStorage.setItem("comfyui_gallery", JSON.stringify(updated));
-          return updated;
-        });
-
-        toast.success("Image ready", { id: "generation" });
       } else {
         await pollForResult(result.prompt_id, prompt.trim(), generatedSeed, finalWidth, finalHeight);
+        return;
       }
+
+      setGallery((prev) => {
+        const updated = [...newItems, ...prev];
+        localStorage.setItem("comfyui_gallery", JSON.stringify(updated));
+        return updated;
+      });
+
+      toast.success("Image ready", { id: "generation" });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Generation failed";
       toast.error(message, { id: "generation" });
     } finally {
+      if (eventSource) {
+        eventSource.close();
+        eventSource = null;
+      }
       setIsGenerating(false);
+      setProgress(null);
       window.dispatchEvent(new Event('vram-stats-request'));
     }
   };
@@ -727,31 +767,47 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                 className="w-full resize-none rounded-xl border border-[#494741] bg-[#262624] px-3 py-3 text-sm text-[#ece8df] outline-none transition placeholder:text-[#6b6560] focus:border-[#b9986d] disabled:opacity-60"
               />
 
-              <div className="mt-2 flex items-center justify-between">
-                <span className="text-[11px] text-[#6b6560]">Shift + Enter for new line</span>
+              <div className="mt-2 flex flex-col gap-3">
+                {isGenerating && progress && (
+                  <div className="rounded-lg border border-[#494741] bg-[#262624] p-3">
+                    <div className="mb-1.5 flex items-center justify-between text-xs text-[#bcb6aa]">
+                      <span>Generating... {progress.value}/{progress.max}</span>
+                      <span>{Math.round((progress.value / progress.max) * 100)}%</span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-[#3a3936]">
+                      <div
+                        className="h-full rounded-full bg-[#c9a87a] transition-all duration-500 ease-out"
+                        style={{ width: `${Math.min(100, (progress.value / progress.max) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-[#6b6560]">Shift + Enter for new line</span>
 
-                <button
-                  onClick={generateImage}
-                  disabled={isGenerating || !prompt.trim()}
-                  className="cursor-pointer flex items-center gap-1.5 rounded-lg bg-[#c9a87a] px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  {isGenerating ? (
-                    <>
-                      <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                      </svg>
-                      Generating…
-                    </>
-                  ) : (
-                    <>
-                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
-                      </svg>
-                      Generate
-                    </>
-                  )}
-                </button>
+                  <button
+                    onClick={generateImage}
+                    disabled={isGenerating || !prompt.trim()}
+                    className="cursor-pointer flex items-center gap-1.5 rounded-lg bg-[#c9a87a] px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                        </svg>
+                        Generating…
+                      </>
+                    ) : (
+                      <>
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
+                        </svg>
+                        Generate
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

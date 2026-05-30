@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ComfyApi, PromptBuilder, CallWrapper } from "@saintno/comfyui-sdk";
+import { emitProgress, emitComplete, emitError } from '@/lib/progress-events';
 
 const COMFYUI_URL = process.env.COMFYUI_URL || "http://127.0.0.1:8188";
 
@@ -12,10 +13,11 @@ interface WanOptions {
   width?: number;
   height?: number;
   frames?: number;
+  generationId?: string;
 }
 
 async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: string; video_path: string; subfolder: string }> {
-  const { image, prompt, negative_prompt, width, height, frames } = options;
+  const { image, prompt, negative_prompt, width, height, frames, generationId } = options;
 
   const videoWidth = width || 480;
   const videoHeight = height || 832;
@@ -393,6 +395,14 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
       const videoFile = videoData?.filename || `${prefix}_00001_.mp4`;
       const videoSubfolder = videoData?.subfolder || "video";
 
+      if (generationId) {
+        emitComplete(generationId, {
+          video_path: videoFile,
+          subfolder: videoSubfolder,
+          prompt_id: prefix,
+        });
+      }
+
       resolve({
         prompt_id: prefix,
         video_path: videoFile,
@@ -404,11 +414,17 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
       if (resolved) return;
       resolved = true;
       console.error("Generation FAILED:", err);
+      if (generationId) {
+        emitError(generationId, { error: typeof err === "string" ? err : JSON.stringify(err) });
+      }
       reject(new Error(typeof err === "string" ? err : JSON.stringify(err)));
     });
 
     wrapper.onProgress((progress: any) => {
       console.log(`Progress: step ${progress?.value} / ${progress?.max}`);
+      if (generationId && progress) {
+        emitProgress(generationId, { value: progress.value, max: progress.max });
+      }
     });
 
     wrapper.run();
@@ -424,6 +440,7 @@ export async function POST(request: NextRequest) {
     const width = body.get('width') ? parseInt(body.get('width') as string) : undefined;
     const height = body.get('height') ? parseInt(body.get('height') as string) : undefined;
     const frames = body.get('frames') ? parseInt(body.get('frames') as string) : undefined;
+    const generationId = request.headers.get('x-generation-id') || undefined;
 
     if (!imageFile || !prompt) {
       console.error('[WAN API] Missing required fields:', { hasImage: !!imageFile, hasPrompt: !!prompt });
@@ -448,6 +465,7 @@ export async function POST(request: NextRequest) {
       width,
       height,
       frames,
+      generationId,
     });
 
     return NextResponse.json({

@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { prompt, width, height, loras, seed } = body;
+    const generationId = request.headers.get('x-generation-id') || undefined;
 
     if (!prompt) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
 
     const lora = loras && loras.length > 0 ? loras[0] : null;
     
-    const result = await generateWithSDK(prompt, finalWidth, finalHeight, lora, seed);
+    const result = await generateWithSDK(prompt, finalWidth, finalHeight, lora, seed, generationId);
     
     return NextResponse.json({ 
       prompt_id: result.prompt_id,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ComfyApi, PromptBuilder, CallWrapper } from "@saintno/comfyui-sdk";
+import { emitProgress, emitComplete, emitError } from '@/lib/progress-events';
 
 const COMFYUI_URL = process.env.COMFYUI_URL || "http://127.0.0.1:8188";
 const api = new ComfyApi(COMFYUI_URL, undefined, { wsTimeout: 300000 });
@@ -12,6 +13,7 @@ async function generateLtxVideo(options: {
   height?: number;
   frames?: number;
   fps?: number;
+  generationId?: string;
 }): Promise<{ prompt_id: string; video_path: string; subfolder: string }> {
   const {
     image,
@@ -21,6 +23,7 @@ async function generateLtxVideo(options: {
     height = 512,
     frames = 81,
     fps = 24,
+    generationId,
   } = options;
 
   const prefix = `ltx_${Math.floor(Date.now() / 1000)}`;
@@ -496,10 +499,21 @@ async function generateLtxVideo(options: {
       const outputNode = data?.["74"] || data?.["73"];
       const videoData = outputNode?.videos?.[0] || outputNode?.gifs?.[0];
 
+      const videoFile = videoData?.filename ?? `${prefix}_00001_.mp4`;
+      const videoSubfolder = videoData?.subfolder ?? "video";
+
+      if (generationId) {
+        emitComplete(generationId, {
+          video_path: videoFile,
+          subfolder: videoSubfolder,
+          prompt_id: prefix,
+        });
+      }
+
       resolve({
         prompt_id: prefix,
-        video_path: videoData?.filename ?? `${prefix}_00001_.mp4`,
-        subfolder: videoData?.subfolder ?? "video",
+        video_path: videoFile,
+        subfolder: videoSubfolder,
       });
     });
 
@@ -507,11 +521,17 @@ async function generateLtxVideo(options: {
       if (resolved) return;
       resolved = true;
       console.error("LTX Generation FAILED:", err);
+      if (generationId) {
+        emitError(generationId, { error: typeof err === "string" ? err : JSON.stringify(err) });
+      }
       reject(new Error(typeof err === "string" ? err : JSON.stringify(err)));
     });
 
     wrapper.onProgress((progress: any) => {
       console.log(`LTX Progress: ${progress?.value} / ${progress?.max}`);
+      if (generationId && progress) {
+        emitProgress(generationId, { value: progress.value, max: progress.max });
+      }
     });
 
     wrapper.run();
@@ -528,6 +548,7 @@ export async function POST(request: NextRequest) {
     const height = body.get('height') ? parseInt(body.get('height') as string) : undefined;
     const frames = body.get('frames') ? parseInt(body.get('frames') as string) : undefined;
     const fps = body.get('fps') ? parseInt(body.get('fps') as string) : 24;
+    const generationId = request.headers.get('x-generation-id') || undefined;
 
     if (!imageFile) {
       return NextResponse.json({ error: 'Image required' }, { status: 400 });
@@ -547,7 +568,8 @@ export async function POST(request: NextRequest) {
       width,
       height,
       frames,
-      fps
+      fps,
+      generationId,
     });
 
     return NextResponse.json({ prompt_id: result.prompt_id, video_path: result.video_path, subfolder: result.subfolder });

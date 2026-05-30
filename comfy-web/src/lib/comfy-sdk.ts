@@ -1,4 +1,5 @@
 import { ComfyApi, PromptBuilder, CallWrapper } from "@saintno/comfyui-sdk";
+import { emitProgress, emitComplete, emitError } from '@/lib/progress-events';
 
 const COMFYUI_URL = process.env.COMFYUI_URL || "http://127.0.0.1:8188";
 
@@ -34,7 +35,8 @@ export async function generateWithSDK(
   width: number,
   height: number,
   lora: Lora | null = null,
-  seed?: number
+  seed?: number,
+  generationId?: string
 ): Promise<{ prompt_id: string; images: string[]; seed: number }> {
   await api.init(5, 2000).waitForReady();
 
@@ -175,6 +177,13 @@ export async function generateWithSDK(
           const urlObj = new URL(url);
           return urlObj.searchParams.get('filename') || img.filename || `${prefix}_00001_.png`;
         }) || [];
+        if (generationId) {
+          emitComplete(generationId, {
+            video_path: images[0] || '',
+            subfolder: '',
+            prompt_id: promptId || prefix,
+          });
+        }
         resolve({ prompt_id: promptId || prefix, images, seed: generationSeed });
       } catch (err) {
         reject(err);
@@ -184,7 +193,16 @@ export async function generateWithSDK(
     wrapper.onFailed((err: Error) => {
       if (resolved) return;
       resolved = true;
+      if (generationId) {
+        emitError(generationId, { error: err.message || String(err) });
+      }
       reject(err);
+    });
+
+    wrapper.onProgress((progress: any) => {
+      if (generationId && progress) {
+        emitProgress(generationId, { value: progress.value, max: progress.max });
+      }
     });
 
     wrapper.run();
