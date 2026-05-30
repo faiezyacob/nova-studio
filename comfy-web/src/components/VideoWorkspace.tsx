@@ -589,21 +589,19 @@ Based on the image, write a prompt that describes exactly enough action to reali
         video.currentTime = video.duration - 0.1;
       };
 
-      video.onloadeddata = () => {
-        setTimeout(() => {
-          const canvas = document.createElement('canvas');
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
+      video.onseeked = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
 
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            reject(new Error('Could not get canvas context'));
-            return;
-          }
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Could not get canvas context'));
+          return;
+        }
 
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          resolve(canvas.toDataURL('image/png'));
-        }, 100);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/png'));
       };
 
       video.onerror = () => {
@@ -667,7 +665,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
           videos: orderedVideos.map(v => ({
             filename: v.filename,
             subfolder: v.subfolder || 'video'
-          }))
+          })),
         })
       });
 

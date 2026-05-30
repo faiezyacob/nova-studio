@@ -311,7 +311,12 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("video_workspace_state", JSON.stringify(videoWorkspaceState));
+    const { uploadedImage, uploadedImageName, ...rest } = videoWorkspaceState;
+    try {
+      localStorage.setItem("video_workspace_state", JSON.stringify(rest));
+    } catch {
+      // data URL too large; skip persistence for this update
+    }
   }, [videoWorkspaceState]);
 
   const handleSetMode = (newMode: AppMode) => {
