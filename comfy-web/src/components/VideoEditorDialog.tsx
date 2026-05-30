@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
+import { useHotkeys } from 'react-hotkeys-hook';
 import { useEditorStore } from '@/stores/editorStore';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { usePlayback } from '@/hooks/usePlayback';
@@ -12,6 +13,7 @@ import Timeline from '@/components/editor/Timeline';
 import AudioTrack from '@/components/editor/AudioTrack';
 import Toolbar from '@/components/editor/Toolbar';
 import Inspector from '@/components/editor/Inspector';
+import { getActiveRenderer } from '@/engine';
 
 interface VideoEditorDialogProps {
   isOpen: boolean;
@@ -35,6 +37,17 @@ export default function VideoEditorDialog({ isOpen, onClose, videoGallery, onSuc
 
   useKeyboardShortcuts();
   usePlayback();
+
+  const debugRef = useRef(false);
+
+  useHotkeys('ctrl+d', (e) => {
+    e.preventDefault();
+    const r = getActiveRenderer();
+    if (r) {
+      debugRef.current = !debugRef.current;
+      r.setDebug(debugRef.current);
+    }
+  });
 
   useEffect(() => {
     if (isOpen) {
