@@ -8,6 +8,7 @@ import ImageWorkspace from "@/components/ImageWorkspace";
 import AgentWorkspace from "@/components/AgentWorkspace";
 import { AppMode, AgentSession, ChatMessage, ChatSession, GalleryItem, Lora, VideoGalleryItem } from "@/types";
 import { sceneAgent } from "@/lib/scene-agent/scene-agent";
+import { fullCleanup } from "@/lib/scene-agent/resource-manager";
 
 export default function App() {
   const [mode, setMode] = useState<AppMode>("image");
@@ -400,6 +401,7 @@ export default function App() {
 
     if (activeAgentSessionId === sessionId) {
       sceneAgent.abort();
+      fullCleanup().catch(() => {});
     }
 
     const updated = agentSessions.filter((s) => s.id !== sessionId);
