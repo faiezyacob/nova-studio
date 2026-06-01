@@ -31,7 +31,7 @@ const STYLE_DESCRIPTIONS: Record<string, string> = {
 - compression artifacts are acceptable especially in busy texture areas or gradients
 - depth of field should feel like a phone sensor: mostly everything in focus unless portrait mode is active, in which case edge masking may appear slightly unnatural around hair or complex outlines
 - composition is accidental or rushed: subject may be slightly cut off, tilted horizon, dead center framing, or too much empty space
-- backgrounds should feel real and lived-in: cluttered surfaces, generic interiors, ordinary streets, unremarkable environments
+- backgrounds should feel real and lived-in: generic interiors, ordinary streets, unremarkable environments
 - avoid any cinematic framing, dramatic lighting, professional composition, or artistic intent
 - avoid clean studio-like results, avoid beautiful bokeh, avoid color grading of any kind
 - the image should feel like something pulled from someone's camera roll without a second thought
