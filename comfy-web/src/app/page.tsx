@@ -7,6 +7,7 @@ import ChatWorkspace from "@/components/ChatWorkspace";
 import ImageWorkspace from "@/components/ImageWorkspace";
 import AgentWorkspace from "@/components/AgentWorkspace";
 import { AppMode, AgentSession, ChatMessage, ChatSession, GalleryItem, Lora, VideoGalleryItem } from "@/types";
+import { sceneAgent } from "@/lib/scene-agent/scene-agent";
 
 export default function App() {
   const [mode, setMode] = useState<AppMode>("image");
@@ -396,18 +397,28 @@ export default function App() {
   const deleteAgentSession = (sessionId: string, e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     const session = agentSessions.find((s) => s.id === sessionId);
+
+    if (activeAgentSessionId === sessionId) {
+      sceneAgent.abort();
+    }
+
     const updated = agentSessions.filter((s) => s.id !== sessionId);
     setAgentSessions(updated);
     if (activeAgentSessionId === sessionId) {
       setActiveAgentSessionId(updated.length > 0 ? updated[0].id : null);
     }
-    const filesToDelete = session?.generatedFiles?.length
-      ? [...new Set(session.generatedFiles)]
-      : session?.outputVideo
-        ? [session.outputVideo]
-        : [];
-    for (const file of filesToDelete) {
-      fetch(`/api/comfy/images?filename=${encodeURIComponent(file)}&subfolder=video`, { method: 'DELETE' }).catch(() => {});
+
+    const files = [
+      ...(session?.generatedFiles || []),
+      ...(session?.outputVideo ? [session.outputVideo] : []),
+    ];
+    const uniqueFiles = [...new Set(files)];
+    for (const file of uniqueFiles) {
+      const ext = file.split('.').pop()?.toLowerCase();
+      const isVideo = ['mp4', 'webm', 'mov'].includes(ext || '');
+      const params = new URLSearchParams({ filename: file });
+      if (isVideo) params.set('subfolder', 'video');
+      fetch(`/api/comfy/images?${params}`, { method: 'DELETE' }).catch(() => {});
     }
     toast.success("Scene session deleted");
   };

@@ -139,6 +139,34 @@ export class TaskQueue {
     this.updateTask(id, { progress, total });
   }
 
+  async rerunTask<T>(type: TaskType, handler: (task: Task) => Promise<T>): Promise<T> {
+    const task = this.tasks.find(t => t.type === type);
+    if (!task) throw new Error(`Task "${type}" not found for rerun`);
+
+    task.status = 'running';
+    task.progress = 0;
+    task.total = 100;
+    task.startTime = Date.now();
+    task.endTime = null;
+    task.error = null;
+    this.notify(task);
+
+    try {
+      const result = await handler(task);
+      task.status = 'completed';
+      task.progress = task.total;
+      task.endTime = Date.now();
+      this.notify(task);
+      return result;
+    } catch (err) {
+      task.status = 'failed';
+      task.error = err instanceof Error ? err.message : String(err);
+      task.endTime = Date.now();
+      this.notify(task);
+      throw err;
+    }
+  }
+
   abort(): void {
     this._aborted = true;
   }

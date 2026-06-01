@@ -15,6 +15,7 @@ export type AgentEventType =
   | 'task_update'
   | 'output'
   | 'error'
+  | 'image_generated'
   | 'complete';
 
 export interface AgentEvent {
@@ -35,6 +36,8 @@ export class SceneAgent {
   private _status: AgentStatus = 'idle';
   private _model = '';
   private _scenePlan: ScenePlan | null = null;
+  private _imageConfirmResolve: ((value: 'confirm' | 'regenerate' | 'abort') => void) | null = null;
+  private _currentImagePrompt: string = '';
 
   get status(): AgentStatus {
     return this._status;
@@ -163,7 +166,50 @@ export class SceneAgent {
 
       if (!imageFilename) throw new Error('Failed to generate keyframe');
 
-      const imageDataUrl = `/generated/${imageFilename}`;
+      this._currentImagePrompt = plan.image_prompt;
+      let imageConfirmed = false;
+      let imageDataUrl = '';
+
+      while (!imageConfirmed) {
+        imageDataUrl = `/generated/${imageFilename}`;
+
+        this.emit({
+          type: 'image_generated',
+          data: {
+            filename: imageFilename,
+            url: imageDataUrl,
+            prompt: this._currentImagePrompt,
+          },
+        });
+
+        const action = await new Promise<'confirm' | 'regenerate' | 'abort'>((resolve) => {
+          this._imageConfirmResolve = resolve;
+        });
+
+        if (action === 'abort') {
+          this.setStatus('idle');
+          return;
+        }
+
+        if (action === 'regenerate') {
+          if (imageFilename) {
+            try {
+              await fetch(`/api/comfy/images?filename=${encodeURIComponent(imageFilename)}&type=image`, { method: 'DELETE' });
+            } catch {}
+          }
+          imageFilename = await this.queue.rerunTask('generate_image', async (task) => {
+            const finalPrompt = options?.styleDescription
+              ? `${options.styleDescription}\n${this._currentImagePrompt}`
+              : this._currentImagePrompt;
+            const result = await generateImage(finalPrompt, imageWidth, imageHeight, options?.lora || null, this.queue, task.id);
+            if (!result) throw new Error('Image regeneration failed');
+            return result;
+          });
+          continue;
+        }
+
+        imageConfirmed = true;
+      }
 
       for (let segIdx = 0; segIdx < segmentPrompts.length; segIdx++) {
         if (this.queue.isAborted) break;
@@ -228,7 +274,7 @@ export class SceneAgent {
       }
 
       this.setStatus('completed');
-      this.emit({ type: 'complete', data: { videoSegments, scenePlan: plan } });
+      this.emit({ type: 'complete', data: { videoSegments, scenePlan: plan, imageFilename } });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       this.setStatus('failed');
@@ -239,9 +285,28 @@ export class SceneAgent {
     }
   }
 
+  async confirmImage(): Promise<void> {
+    if (this._imageConfirmResolve) {
+      this._imageConfirmResolve('confirm');
+      this._imageConfirmResolve = null;
+    }
+  }
+
+  async regenerateImage(prompt: string): Promise<void> {
+    this._currentImagePrompt = prompt;
+    if (this._imageConfirmResolve) {
+      this._imageConfirmResolve('regenerate');
+      this._imageConfirmResolve = null;
+    }
+  }
+
   abort(): void {
     this.queue.abort();
     this.setStatus('idle');
+    if (this._imageConfirmResolve) {
+      this._imageConfirmResolve('abort');
+      this._imageConfirmResolve = null;
+    }
     releaseGenerationLock();
     setModelToUnload(null);
   }

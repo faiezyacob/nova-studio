@@ -212,6 +212,15 @@ export default function AgentWorkspace({
   const [isRunning, setIsRunning] = useState(false);
   const [isUpscaleOpen, setIsUpscaleOpen] = useState(false);
   const [videoToUpscale, setVideoToUpscale] = useState<VideoGalleryItem | null>(null);
+  const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null);
+  const [editableImagePrompt, setEditableImagePrompt] = useState('');
+  const [isAwaitingImageConfirm, setIsAwaitingImageConfirm] = useState(false);
+
+  useEffect(() => {
+    setSelectedImagePreview(null);
+    setEditableImagePrompt('');
+    setIsAwaitingImageConfirm(false);
+  }, [activeSessionId]);
 
   const status = (activeSession?.status || 'idle') as AgentStatus;
 
@@ -221,6 +230,10 @@ export default function AgentWorkspace({
 
       switch (event.type) {
         case 'status':
+          if (event.data === 'idle' || event.data === 'completed' || event.data === 'failed') {
+            setIsAwaitingImageConfirm(false);
+            setSelectedImagePreview(null);
+          }
           setAgentSessions((prev) =>
             prev.map((s) => (s.id === activeSessionId ? { ...s, status: event.data } : s)),
           );
@@ -258,6 +271,22 @@ export default function AgentWorkspace({
             );
           }
           break;
+        case 'image_generated':
+          if (event.data?.url) {
+            setSelectedImagePreview(event.data.url);
+            setEditableImagePrompt(event.data.prompt || '');
+            setIsAwaitingImageConfirm(true);
+            if (event.data?.filename) {
+              setAgentSessions((prev) =>
+                prev.map((s) =>
+                  s.id === activeSessionId
+                    ? { ...s, generatedFiles: [...new Set([...s.generatedFiles, event.data.filename])] }
+                    : s,
+                ),
+              );
+            }
+          }
+          break;
         case 'error':
           setAgentSessions((prev) =>
             prev.map((s) =>
@@ -265,6 +294,8 @@ export default function AgentWorkspace({
             ),
           );
           toast.error(event.data);
+          setIsAwaitingImageConfirm(false);
+          setSelectedImagePreview(null);
           break;
         case 'complete':
           setAgentSessions((prev) =>
@@ -273,14 +304,20 @@ export default function AgentWorkspace({
               const segmentFiles: string[] = (event.data?.videoSegments || []).map(
                 (seg: { filename: string }) => seg.filename,
               );
+              const imageFile = event.data?.imageFilename;
+              const allFiles = imageFile
+                ? [...segmentFiles, imageFile]
+                : segmentFiles;
               return {
                 ...s,
                 logs: [...s.logs, '[Complete] Scene generation finished'],
-                generatedFiles: [...new Set([...s.generatedFiles, ...segmentFiles])],
+                generatedFiles: [...new Set([...s.generatedFiles, ...allFiles])],
               };
             }),
           );
           setIsRunning(false);
+          setIsAwaitingImageConfirm(false);
+          setSelectedImagePreview(null);
           toast.success('Scene generation complete!');
           break;
       }
@@ -606,7 +643,47 @@ export default function AgentWorkspace({
             <div className="space-y-2">
               <p className="text-[10px] uppercase tracking-widest text-[#6b6560]">Progress</p>
               {(activeSession.tasks as Task[]).map((task) => (
-                <TaskRow key={task.id} task={task} />
+                <div key={task.id}>
+                  <TaskRow task={task} />
+                  {task.type === 'generate_image' && isAwaitingImageConfirm && selectedImagePreview && (
+                    <div className="mb-2 mt-3 rounded-xl border border-[#c9a87a]/30 bg-[#2a2a28] p-4">
+                      <p className="mb-2 text-[10px] uppercase tracking-widest text-[#c9a87a]">Keyframe Preview</p>
+                      <p className="mb-3 text-xs text-[#9f988c]">Review the generated keyframe. Edit the prompt and regenerate if needed, then confirm to continue with video generation.</p>
+                      <div className="overflow-hidden rounded-lg bg-[#1a1a18] mb-3">
+                        <img
+                          src={selectedImagePreview}
+                          alt="Generated keyframe"
+                          className="w-full max-h-[500px] object-contain"
+                        />
+                      </div>
+                      <textarea
+                        value={editableImagePrompt}
+                        onChange={(e) => setEditableImagePrompt(e.target.value)}
+                        placeholder="Enter image prompt..."
+                        rows={3}
+                        className="w-full resize-none rounded-xl border border-[#494741] bg-[#262624] px-3 py-3 text-sm text-[#ece8df] outline-none transition placeholder:text-[#6b6560] focus:border-[#b9986d] mb-3"
+                      />
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => sceneAgent.regenerateImage(editableImagePrompt)}
+                          className="rounded-lg border border-[#c9a87a]/40 bg-[#3a352e] px-4 py-2 text-xs text-[#f2dbc0] transition hover:bg-[#4a433a] hover:border-[#c9a87a]"
+                        >
+                          Regenerate
+                        </button>
+                        <button
+                          onClick={() => {
+                            sceneAgent.confirmImage();
+                            setIsAwaitingImageConfirm(false);
+                            setSelectedImagePreview(null);
+                          }}
+                          className="rounded-lg bg-[#c9a87a] px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d]"
+                        >
+                          Confirm & Continue
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           )}
