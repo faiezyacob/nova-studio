@@ -68,11 +68,56 @@ const AVAILABLE_LORAS = [
 ];
 
 const STYLE_DESCRIPTIONS: Record<string, string> = {
-  realistic: `Describe as a candid photo taken on a modern smartphone camera in everyday conditions with uncontrolled ambient lighting, phone camera artifacts, and accidental composition. Avoid cinematic framing or artistic intent.`,
-  photography: `Describe as a high-quality professional camera photograph with natural controlled lighting, intentional composition, realistic depth of field, and fine texture detail. Avoid cinematic mood or stylized effects.`,
-  cinematic: `Describe as a frame from a live-action film with motivated lighting, deliberate composition, spatial depth, natural color grading, and narrative context. Include subtle film characteristics.`,
-  anime: `Describe as a modern high-quality anime illustration with expressive characters, clean linework, stylized shading, intentional colors, and consistent art style matching contemporary Japanese animation production.`,
-  cgi: `Describe as a high-end 3D rendered scene with physically based materials, realistic lighting with bounce and shadow, spatial depth, and subtle render imperfections. Avoid sterile or toy-like perfection.`,
+  realistic: `
+- ALWAYS describe as a candid photo taken on a modern smartphone camera in everyday conditions
+- lighting must feel completely uncontrolled and ambient: harsh overhead indoor LEDs, mixed color temperature from multiple sources, flat overcast daylight, warm yellow tungsten, or uneven window light casting hard shadows
+- include authentic phone camera artifacts: digital noise in shadow areas, luminance grain in low light, color smearing in highlights, lens flare from bright sources, slight barrel distortion at edges
+- skin tones should appear slightly processed by computational photography: oversharpened edges, smoothed textures, unnatural micro-contrast from HDR merging
+- colors may appear slightly oversaturated or shifted depending on auto white balance guessing incorrectly
+- compression artifacts are acceptable especially in busy texture areas or gradients
+- depth of field should feel like a phone sensor: mostly everything in focus unless portrait mode is active, in which case edge masking may appear slightly unnatural around hair or complex outlines
+- composition is accidental or rushed: subject may be slightly cut off, tilted horizon, dead center framing, or too much empty space
+- backgrounds should feel real and lived-in: generic interiors, ordinary streets, unremarkable environments
+- avoid any cinematic framing, dramatic lighting, professional composition, or artistic intent
+- avoid clean studio-like results, avoid beautiful bokeh, avoid color grading of any kind
+- the image should feel like something pulled from someone's camera roll without a second thought
+`,
+  photography: `
+- describe as a high-quality professional camera photograph captured in real environments
+- natural but controlled lighting such as soft daylight, golden hour, or studio-like practical lighting when appropriate
+- subject is clearly the focus but still feels part of a real environment
+- composition feels intentional but not artificially perfect or overly staged
+- include realistic depth of field depending on lens behavior (not always shallow)
+- preserve fine texture detail in skin, fabric, and materials
+- subtle natural imperfections are allowed but must not feel like noise or damage
+- avoid cinematic mood, avoid dramatic grading, avoid stylized effects
+`,
+  cinematic: `
+- describe as a frame extracted from a live-action film scene with narrative context
+- lighting should feel motivated by real sources such as streetlights, practical lamps, sunlight through windows, or environmental light sources
+- composition should feel deliberately framed like a shot from a director, with foreground and background storytelling
+- depth, atmosphere, and spatial layering are important to create scene immersion
+- color grading should support mood but remain physically believable and not over-stylized
+- include natural film characteristics such as grain and slight lens imperfections when appropriate
+- the scene should feel like something happening, not a posed image
+`,
+  anime: `
+- describe as a modern high-quality anime illustration consistent with contemporary Japanese animation production
+- expressive characters with stylized facial features and clear emotional readability
+- clean linework integrated naturally into the illustration rather than outlined separately
+- lighting and shading should follow anime production techniques such as soft gradient shading or cel shading depending on scene
+- environments should feel like fully designed anime worlds with depth and atmosphere
+- colors should be expressive and intentional but still harmonious
+- maintain consistent art style across characters and background without mixing realism
+`,
+  cgi: `
+- describe as a high-end 3D rendered scene from a modern production pipeline such as film, animation, or AAA game cinematics
+- materials should behave realistically with physically based rendering such as metal, glass, fabric, or skin responding naturally to light
+- lighting can come from both practical and environmental sources with realistic bounce and shadow behavior
+- include subtle render imperfections like aliasing, micro-noise, or lens effects when appropriate
+- emphasize spatial depth, scale, and physical presence of objects in the scene
+- avoid overly sterile or toy-like perfection unless specifically required by the subject
+`,
 };
 
 function TaskRow({ task }: { task: Task }) {
@@ -333,13 +378,13 @@ export default function AgentWorkspace({
   }, [activeSession?.logs]);
 
   const parseRatioFromSession = (session: typeof activeSession): string => {
-    if (!session) return '1:1';
+    if (!session) return '9:16';
     const log = session.logs.find((l) => l.startsWith('[Agent] Aspect Ratio:'));
     if (log) {
       const match = log.match(/\[Agent\] Aspect Ratio: ([\d:]+)/);
       if (match) return match[1];
     }
-    return '1:1';
+    return '9:16';
   };
 
   useEffect(() => {

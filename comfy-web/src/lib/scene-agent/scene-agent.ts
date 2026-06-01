@@ -120,7 +120,7 @@ export class SceneAgent {
       this.setStatus('planning');
       this.emit({ type: 'plan', data: { phase: 'generating' } });
 
-      const plan = await generateScenePlan(userDescription, durationSeconds, model, options?.styleDescription);
+      const plan = await generateScenePlan(userDescription, durationSeconds, model, options?.imageStyle, options?.styleDescription);
       this._scenePlan = plan;
       setContinuity({
         totalSegments: plan.scene.segments,
