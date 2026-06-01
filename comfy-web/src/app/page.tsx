@@ -5,7 +5,8 @@ import { Toaster, toast } from "sonner";
 import VideoWorkspace from "@/components/VideoWorkspace";
 import ChatWorkspace from "@/components/ChatWorkspace";
 import ImageWorkspace from "@/components/ImageWorkspace";
-import { AppMode, ChatMessage, ChatSession, GalleryItem, Lora, VideoGalleryItem } from "@/types";
+import AgentWorkspace from "@/components/AgentWorkspace";
+import { AppMode, AgentSession, ChatMessage, ChatSession, GalleryItem, Lora, VideoGalleryItem } from "@/types";
 
 export default function App() {
   const [mode, setMode] = useState<AppMode>("image");
@@ -63,6 +64,10 @@ export default function App() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [chatInput, setChatInput] = useState("");
   const [isChatLoading, setIsChatLoading] = useState(false);
+
+  // Agent Session States
+  const [agentSessions, setAgentSessions] = useState<AgentSession[]>([]);
+  const [activeAgentSessionId, setActiveAgentSessionId] = useState<string | null>(null);
 
   const [isPurging, setIsPurging] = useState(false);
   const [isRestarting, setIsRestarting] = useState(false);
@@ -236,6 +241,29 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const saved = localStorage.getItem("agent_sessions");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setAgentSessions(parsed);
+          setActiveAgentSessionId(parsed[0].id);
+        }
+      } catch (e) {
+        console.error("Failed to load agent sessions", e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (agentSessions.length > 0) {
+      localStorage.setItem("agent_sessions", JSON.stringify(agentSessions));
+    } else {
+      localStorage.removeItem("agent_sessions");
+    }
+  }, [agentSessions]);
+
+  useEffect(() => {
     if (chatSessions.length > 0) {
       localStorage.setItem("chat_sessions", JSON.stringify(chatSessions));
     } else {
@@ -245,7 +273,7 @@ export default function App() {
 
   useEffect(() => {
     const saved = localStorage.getItem("app_mode");
-    if (saved === "chat" || saved === "image" || saved === "video") {
+    if (saved === "chat" || saved === "image" || saved === "video" || saved === "agent") {
       setMode(saved as AppMode);
     }
     setModeHydrated(true);
@@ -347,6 +375,43 @@ export default function App() {
     toast.success("Chat deleted");
   };
 
+  const createAgentSession = () => {
+    const newSession: AgentSession = {
+      id: `agent_${Date.now()}`,
+      title: `Scene ${agentSessions.length + 1}`,
+      description: "",
+      duration: 10,
+      status: "idle",
+      scenePlan: null,
+      tasks: [],
+      logs: [],
+      outputVideo: null,
+      createdAt: Date.now(),
+      model: selectedModel || availableModels[0] || "",
+    };
+    setAgentSessions((prev) => [newSession, ...prev]);
+    setActiveAgentSessionId(newSession.id);
+  };
+
+  const deleteAgentSession = (sessionId: string, e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    const session = agentSessions.find((s) => s.id === sessionId);
+    const updated = agentSessions.filter((s) => s.id !== sessionId);
+    setAgentSessions(updated);
+    if (activeAgentSessionId === sessionId) {
+      setActiveAgentSessionId(updated.length > 0 ? updated[0].id : null);
+    }
+    const filesToDelete = session?.generatedFiles?.length
+      ? [...new Set(session.generatedFiles)]
+      : session?.outputVideo
+        ? [session.outputVideo]
+        : [];
+    for (const file of filesToDelete) {
+      fetch(`/api/comfy/images?filename=${encodeURIComponent(file)}&subfolder=video`, { method: 'DELETE' }).catch(() => {});
+    }
+    toast.success("Scene session deleted");
+  };
+
   const useImageForVideo = (item: GalleryItem) => {
     const imageUrl = `/generated/${item.filename}`;
     setVideoWorkspaceState(prev => ({
@@ -394,8 +459,8 @@ export default function App() {
               </div>
 
               {modeHydrated && (
-                <div className="grid grid-cols-3 rounded-xl border border-[#4a4944] bg-[#32312e] p-1">
-                  {(["image", "chat", "video"] as AppMode[]).map((tab) => (
+                <div className="grid grid-cols-4 rounded-xl border border-[#4a4944] bg-[#32312e] p-1">
+                  {(["chat", "image", "video", "agent"] as AppMode[]).map((tab) => (
                     <button
                       key={tab}
                       onClick={() => handleSetMode(tab)}
@@ -489,6 +554,51 @@ export default function App() {
                         ))}
                       </div>
                     )}
+                  </>
+                ) : mode === "agent" ? (
+                  <>
+                    <div className="p-3">
+                      <button
+                        onClick={createAgentSession}
+                        className="w-full rounded-lg bg-[#c9a87a] px-3 py-2.5 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d]"
+                      >
+                        New Scene
+                      </button>
+                    </div>
+                    <div className="p-3 flex-1 space-y-1 overflow-y-auto pb-3">
+                      {agentSessions.length === 0 && (
+                        <p className="px-3 py-8 text-center text-xs text-[#9f988c]">No scenes yet</p>
+                      )}
+                      {agentSessions.map((session) => {
+                        const statusIcon =
+                          session.status === "running" ? "◉" :
+                          session.status === "completed" ? "✓" :
+                          session.status === "failed" ? "✕" : "○";
+                        return (
+                          <div
+                            key={session.id}
+                            onClick={() => setActiveAgentSessionId(session.id)}
+                            className={`group flex cursor-pointer items-center gap-2 rounded-lg mb-2 border px-3 py-2 transition ${
+                              activeAgentSessionId === session.id
+                                ? "border-[#555149] bg-[#383733] text-[#f1ede4]"
+                                : "border-[#3a3936] text-[#bcb6aa] hover:border-[#4b4740] hover:bg-[#343330] hover:text-[#f1ede4]"
+                            }`}
+                          >
+                            <span className="text-[10px] w-4 text-center shrink-0">{statusIcon}</span>
+                            <span className="truncate text-xs flex-1">{session.title}</span>
+                            <button
+                              onClick={(e) => deleteAgentSession(session.id, e)}
+                              className="rounded p-1 text-[#958d80] opacity-0 transition group-hover:opacity-100 hover:bg-[#4a463f] hover:text-[#f5d4a7]"
+                              type="button"
+                            >
+                              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </>
                 ) : (
                   <>
@@ -643,6 +753,16 @@ export default function App() {
               availableModels={availableModels}
               openConfirm={openConfirm}
               closeConfirm={closeConfirm}
+            />
+          ) : mode === "agent" ? (
+            <AgentWorkspace
+              agentSessions={agentSessions}
+              setAgentSessions={setAgentSessions}
+              activeSessionId={activeAgentSessionId}
+              setActiveSessionId={setActiveAgentSessionId}
+              availableModels={availableModels}
+              selectedModel={selectedModel}
+              switchModel={switchModel}
             />
           ) : (
             <ChatWorkspace

@@ -51,4 +51,19 @@ export interface Lora {
   strength_clip: number;
 }
 
-export type AppMode = "image" | "video" | "chat";
+export interface AgentSession {
+  id: string;
+  title: string;
+  description: string;
+  duration: number;
+  status: string;
+  scenePlan: unknown | null;
+  tasks: unknown[];
+  logs: string[];
+  outputVideo: string | null;
+  generatedFiles: string[];
+  createdAt: number;
+  model: string;
+}
+
+export type AppMode = "chat" | "image" | "video" | "agent";

@@ -6,18 +6,18 @@ import { GalleryItem, HistoryEntry, Lora } from "@/types";
 import ImageUpscaleDialog from "./ImageUpscaleDialog";
 
 const AVAILABLE_LORAS = [
-  "pixel_art_style_z_image_turbo.safetensors",
-  "zimage_anadearmas_v2_onetrainer.safetensors",
-  "zimage_alexandradaddario_v2_onetrainer.safetensors",
-  "zimage_angelinajolie_v2_onetrainer.safetensors",
-  "zimage_billieeilish_v2_onetrainer.safetensors",
-  "zimage_elizabetholsen_v2_onetrainer.safetensors",
-  "zimage_gigihadid_v2_onetrainer.safetensors",
-  "zimage_jenniferlawrence_v2_onetrainer.safetensors",
-  "zimage_madisonbeer_v2_onetrainer.safetensors",
+  // "pixel_art_style_z_image_turbo.safetensors",
+  // "zimage_anadearmas_v2_onetrainer.safetensors",
+  // "zimage_alexandradaddario_v2_onetrainer.safetensors",
+  // "zimage_angelinajolie_v2_onetrainer.safetensors",
+  // "zimage_billieeilish_v2_onetrainer.safetensors",
+  // "zimage_elizabetholsen_v2_onetrainer.safetensors",
+  // "zimage_gigihadid_v2_onetrainer.safetensors",
+  // "zimage_jenniferlawrence_v2_onetrainer.safetensors",
+  // "zimage_madisonbeer_v2_onetrainer.safetensors",
   // "zimage_miakhalifa_v2_onetrainer.safetensors",
-  "zimage_sydneysweeney_v1.safetensors",
-  "zimage_amandaseyfried_v2_onetrainer.safetensors",
+  // "zimage_sydneysweeney_v1.safetensors",
+  // "zimage_amandaseyfried_v2_onetrainer.safetensors",
   "RealisticSnapshot-Zimage-Turbov5.safetensors",
 ];
 

@@ -32,14 +32,17 @@ async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: strin
 
   const nodes: Record<string, any> = {};
 
-  // Node 1: Load Video
+  // Node 1: Load Video — use actual source dimensions so VHS_LoadVideo
+  // doesn't fall back to a default resolution (e.g. 1024×1024)
+  const srcW = width || 480;
+  const srcH = height || 832;
   nodes["1"] = {
     class_type: "VHS_LoadVideo",
     inputs: {
       video: videoPath,
       force_rate: 0,
-      custom_width: 0,
-      custom_height: 0,
+      custom_width: srcW,
+      custom_height: srcH,
       frame_load_cap: 0,
       skip_first_frames: 0,
       select_every_nth: 1,
