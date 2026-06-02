@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { sceneAgent, type AgentStatus, type AgentEvent } from '@/lib/scene-agent/scene-agent';
 import type { Task } from '@/lib/scene-agent/task-queue';
 import type { ScenePlan } from '@/lib/scene-agent/scene-planner';
-import type { AgentSession, VideoGalleryItem } from '@/types';
+import type { AgentSession, Lora, VideoGalleryItem } from '@/types';
 import VideoUpscaleDialog from './VideoUpscaleDialog';
 
 const STATUS_LABELS: Record<AgentStatus, string> = {
@@ -253,7 +253,7 @@ export default function AgentWorkspace({
   const [duration, setDuration] = useState(10);
   const [aspectRatio, setAspectRatio] = useState('9:16');
   const [imageStyle, setImageStyle] = useState('realistic');
-  const [selectedLoraName, setSelectedLoraName] = useState('');
+  const [selectedLora, setSelectedLora] = useState<Lora>({ name: '', strength_model: 1.0, strength_clip: 1.0 });
   const [isRunning, setIsRunning] = useState(false);
   const [isUpscaleOpen, setIsUpscaleOpen] = useState(false);
   const [videoToUpscale, setVideoToUpscale] = useState<VideoGalleryItem | null>(null);
@@ -423,7 +423,7 @@ export default function AgentWorkspace({
                 `[Agent] Duration: ${duration}s`,
                 `[Agent] Aspect Ratio: ${activeRatio.label} (${activeRatio.videoWidth}x${activeRatio.videoHeight})`,
                 `[Agent] Style: ${imageStyle}`,
-                ...(selectedLoraName ? [`[Agent] LoRA: ${selectedLoraName}`] : []),
+                ...(selectedLora.name ? [`[Agent] LoRA: ${selectedLora.name} (strength_model: ${selectedLora.strength_model})`] : []),
                 `[Agent] Model: ${selectedModel}`,
               ],
               outputVideo: null,
@@ -446,7 +446,7 @@ export default function AgentWorkspace({
         workflow: 'wan',
         imageStyle,
         styleDescription: STYLE_DESCRIPTIONS[imageStyle] || '',
-        lora: selectedLoraName ? { name: selectedLoraName, strength_model: 1.0, strength_clip: 1.0 } : null,
+        lora: selectedLora.name ? { name: selectedLora.name, strength_model: selectedLora.strength_model, strength_clip: selectedLora.strength_clip } : null,
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Agent failed';
@@ -652,25 +652,62 @@ export default function AgentWorkspace({
                 {AVAILABLE_LORAS.length > 0 && (
                   <>
                     <div className="mt-3 h-px bg-[#3a3835]" />
-                    <div className="mt-3 flex flex-col gap-1">
-                      <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">LoRA (Image Only)</span>
-                      <div className="relative max-w-[280px]">
-                        <select
-                          value={selectedLoraName}
-                          onChange={(e) => setSelectedLoraName(e.target.value)}
-                          className="w-full rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none"
-                        >
-                          <option value="">None</option>
-                          {AVAILABLE_LORAS.map((loraName) => (
-                            <option key={loraName} value={loraName}>
-                              {loraName.replace('.safetensors', '')}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6b6560]">
-                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                          </svg>
+                    <div className="mt-3 flex flex-wrap items-end gap-3">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">LoRA (Image Only)</span>
+                        <div className="relative max-w-[280px]">
+                          <select
+                            value={selectedLora.name}
+                            onChange={(e) => setSelectedLora({ ...selectedLora, name: e.target.value })}
+                            className="w-full rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none"
+                          >
+                            <option value="">None</option>
+                            {AVAILABLE_LORAS.map((loraName) => (
+                              <option key={loraName} value={loraName}>
+                                {loraName.replace('.safetensors', '')}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6b6560]">
+                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1 min-w-[140px] max-w-[200px]">
+                        <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Strength</span>
+                        <div className="flex items-center gap-2 h-[34px]">
+                          <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.1"
+                            value={selectedLora.strength_model}
+                            onChange={(e) =>
+                              setSelectedLora({ ...selectedLora, strength_model: parseFloat(e.target.value) })
+                            }
+                            className="
+                              flex-1 h-1.5 appearance-none rounded-full outline-none
+                              bg-[#494741] cursor-pointer
+                              [&::-webkit-slider-thumb]:appearance-none
+                              [&::-webkit-slider-thumb]:h-3.5
+                              [&::-webkit-slider-thumb]:w-3.5
+                              [&::-webkit-slider-thumb]:rounded-full
+                              [&::-webkit-slider-thumb]:bg-[#c9a87a]
+                              [&::-webkit-slider-thumb]:cursor-pointer
+                              [&::-webkit-slider-thumb]:transition
+                              [&::-webkit-slider-thumb]:hover:bg-[#d8b88d]
+                              [&::-moz-range-thumb]:h-3.5
+                              [&::-moz-range-thumb]:w-3.5
+                              [&::-moz-range-thumb]:rounded-full
+                              [&::-moz-range-thumb]:bg-[#c9a87a]
+                              [&::-moz-range-thumb]:border-0
+                            "
+                          />
+                          <span className="w-9 text-center rounded-md bg-[#262624] border border-[#494741] py-0.5 text-[11px] tabular-nums text-[#c9a87a]">
+                            {selectedLora.strength_model.toFixed(2)}
+                          </span>
                         </div>
                       </div>
                     </div>

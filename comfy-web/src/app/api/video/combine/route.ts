@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
+import { writeFile, mkdir, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 
@@ -106,13 +106,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { copyFile, mkdir: mkDir } = await import('fs/promises');
+    const { mkdir: mkDir } = await import('fs/promises');
     const comfyOutputVideoDir = path.join(process.cwd(), '..', 'ComfyUI', 'output', 'video');
-    if (!existsSync(comfyOutputVideoDir)) {
-      await mkDir(comfyOutputVideoDir, { recursive: true });
-    }
     const comfyDestPath = path.join(comfyOutputVideoDir, outputFilename);
-    await copyFile(outputPath, comfyDestPath);
+    if (existsSync(comfyDestPath)) {
+      await unlink(comfyDestPath).catch(() => {});
+    }
 
     return NextResponse.json({
       video_path: outputFilename,

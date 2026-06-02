@@ -126,6 +126,9 @@ export async function GET(request: NextRequest) {
       await ensureDirectory(path.dirname(flatLocalPath));
       await writeFile(flatLocalPath, imageBuffer);
 
+      // Remove source from ComfyUI output after caching to public/generated
+      await unlink(comfyLocalPath).catch(() => {});
+
       return new NextResponse(imageBuffer, {
         headers: {
           'Content-Type': contentType,
