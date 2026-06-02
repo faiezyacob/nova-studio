@@ -179,6 +179,9 @@ function TaskRow({ task }: { task: Task }) {
             />
           </div>
         )}
+        {task.data?.prompt && typeof task.data.prompt === 'string' && (
+          <p className="mt-1.5 text-xs text-[#8f887b] line-clamp-2">{task.data.prompt}</p>
+        )}
         {isFailed && task.error && (
           <p className="mt-1 text-xs text-[#e87a7a] truncate">{task.error}</p>
         )}

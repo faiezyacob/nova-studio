@@ -133,10 +133,10 @@ export class SceneAgent {
       this.setStatus('running');
 
       this.queue.addTask('cleanup', 'Cleaning VRAM & RAM');
-      this.queue.addTask('generate_image', 'Generating Keyframe');
+      this.queue.addTask('generate_image', 'Generating Keyframe', { prompt: plan.image_prompt });
       for (let i = 0; i < plan.scene.segments; i++) {
         this.queue.addTask('cleanup', `Cleaning memory for segment ${i + 1}`);
-        this.queue.addTask('generate_video', `Generating Segment ${i + 1}/${plan.scene.segments}`);
+        this.queue.addTask('generate_video', `Generating Segment ${i + 1}/${plan.scene.segments}`, { prompt: plan.video_prompts[i] });
         if (i < plan.scene.segments - 1) {
           this.queue.addTask('extract_frame', `Extracting continuity frame ${i + 1}`);
         }
