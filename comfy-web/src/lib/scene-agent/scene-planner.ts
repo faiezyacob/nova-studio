@@ -31,6 +31,8 @@ RULES:
 5. image_prompt should be a detailed prompt for image generation (Flux model).
 6. Each video_prompt should describe what happens in that specific segment, maintaining continuity.
 7. continuity_notes should list key elements to maintain across segments (subject appearance, lighting, camera, etc.).
+8. Prevent sudden changes in style, lighting, or subject appearance between segments. Ensure smooth transitions. For example, if the first segment has has a person walking, on the second segment they could be running but please start with slow movement to maintain continuity. If the first segment is a sunny outdoor scene, the second segment shouldn't suddenly be a dark indoor scene.
+9. Please ensure the user's description is followed, but improve it as needed to create a coherent scene plan that fits the duration and segment requirements.
 
 OUTPUT SCHEMA:
 {

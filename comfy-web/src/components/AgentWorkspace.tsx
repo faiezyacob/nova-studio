@@ -6,6 +6,7 @@ import { sceneAgent, type AgentStatus, type AgentEvent } from '@/lib/scene-agent
 import type { Task } from '@/lib/scene-agent/task-queue';
 import type { ScenePlan } from '@/lib/scene-agent/scene-planner';
 import type { AgentSession, Lora, VideoGalleryItem } from '@/types';
+import VideoEditorDialog from './VideoEditorDialog';
 import VideoUpscaleDialog from './VideoUpscaleDialog';
 
 const STATUS_LABELS: Record<AgentStatus, string> = {
@@ -260,6 +261,8 @@ export default function AgentWorkspace({
   const [isRunning, setIsRunning] = useState(false);
   const [isUpscaleOpen, setIsUpscaleOpen] = useState(false);
   const [videoToUpscale, setVideoToUpscale] = useState<VideoGalleryItem | null>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [editorVideo, setEditorVideo] = useState<VideoGalleryItem | null>(null);
   const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null);
   const [editableImagePrompt, setEditableImagePrompt] = useState('');
   const [isAwaitingImageConfirm, setIsAwaitingImageConfirm] = useState(false);
@@ -505,6 +508,36 @@ export default function AgentWorkspace({
       ),
     );
     toast.success('Video upscaled successfully');
+  };
+
+  const openEditor = () => {
+    if (!activeSession?.outputVideo) return;
+    setEditorVideo({
+      id: `edit_${Date.now()}`,
+      filename: activeSession.outputVideo,
+      subfolder: 'video',
+      prompt: activeSession.description || 'Agent scene',
+      timestamp: Date.now(),
+      width: activeRatio.videoWidth,
+      height: activeRatio.videoHeight,
+    });
+    setIsEditorOpen(true);
+  };
+
+  const handleEditorSuccess = (newVideo: VideoGalleryItem) => {
+    setAgentSessions((prev) =>
+      prev.map((s) =>
+        s.id === activeSessionId
+          ? {
+              ...s,
+              outputVideo: newVideo.filename,
+              generatedFiles: [...new Set([...s.generatedFiles, newVideo.filename])],
+              logs: [...s.logs, `[Output] Video edited: ${newVideo.filename}`],
+            }
+          : s,
+      ),
+    );
+    toast.success('Video edited successfully');
   };
 
   const formatTime = (ts: number) =>
@@ -807,6 +840,12 @@ export default function AgentWorkspace({
                 >
                   Upscale
                 </button>
+                <button
+                  onClick={openEditor}
+                  className="rounded-lg border border-[#c9a87a]/40 bg-[#3a352e] px-3 py-2 text-xs text-[#f2dbc0] transition hover:bg-[#4a433a] hover:border-[#c9a87a]"
+                >
+                  Edit
+                </button>
               </div>
             </div>
           )}
@@ -893,6 +932,17 @@ export default function AgentWorkspace({
           video={videoToUpscale}
           selectedModel={selectedModel}
           onSuccess={handleUpscaleSuccess}
+        />
+      )}
+      {editorVideo && (
+        <VideoEditorDialog
+          isOpen={isEditorOpen}
+          onClose={() => setIsEditorOpen(false)}
+          videoGallery={[editorVideo]}
+          onSuccess={(newVideo) => {
+            handleEditorSuccess(newVideo);
+            setIsEditorOpen(false);
+          }}
         />
       )}
     </>
