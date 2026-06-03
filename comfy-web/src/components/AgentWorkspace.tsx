@@ -54,11 +54,11 @@ interface RatioPreset {
 }
 
 const RATIO_PRESETS: RatioPreset[] = [
-  { label: '1:1',  imgWidth: 1024, imgHeight: 1024, videoWidth: 720,  videoHeight: 720 },
-  { label: '9:16', imgWidth: 768,  imgHeight: 1360, videoWidth: 720,  videoHeight: 1280 },
-  { label: '16:9', imgWidth: 1360, imgHeight: 768,  videoWidth: 1280, videoHeight: 720 },
-  { label: '4:3',  imgWidth: 1152, imgHeight: 864,  videoWidth: 960,  videoHeight: 720 },
-  { label: '3:2',  imgWidth: 1152, imgHeight: 768,  videoWidth: 1080, videoHeight: 720 },
+  { label: '1:1',  imgWidth: 1024, imgHeight: 1024, videoWidth: 480,  videoHeight: 480 },
+  { label: '9:16', imgWidth: 768,  imgHeight: 1360, videoWidth: 480,  videoHeight: 853 },
+  { label: '16:9', imgWidth: 1360, imgHeight: 768,  videoWidth: 853, videoHeight: 480 },
+  { label: '4:3',  imgWidth: 1152, imgHeight: 864,  videoWidth: 640,  videoHeight: 480 },
+  { label: '3:2',  imgWidth: 1152, imgHeight: 768,  videoWidth: 720, videoHeight: 480 },
 ];
 
 const IMAGE_STYLES = ["realistic", "photography", "cinematic", "anime", "cgi"];

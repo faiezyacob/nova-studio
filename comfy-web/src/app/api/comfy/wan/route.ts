@@ -86,7 +86,7 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
     class_type: "LoraLoaderModelOnly",
     inputs: {
       model: ["11", 0],
-      lora_name: "lightx2v_I2V_14B_480p_cfg_step_distill_rank32_bf16.safetensors",
+      lora_name: "lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors",
       strength_model: 3.0, // ✅ HIGH noise gets 3.0 (original node14)
     },
   };
@@ -124,7 +124,7 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
     class_type: "LoraLoaderModelOnly",
     inputs: {
       model: ["21", 0],
-      lora_name: "lightx2v_I2V_14B_480p_cfg_step_distill_rank32_bf16.safetensors",
+      lora_name: "lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors",
       strength_model: 1.5, // ✅ LOW noise gets 1.5 (original node13)
     },
   };
