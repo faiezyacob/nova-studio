@@ -12,6 +12,8 @@ export interface CompleteData {
   video_path: string;
   subfolder: string;
   prompt_id: string;
+  frame_path?: string;
+  frame_subfolder?: string;
 }
 
 export interface ErrorData {

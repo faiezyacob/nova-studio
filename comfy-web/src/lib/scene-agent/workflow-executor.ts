@@ -19,6 +19,8 @@ interface VideoResult {
   video_path: string;
   subfolder: string;
   prompt_id: string;
+  frame_path?: string;
+  frame_subfolder?: string;
 }
 
 interface CombinedResult {
@@ -92,6 +94,8 @@ export async function generateVideoSegment(
   workflow: 'wan' | 'ltx',
   queue: TaskQueue,
   taskId: string,
+  imgWidth?: number,
+  imgHeight?: number,
 ): Promise<VideoResult | null> {
   const generationId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -118,6 +122,8 @@ export async function generateVideoSegment(
     formData.append('prompt', prompt);
     if (width !== undefined) formData.append('width', String(width));
     if (height !== undefined) formData.append('height', String(height));
+    if (imgWidth !== undefined) formData.append('imgWidth', String(imgWidth));
+    if (imgHeight !== undefined) formData.append('imgHeight', String(imgHeight));
     formData.append('frames', String(frames));
 
     let result: VideoResult;
@@ -149,6 +155,11 @@ export async function generateVideoSegment(
     const cacheUrl = `/api/comfy/images?filename=${encodeURIComponent(result.video_path)}&subfolder=${encodeURIComponent(result.subfolder || 'video')}`;
     await fetch(cacheUrl).catch(() => {});
 
+    if (result.frame_path) {
+      const frameCacheUrl = `/api/comfy/images?filename=${encodeURIComponent(result.frame_path)}&subfolder=${encodeURIComponent(result.frame_subfolder || '')}`;
+      await fetch(frameCacheUrl).catch(() => {});
+    }
+
     return result;
   } finally {
     eventSource.close();
@@ -179,11 +190,14 @@ export async function extractLastFrameFromVideo(videoPath: string): Promise<{ da
       setTimeout(() => reject(new Error('Seek timeout')), 10000);
     });
 
+    const scale = 3;
     const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    canvas.width = video.videoWidth * scale;
+    canvas.height = video.videoHeight * scale;
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Could not get canvas context');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataUrl = canvas.toDataURL('image/png');

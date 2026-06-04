@@ -62,6 +62,13 @@ const RATIO_PRESETS: RatioPreset[] = [
   { label: '3:2',  imgWidth: 1152, imgHeight: 768,  videoWidth: 720, videoHeight: 480 },
 ];
 
+const RESOLUTIONS = ['480p', '720p'];
+
+const RESOLUTION_SCALE: Record<string, number> = {
+  '480p': 1,
+  '720p': 1.5,
+};
+
 const IMAGE_STYLES = ["realistic", "photography", "cinematic", "anime", "cgi"];
 
 const AVAILABLE_LORAS = [
@@ -256,6 +263,7 @@ export default function AgentWorkspace({
   const [userInput, setUserInput] = useState('');
   const [duration, setDuration] = useState(10);
   const [aspectRatio, setAspectRatio] = useState('9:16');
+  const [resolution, setResolution] = useState('480p');
   const [imageStyle, setImageStyle] = useState('realistic');
   const [selectedLora, setSelectedLora] = useState<Lora>({ name: '', strength_model: 1.0, strength_clip: 1.0 });
   const [isRunning, setIsRunning] = useState(false);
@@ -428,6 +436,7 @@ export default function AgentWorkspace({
                 `[Agent] Starting scene: "${userInput.trim()}"`,
                 `[Agent] Duration: ${duration}s`,
                 `[Agent] Aspect Ratio: ${activeRatio.label} (${activeRatio.videoWidth}x${activeRatio.videoHeight})`,
+                `[Agent] Resolution: ${resolution}`,
                 `[Agent] Style: ${imageStyle}`,
                 ...(selectedLora.name ? [`[Agent] LoRA: ${selectedLora.name} (strength_model: ${selectedLora.strength_model})`] : []),
                 `[Agent] Model: ${selectedModel}`,
@@ -442,12 +451,16 @@ export default function AgentWorkspace({
 
     setIsRunning(true);
 
+    const resolutionScale = RESOLUTION_SCALE[resolution] || 1;
+    const videoWidth = Math.round(activeRatio.videoWidth * resolutionScale);
+    const videoHeight = Math.round(activeRatio.videoHeight * resolutionScale);
+
     try {
       await sceneAgent.startScene(userInput.trim(), duration, selectedModel, {
         imageWidth: activeRatio.imgWidth,
         imageHeight: activeRatio.imgHeight,
-        videoWidth: activeRatio.videoWidth,
-        videoHeight: activeRatio.videoHeight,
+        videoWidth,
+        videoHeight,
         videoFrames: 81,
         workflow: 'wan',
         imageStyle,
@@ -679,6 +692,24 @@ export default function AgentWorkspace({
                           }`}
                         >
                           {r.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Resolution</span>
+                    <div className="flex gap-1.5">
+                      {RESOLUTIONS.map((r) => (
+                        <button
+                          key={r}
+                          onClick={() => setResolution(r)}
+                          className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
+                            resolution === r
+                              ? 'border-[#c9a87a] bg-[#c9a87a]/15 text-[#edeae2]'
+                              : 'border-[#494741] bg-[#262624] text-[#9f988c] hover:border-[#5a4f40] hover:text-[#edeae2]'
+                          }`}
+                        >
+                          {r}
                         </button>
                       ))}
                     </div>

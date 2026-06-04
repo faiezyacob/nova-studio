@@ -12,16 +12,20 @@ interface WanOptions {
   negative_prompt?: string;
   width?: number;
   height?: number;
+  imgWidth?: number;
+  imgHeight?: number;
   frames?: number;
   generationId?: string;
 }
 
-async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: string; video_path: string; subfolder: string }> {
-  const { image, prompt, negative_prompt, width, height, frames, generationId } = options;
+async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: string; video_path: string; subfolder: string; frame_path?: string; frame_subfolder?: string }> {
+  const { image, prompt, negative_prompt, width, height, imgWidth, imgHeight, frames, generationId } = options;
 
   const videoWidth = width || 480;
   const videoHeight = height || 832;
   const videoFrames = frames || 81;
+  const origWidth = imgWidth || videoWidth;
+  const origHeight = imgHeight || videoHeight;
 
   const prefix = `wan_${Math.floor(Date.now() / 1000)}`;
   const seed = Math.floor(Math.random() * 10000000000000);
@@ -226,7 +230,7 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
       image: ["40", 0],
       width: videoWidth,
       height: videoHeight,
-      upscale_method: "nearest-exact",
+      upscale_method: "bicubic",
       keep_proportion: "stretch",   // ✅ matches original widget "stretch"
       pad_color: "0, 0, 0",
       crop_position: "center",
@@ -324,6 +328,34 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
     },
   };
 
+  // =========================
+  // FRAME UPSCALE + SAVE (continuity frame at original image dimensions)
+  // Node 71: upscale decoded frame to original image dimensions
+  // Node 72: save the upscaled frame as PNG
+  // =========================
+
+  nodes["71"] = {
+    class_type: "ImageResizeKJv2",
+    inputs: {
+      image: ["70", 0],
+      width: origWidth,
+      height: origHeight,
+      upscale_method: "bicubic",
+      keep_proportion: "stretch",
+      pad_color: "0, 0, 0",
+      crop_position: "center",
+      divisible_by: 8,
+    },
+  };
+
+  nodes["72"] = {
+    class_type: "SaveImage",
+    inputs: {
+      images: ["71", 0],
+      filename_prefix: `frame/${prefix}`,
+    },
+  };
+
   // CreateVideo (original node 24) - widget_values: [16]
   nodes["80"] = {
     class_type: "CreateVideo",
@@ -355,7 +387,7 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
     const builder = new PromptBuilder(
       nodes as any,
       ["prompt", "negative_prompt", "width", "height", "frames", "seed"],
-      ["video_path"]
+      ["video_path", "frame_path"]
     );
 
     builder.setInputNode("prompt", "31.inputs.text");
@@ -365,6 +397,7 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
     builder.setInputNode("frames", "50.inputs.length"); // ✅ FIXED: "length" not "frames"
     builder.setInputNode("seed", "60.inputs.noise_seed");
     builder.setOutputNode("video_path", "90");
+    builder.setOutputNode("frame_path", "72");
 
     // Set actual values
     console.log('[WAN API] Mapping prompt to node 31 inputs.text:', prompt);
@@ -395,10 +428,18 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
       const videoFile = videoData?.filename || `${prefix}_00001_.mp4`;
       const videoSubfolder = videoData?.subfolder || "video";
 
+      // Extract frame filename and subfolder from output
+      const frameNode = data?.["72"];
+      const frameData = frameNode?.images?.[0];
+      const frameFile = frameData?.filename || "";
+      const frameSubfolder = frameData?.subfolder || "";
+
       if (generationId) {
         emitComplete(generationId, {
           video_path: videoFile,
           subfolder: videoSubfolder,
+          frame_path: frameFile,
+          frame_subfolder: frameSubfolder,
           prompt_id: prefix,
         });
       }
@@ -407,6 +448,8 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
         prompt_id: prefix,
         video_path: videoFile,
         subfolder: videoSubfolder,
+        frame_path: frameFile,
+        frame_subfolder: frameSubfolder,
       });
     });
 
@@ -439,6 +482,8 @@ export async function POST(request: NextRequest) {
     const negative_prompt = body.get('negative_prompt') as string | null;
     const width = body.get('width') ? parseInt(body.get('width') as string) : undefined;
     const height = body.get('height') ? parseInt(body.get('height') as string) : undefined;
+    const imgWidth = body.get('imgWidth') ? parseInt(body.get('imgWidth') as string) : undefined;
+    const imgHeight = body.get('imgHeight') ? parseInt(body.get('imgHeight') as string) : undefined;
     const frames = body.get('frames') ? parseInt(body.get('frames') as string) : undefined;
     const generationId = request.headers.get('x-generation-id') || undefined;
 
@@ -464,6 +509,8 @@ export async function POST(request: NextRequest) {
       negative_prompt: negative_prompt || undefined,
       width,
       height,
+      imgWidth,
+      imgHeight,
       frames,
       generationId,
     });
@@ -471,7 +518,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       prompt_id: result.prompt_id,
       video_path: result.video_path,
-      subfolder: result.subfolder
+      subfolder: result.subfolder,
+      frame_path: result.frame_path,
+      frame_subfolder: result.frame_subfolder,
     });
   } catch (error) {
     return NextResponse.json(

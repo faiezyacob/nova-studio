@@ -1,5 +1,5 @@
 import { TaskQueue, acquireGenerationLock, releaseGenerationLock, isGenerationLocked } from './task-queue';
-import { resetContinuity, setContinuity, getContinuity, addContinuityNote, advanceSegment } from './continuity-manager';
+import { resetContinuity, setContinuity, getContinuity, addContinuityNote, advanceSegment, setLastFrame } from './continuity-manager';
 import { setModelToUnload, fullCleanup } from './resource-manager';
 import { generateScenePlan, askClarification, type ScenePlan } from './scene-planner';
 import { generateImage, generateVideoSegment, extractLastFrameFromVideo, mergeVideoSegments } from './workflow-executor';
@@ -238,6 +238,8 @@ export class SceneAgent {
             workflow,
             this.queue,
             task.id,
+            imageWidth,
+            imageHeight,
           );
           if (!result) throw new Error('Video generation failed');
           return result;
@@ -252,9 +254,15 @@ export class SceneAgent {
 
         if (segIdx < segmentPrompts.length - 1) {
           await this.queue.runTask(async (task) => {
-            const frame = await extractLastFrameFromVideo(videoResult.video_path);
-            if (frame) {
+            if (videoResult.frame_path) {
+              const frameUrl = `/generated/${videoResult.frame_path}`;
+              setLastFrame(frameUrl, videoResult.frame_path);
               addContinuityNote(`Segment ${segIdx + 1} completed. Continuity maintained.`);
+            } else {
+              const frame = await extractLastFrameFromVideo(videoResult.video_path);
+              if (frame) {
+                addContinuityNote(`Segment ${segIdx + 1} completed. Continuity maintained.`);
+              }
             }
             advanceSegment();
           });
@@ -264,13 +272,20 @@ export class SceneAgent {
       }
 
       if (!this.queue.isAborted) {
-        await this.queue.runTask(async (task) => {
-          this.emit({ type: 'progress', data: { label: 'Merging video segments...', progress: 0, total: 1 } });
-          const merged = await mergeVideoSegments(videoSegments);
-          if (merged) {
-            this.emit({ type: 'output', data: merged });
+        if (videoSegments.length <= 1) {
+          const single = videoSegments[0];
+          if (single) {
+            this.emit({ type: 'output', data: { video_path: single.filename } });
           }
-        });
+        } else {
+          await this.queue.runTask(async (task) => {
+            this.emit({ type: 'progress', data: { label: 'Merging video segments...', progress: 0, total: 1 } });
+            const merged = await mergeVideoSegments(videoSegments);
+            if (merged) {
+              this.emit({ type: 'output', data: merged });
+            }
+          });
+        }
       }
 
       this.setStatus('completed');

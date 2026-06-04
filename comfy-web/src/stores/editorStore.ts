@@ -241,14 +241,16 @@ export const useEditorStore = create<EditorStore>()(
         if (!item) return;
         const clamped = Math.max(0, Math.min(newSourceStart, item.sourceEnd - 0.1));
         const delta = clamped - item.sourceStart;
+        const oldStartTime = item.startTime;
         item.sourceStart = clamped;
+        item.startTime += delta;
         item.duration = item.sourceEnd - item.sourceStart;
         if (draft.rippleTrimMode && delta !== 0) {
           const track = draft.tracks.find((t) => t.id === item.trackId);
           if (track) {
             for (const id of track.itemIds) {
               const other = draft.items[id];
-              if (other && other.id !== itemId && other.startTime > item.startTime) {
+              if (other && other.id !== itemId && other.startTime > oldStartTime) {
                 other.startTime += delta;
               }
             }
