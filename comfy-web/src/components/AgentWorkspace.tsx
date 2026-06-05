@@ -133,6 +133,8 @@ function TaskRow({ task }: { task: Task }) {
   const isDone = task.status === 'completed';
   const isFailed = task.status === 'failed';
   const isPending = task.status === 'pending';
+  const promptText = task.data?.prompt;
+  const promptStr = typeof promptText === 'string' ? promptText : null;
 
   return (
     <div
@@ -187,8 +189,8 @@ function TaskRow({ task }: { task: Task }) {
             />
           </div>
         )}
-        {task.data?.prompt && typeof task.data.prompt === 'string' && (
-          <p className="mt-1.5 text-xs text-[#8f887b] line-clamp-2">{task.data.prompt}</p>
+        {promptStr && (
+          <p className="mt-1.5 text-xs text-[#8f887b] line-clamp-2">{promptStr}</p>
         )}
         {isFailed && task.error && (
           <p className="mt-1 text-xs text-[#e87a7a] truncate">{task.error}</p>
@@ -485,14 +487,26 @@ export default function AgentWorkspace({
     setUserInput(activeSession.description);
     setDuration(activeSession.duration);
     setAspectRatio(parseRatioFromSession(activeSession));
-      setAgentSessions((prev) =>
-        prev.map((s) =>
-          s.id === activeSessionId
-            ? { ...s, status: 'idle', tasks: [], logs: [], outputVideo: null, scenePlan: null, generatedFiles: [] }
-            : s,
-        ),
-      );
-    };
+    const filesToDelete = [
+      ...(activeSession.generatedFiles || []),
+      ...(activeSession.outputVideo ? [activeSession.outputVideo] : []),
+    ];
+    const uniqueFiles = [...new Set(filesToDelete)];
+    for (const file of uniqueFiles) {
+      const ext = file.split('.').pop()?.toLowerCase();
+      const isVideo = ['mp4', 'webm', 'mov'].includes(ext || '');
+      const params = new URLSearchParams({ filename: file });
+      if (isVideo) params.set('subfolder', 'video');
+      fetch(`/api/comfy/images?${params}`, { method: 'DELETE' }).catch(() => {});
+    }
+    setAgentSessions((prev) =>
+      prev.map((s) =>
+        s.id === activeSessionId
+          ? { ...s, status: 'idle', tasks: [], logs: [], outputVideo: null, scenePlan: null, generatedFiles: [] }
+          : s,
+      ),
+    );
+  };
 
   const openUpscale = () => {
     if (!activeSession?.outputVideo) return;

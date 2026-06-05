@@ -170,7 +170,6 @@ export async function extractLastFrameFromVideo(videoPath: string): Promise<{ da
   const videoUrl = `/generated/${videoPath}`;
 
   const video = document.createElement('video');
-  video.src = videoUrl;
   video.crossOrigin = 'anonymous';
   video.muted = true;
 
@@ -181,6 +180,8 @@ export async function extractLastFrameFromVideo(videoPath: string): Promise<{ da
         resolve();
       };
       video.onerror = () => reject(new Error('Failed to load video'));
+      video.src = videoUrl;
+      video.load();
       setTimeout(() => reject(new Error('Video load timeout')), 30000);
     });
 

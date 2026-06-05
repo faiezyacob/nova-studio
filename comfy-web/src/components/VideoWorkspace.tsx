@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Toaster, toast } from 'sonner';
 import VideoUpscaleDialog from './VideoUpscaleDialog';
 import VideoEditorDialog from './VideoEditorDialog';
+import { db } from "@/utils/db";
 
 interface VideoGalleryItem {
   id: string;
@@ -61,7 +62,6 @@ function ChevronIcon() {
   );
 }
 
-const STORAGE_KEY = 'video_workspace_state';
 const VIDEO_GALLERY_KEY = 'video_gallery';
 
 interface VideoWorkspaceState {
@@ -187,20 +187,16 @@ export default function VideoWorkspace({
 
     let newWidth, newHeight;
     if (width > height) {
-      // Landscape: height will be targetShortSide
       newHeight = targetShortSide;
       newWidth = Math.round(targetShortSide * aspectRatio);
     } else {
-      // Portrait or Square: width will be targetShortSide
       newWidth = targetShortSide;
       newHeight = Math.round(targetShortSide / aspectRatio);
     }
 
-    // Ensure divisible by 8 (required by ComfyUI nodes)
     newWidth = Math.floor(newWidth / 8) * 8;
     newHeight = Math.floor(newHeight / 8) * 8;
 
-    // Cap long side to prevent memory issues (e.g., 1280 for 720p level, 832 for 480p level)
     const maxLongSide = videoSize === '720' ? 1280 : videoSize === '540' ? 960 : 832;
     if (newWidth > maxLongSide) {
       newHeight = Math.floor((newHeight * maxLongSide / newWidth) / 8) * 8;
@@ -229,7 +225,6 @@ export default function VideoWorkspace({
         const ctx = canvas.getContext('2d')!;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // Use JPEG with 80% quality → much smaller than PNG
         resolve(canvas.toDataURL('image/jpeg', 0.7));
       };
       img.src = imageUrl;
@@ -242,20 +237,16 @@ export default function VideoWorkspace({
       return;
     }
 
-    localStorage.setItem("loaded_model", selectedModel);
+    await db.set("loaded_model", selectedModel);
     setIsEnhancing(true);
     setError('');
 
     try {
-      // FIX: Increased thumbnail size for better image grounding
-      // 400px loses fine detail (facial expression, texture, lighting nuance)
-      // that the vision model needs to accurately anchor the first frame
       const thumbnailBase64 = await createImageThumbnail(uploadedImage, 768);
 
       const currentFps = WORKFLOW_FPS[activeWorkflow] || 16;
       const durationSeconds = (durationFrames / currentFps).toFixed(1);
 
-      // Derive resolution label for prompt context
       const resolutionContext = (() => {
         if (activeWorkflow === 'ltx-2.3-i2v') {
           const h = targetDimensions.height;
@@ -285,7 +276,7 @@ SECTION 1 — [VISUAL] RULES
 Write **one continuous, highly descriptive paragraph**.
 
 **FIRST SENTENCE — PERFECT IMAGE ANCHOR** (Critical):
-Describe exactly what is visible in the input image: subject’s appearance, exact pose, expression, clothing, lighting, background, and framing. Do not add or change anything.
+Describe exactly what is visible in the input image: subject's appearance, exact pose, expression, clothing, lighting, background, and framing. Do not add or change anything.
 
 **MOTION STYLE**:
 - Use slow, sensual, seductive movements.
@@ -385,9 +376,6 @@ Based on the image, write a prompt that describes exactly enough action to reali
               ],
             },
           ],
-          // FIX: Lower temperature for structured output tasks
-          // 0.6 causes the model to deviate from the required format
-          // 0.3 keeps output creative enough while respecting structure
           temperature: 0.3,
         }),
       });
@@ -415,8 +403,6 @@ Based on the image, write a prompt that describes exactly enough action to reali
 
       const match = rawText.match(/<prompt>([\s\S]*?)<\/prompt>/i);
 
-      // FIX: Detect malformed output and warn user instead of silently
-      // falling back to raw text which may include system prompt leakage
       if (!match) {
         console.warn('Model did not return expected <prompt> tags. Raw output:', rawText);
         toast.warning('Model returned unexpected format — using raw output. Consider switching to a stronger vision model.');
@@ -425,11 +411,9 @@ Based on the image, write a prompt that describes exactly enough action to reali
       const enhanced = match?.[1]?.trim() || rawText.trim();
 
       if (isLTX && match) {
-        // Extract [NEGATIVE] section and update negative prompt field separately
         const negativeMatch = enhanced.match(/\[NEGATIVE\]:\s*([\s\S]*?)(?=\[|$)/i);
         if (negativeMatch?.[1]?.trim()) {
           const extractedNegative = negativeMatch[1].trim();
-          // Strip [NEGATIVE] block from the positive prompt
           const positiveOnly = enhanced
             .replace(/\[NEGATIVE\]:\s*[\s\S]*?(?=\[|$)/i, '')
             .trim();
@@ -437,14 +421,14 @@ Based on the image, write a prompt that describes exactly enough action to reali
             prompt: positiveOnly,
             negative_prompt: extractedNegative,
           });
-          toast.success('Prompt and negative prompt enhanced ✨');
+          toast.success('Prompt and negative prompt enhanced');
           return;
         }
       }
 
       if (enhanced && enhanced !== prompt) {
         updateWorkspaceState({ prompt: enhanced });
-        toast.success('Prompt enhanced with image context ✨');
+        toast.success('Prompt enhanced with image context');
       } else {
         toast.info('Already optimal');
       }
@@ -592,11 +576,9 @@ Based on the image, write a prompt that describes exactly enough action to reali
       console.log('[VIDEO] New video created:', newVideo);
 
       setVideoResult(newVideo);
-      setVideoGallery((prev: VideoGalleryItem[]) => {
-        const updated = [newVideo, ...prev];
-        localStorage.setItem(VIDEO_GALLERY_KEY, JSON.stringify(updated));
-        return updated;
-      });
+      const updated = [newVideo, ...videoGallery];
+      setVideoGallery(updated);
+      await db.set(VIDEO_GALLERY_KEY, updated);
       toast.success('Video ready', { id: 'video-gen' });
 
     } catch (err) {
@@ -660,13 +642,11 @@ Based on the image, write a prompt that describes exactly enough action to reali
     }
   };
 
-  const handleEditorSuccess = (newVideo: VideoGalleryItem) => {
+  const handleEditorSuccess = async (newVideo: VideoGalleryItem) => {
     setVideoResult(newVideo);
-    setVideoGallery(prev => {
-      const updated = [newVideo, ...prev];
-      localStorage.setItem(VIDEO_GALLERY_KEY, JSON.stringify(updated));
-      return updated;
-    });
+    const updated = [newVideo, ...videoGallery];
+    setVideoGallery(updated);
+    await db.set(VIDEO_GALLERY_KEY, updated);
   };
 
   const deleteVideo = async (id: string) => {
@@ -684,7 +664,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
 
     const updated = videoGallery.filter(v => v.id !== id);
     setVideoGallery(updated);
-    localStorage.setItem(VIDEO_GALLERY_KEY, JSON.stringify(updated));
+    await db.set(VIDEO_GALLERY_KEY, updated);
 
     if (videoResult?.id === id) {
       setVideoResult(null);
@@ -704,14 +684,13 @@ Based on the image, write a prompt that describes exactly enough action to reali
             : `/api/comfy/images?filename=${item.filename}`;
           await fetch(deleteUrl, { method: 'DELETE' });
         } catch {
-          // Continue even if server delete fails
         }
       }
     };
     deleteFromServer();
     const updated = videoGallery.filter(v => !selectedForDeletion.has(v.id));
     setVideoGallery(updated);
-    localStorage.setItem(VIDEO_GALLERY_KEY, JSON.stringify(updated));
+    await db.set(VIDEO_GALLERY_KEY, updated);
     toast.success(`Deleted ${selectedForDeletion.size} video(s)`);
     closeConfirm();
     setSelectedForDeletion(new Set());
@@ -722,12 +701,11 @@ Based on the image, write a prompt that describes exactly enough action to reali
     try {
       await fetch("/api/comfy/images?type=video", { method: "DELETE" });
     } catch {
-      // Still clear local state even if server deletion fails.
     }
 
     setVideoGallery([]);
     setVideoResult(null);
-    localStorage.removeItem(VIDEO_GALLERY_KEY);
+    await db.remove(VIDEO_GALLERY_KEY);
     toast.success("Gallery cleared");
     closeConfirm();
   };
@@ -737,13 +715,11 @@ Based on the image, write a prompt that describes exactly enough action to reali
     setIsUpscaleOpen(true);
   };
 
-  const handleUpscaleSuccess = (newVideo: VideoGalleryItem) => {
+  const handleUpscaleSuccess = async (newVideo: VideoGalleryItem) => {
     setVideoResult(newVideo);
-    setVideoGallery(prev => {
-      const updated = [newVideo, ...prev];
-      localStorage.setItem(VIDEO_GALLERY_KEY, JSON.stringify(updated));
-      return updated;
-    });
+    const updated = [newVideo, ...videoGallery];
+    setVideoGallery(updated);
+    await db.set(VIDEO_GALLERY_KEY, updated);
   };
 
   return (
@@ -1042,7 +1018,6 @@ Based on the image, write a prompt that describes exactly enough action to reali
                     <>
                       <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       Generate Video
                     </>
@@ -1207,19 +1182,6 @@ Based on the image, write a prompt that describes exactly enough action to reali
                               <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                             </svg>
                           </button>
-                          {/* <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              updateWorkspaceState({ prompt: video.prompt });
-                              toast.success('Prompt loaded');
-                            }}
-                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
-                            title="Use Prompt"
-                          >
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                          </button> */}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();

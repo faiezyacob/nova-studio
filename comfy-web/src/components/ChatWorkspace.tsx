@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { toast } from "sonner";
 import { ChatMessage, ChatSession } from "@/types";
+import { db } from "@/utils/db";
 
 interface ChatWorkspaceProps {
   chatSessions: ChatSession[];
@@ -301,7 +302,7 @@ export default function ChatWorkspace({
           }
         }
         setCurrentModel(modelToUse);
-        localStorage.setItem("loaded_model", modelToUse);
+        db.set("loaded_model", modelToUse);
       }
 
       const messages = [

@@ -4,20 +4,9 @@ import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react"
 import { toast } from "sonner";
 import { GalleryItem, HistoryEntry, Lora } from "@/types";
 import ImageUpscaleDialog from "./ImageUpscaleDialog";
+import { db } from "@/utils/db";
 
 const AVAILABLE_LORAS = [
-  // "pixel_art_style_z_image_turbo.safetensors",
-  // "zimage_anadearmas_v2_onetrainer.safetensors",
-  // "zimage_alexandradaddario_v2_onetrainer.safetensors",
-  // "zimage_angelinajolie_v2_onetrainer.safetensors",
-  // "zimage_billieeilish_v2_onetrainer.safetensors",
-  // "zimage_elizabetholsen_v2_onetrainer.safetensors",
-  // "zimage_gigihadid_v2_onetrainer.safetensors",
-  // "zimage_jenniferlawrence_v2_onetrainer.safetensors",
-  // "zimage_madisonbeer_v2_onetrainer.safetensors",
-  // "zimage_miakhalifa_v2_onetrainer.safetensors",
-  // "zimage_sydneysweeney_v1.safetensors",
-  // "zimage_amandaseyfried_v2_onetrainer.safetensors",
   "RealisticSnapshot-Zimage-Turbov5.safetensors",
 ];
 
@@ -196,18 +185,15 @@ export default function ImageWorkspace({
               newItems.map((item) => fetch(`/api/comfy/images?filename=${item.filename}`).catch(console.error)),
             );
 
-            setGallery((prev) => {
-              const updated = [...newItems, ...prev];
-              localStorage.setItem("comfyui_gallery", JSON.stringify(updated));
-              return updated;
-            });
+            const updated = [...newItems, ...gallery];
+            setGallery(updated);
+            await db.set("comfyui_gallery", updated);
 
             toast.success("Image ready", { id: "generation" });
             return;
           }
         }
       } catch {
-        // Keep polling until timeout.
       }
 
       attempts += 1;
@@ -318,11 +304,9 @@ export default function ImageWorkspace({
         return;
       }
 
-      setGallery((prev) => {
-        const updated = [...newItems, ...prev];
-        localStorage.setItem("comfyui_gallery", JSON.stringify(updated));
-        return updated;
-      });
+      const updated = [...newItems, ...gallery];
+      setGallery(updated);
+      await db.set("comfyui_gallery", updated);
 
       toast.success("Image ready", { id: "generation" });
     } catch (err: unknown) {
@@ -342,7 +326,7 @@ export default function ImageWorkspace({
   const enhancePrompt = async () => {
     if (!prompt.trim() || !selectedModel) return;
 
-    localStorage.setItem("loaded_model", selectedModel);
+    await db.set("loaded_model", selectedModel);
     const stylePrefix = STYLE_DESCRIPTIONS[imageStyle] || "";
     const systemPrompt = `
 You are a prompt enhancer optimized for the z-image-turbo model.
@@ -417,11 +401,10 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
     try {
       await fetch("/api/comfy/images?type=image", { method: "DELETE" });
     } catch {
-      // Still clear local state even if server deletion fails.
     }
 
     setGallery([]);
-    localStorage.removeItem("comfyui_gallery");
+    await db.remove("comfyui_gallery");
     toast.success("Gallery cleared");
     closeConfirm();
   };
@@ -433,24 +416,23 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
     try {
       await fetch(`/api/comfy/images?filename=${item.filename}`, { method: "DELETE" });
     } catch {
-      // Keep UX responsive even if server delete fails.
     }
 
     const updated = gallery.filter((_, i) => i !== index);
     setGallery(updated);
-    localStorage.setItem("comfyui_gallery", JSON.stringify(updated));
+    await db.set("comfyui_gallery", updated);
     if (showToast) {
       toast.success("Deleted");
       closeConfirm();
     }
   };
 
-  const toggleImageVisibility = (index: number) => {
+  const toggleImageVisibility = async (index: number) => {
     const updated = gallery.map((item, i) =>
       i === index ? { ...item, hidden: !item.hidden } : item
     );
     setGallery(updated);
-    localStorage.setItem("comfyui_gallery", JSON.stringify(updated));
+    await db.set("comfyui_gallery", updated);
   };
 
   const copyToClipboard = (text: string) => {
@@ -511,7 +493,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                 </button>
                 {isSelectMode && selectedForDeletion.size > 0 && (
                   <button
-                    onClick={() => openConfirm("Delete Selected", `Delete ${selectedForDeletion.size} image(s)?`, () => {
+                    onClick={() => openConfirm("Delete Selected", `Delete ${selectedForDeletion.size} image(s)?`, async () => {
                       const filenames = Array.from(selectedForDeletion);
                       const deleteFromGallery = gallery.filter(item => selectedForDeletion.has(item.filename));
                       const deleteFromServer = async () => {
@@ -519,14 +501,13 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                           try {
                             await fetch(`/api/comfy/images?filename=${item.filename}`, { method: "DELETE" });
                           } catch {
-                            // Continue even if server delete fails
                           }
                         }
                       };
                       deleteFromServer();
                       const updated = gallery.filter(item => !selectedForDeletion.has(item.filename));
                       setGallery(updated);
-                      localStorage.setItem("comfyui_gallery", JSON.stringify(updated));
+                      await db.set("comfyui_gallery", updated);
                       toast.success(`Deleted ${filenames.length} image(s)`);
                       closeConfirm();
                       setSelectedForDeletion(new Set());
@@ -1013,12 +994,10 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
         isOpen={selectedImageForUpscale !== null}
         onClose={() => setSelectedImageForUpscale(null)}
         image={selectedImageForUpscale || { filename: '', prompt: '' }}
-        onSuccess={(newImage) => {
-          setGallery((prev) => {
-            const updated = [newImage, ...prev];
-            localStorage.setItem("comfyui_gallery", JSON.stringify(updated));
-            return updated;
-          });
+        onSuccess={async (newImage) => {
+          const updated = [newImage, ...gallery];
+          setGallery(updated);
+          await db.set("comfyui_gallery", updated);
           setSelectedImageForUpscale(null);
         }}
       />

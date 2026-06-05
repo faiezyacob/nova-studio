@@ -9,6 +9,7 @@ import AgentWorkspace from "@/components/AgentWorkspace";
 import { AppMode, AgentSession, ChatMessage, ChatSession, GalleryItem, Lora, VideoGalleryItem } from "@/types";
 import { sceneAgent } from "@/lib/scene-agent/scene-agent";
 import { fullCleanup } from "@/lib/scene-agent/resource-manager";
+import { db, migrateFromLocalStorage } from "@/utils/db";
 
 export default function App() {
   const [mode, setMode] = useState<AppMode>("image");
@@ -36,26 +37,8 @@ export default function App() {
 
   // Image Generation States
   const [imageStyle, setImageStyle] = useState("realistic");
-  const [imageWidth, setImageWidth] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("image_dimensions");
-      if (saved) {
-        const { width } = JSON.parse(saved);
-        if (width) return width;
-      }
-    }
-    return 1024;
-  });
-  const [imageHeight, setImageHeight] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("image_dimensions");
-      if (saved) {
-        const { height } = JSON.parse(saved);
-        if (height) return height;
-      }
-    }
-    return 1024;
-  });
+  const [imageWidth, setImageWidth] = useState(1024);
+  const [imageHeight, setImageHeight] = useState(1024);
   const [lockAspectRatio, setLockAspectRatio] = useState(true);
   const [selectedLora, setSelectedLora] = useState<Lora>({ name: "", strength_model: 1.0, strength_clip: 1.0 });
   const [galleryFilter, setGalleryFilter] = useState("all");
@@ -91,13 +74,28 @@ export default function App() {
     setConfirmModal(null);
   };
 
+  // Migrate existing localStorage data to IndexedDB on first mount
+  useEffect(() => {
+    migrateFromLocalStorage();
+  }, []);
+
+  // Hydrate image dimensions from IndexedDB
+  useEffect(() => {
+    db.get<{ width: number; height: number }>("image_dimensions").then(saved => {
+      if (saved) {
+        if (saved.width) setImageWidth(saved.width);
+        if (saved.height) setImageHeight(saved.height);
+      }
+    });
+  }, []);
+
   const fetchVramStats = async () => {
     try {
       const res = await fetch("/api/system/stats");
       if (res.ok) {
         const data = await res.json();
         setVramStats({
-          used: data.used / (1024 ** 3), // B to GB
+          used: data.used / (1024 ** 3),
           total: data.total / (1024 ** 3),
           percent: data.percent,
           ram: data.ram ? {
@@ -108,7 +106,6 @@ export default function App() {
         });
       }
     } catch {
-      // Ignore errors
     }
   };
 
@@ -136,13 +133,14 @@ export default function App() {
     setIsPurging(true);
     toast.loading("Purging VRAM & System RAM...", { id: "vram-purge" });
     try {
-      if (localStorage.getItem('loaded_model')) {
+      const loadedModel = await db.get<string>('loaded_model');
+      if (loadedModel) {
         await fetch("/api/lmstudio/unload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ model: localStorage.getItem('loaded_model') }),
+          body: JSON.stringify({ model: loadedModel }),
         });
-        localStorage.removeItem("loaded_model");
+        await db.remove("loaded_model");
         setCurrentModel("");
       }
       await fetch("/api/comfy/free", { method: "POST" });
@@ -182,7 +180,7 @@ export default function App() {
         const data = await res.json();
         const models = (data.data || []).map((model: { id: string }) => model.id);
         setAvailableModels(models);
-        const savedModel = localStorage.getItem("loaded_model");
+        const savedModel = await db.get<string>("loaded_model");
         if (models.length > 0 && !selectedModel) {
           if (savedModel && models.includes(savedModel)) {
             setSelectedModel(savedModel);
@@ -213,7 +211,7 @@ export default function App() {
       setCurrentModel(newModel);
     }
     setSelectedModel(newModel);
-    localStorage.setItem("loaded_model", newModel);
+    await db.set("loaded_model", newModel);
   };
 
   useEffect(() => {
@@ -221,131 +219,109 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const savedModel = localStorage.getItem("loaded_model");
-    if (savedModel && availableModels.includes(savedModel)) {
-      setCurrentModel(savedModel);
-      setSelectedModel(savedModel);
-    }
+    db.get<string>("loaded_model").then(savedModel => {
+      if (savedModel && availableModels.includes(savedModel)) {
+        setCurrentModel(savedModel);
+        setSelectedModel(savedModel);
+      }
+    });
   }, [availableModels]);
 
   useEffect(() => {
-    const savedSessions = localStorage.getItem("chat_sessions");
-    if (!savedSessions) return;
-    try {
-      const parsed = JSON.parse(savedSessions);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        setChatSessions(parsed);
-        setActiveSessionId(parsed[0].id);
+    db.get<ChatSession[]>("chat_sessions").then(savedSessions => {
+      if (savedSessions && Array.isArray(savedSessions) && savedSessions.length > 0) {
+        setChatSessions(savedSessions);
+        setActiveSessionId(savedSessions[0].id);
       }
-    } catch (e) {
-      console.error("Failed to load chat sessions", e);
-    }
+    }).catch(e => console.error("Failed to load chat sessions", e));
   }, []);
 
   useEffect(() => {
-    const saved = localStorage.getItem("agent_sessions");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setAgentSessions(parsed);
-          setActiveAgentSessionId(parsed[0].id);
-        }
-      } catch (e) {
-        console.error("Failed to load agent sessions", e);
+    db.get<AgentSession[]>("agent_sessions").then(saved => {
+      if (saved && Array.isArray(saved) && saved.length > 0) {
+        setAgentSessions(saved);
+        setActiveAgentSessionId(saved[0].id);
       }
-    }
+    }).catch(e => console.error("Failed to load agent sessions", e));
   }, []);
 
   useEffect(() => {
     if (agentSessions.length > 0) {
-      localStorage.setItem("agent_sessions", JSON.stringify(agentSessions));
+      db.set("agent_sessions", agentSessions);
     } else {
-      localStorage.removeItem("agent_sessions");
+      db.remove("agent_sessions");
     }
   }, [agentSessions]);
 
   useEffect(() => {
     if (chatSessions.length > 0) {
-      localStorage.setItem("chat_sessions", JSON.stringify(chatSessions));
+      db.set("chat_sessions", chatSessions);
     } else {
-      localStorage.removeItem("chat_sessions");
+      db.remove("chat_sessions");
     }
   }, [chatSessions]);
 
   useEffect(() => {
-    const saved = localStorage.getItem("app_mode");
-    if (saved === "chat" || saved === "image" || saved === "video" || saved === "agent") {
-      setMode(saved as AppMode);
-    }
-    setModeHydrated(true);
+    db.get<AppMode>("app_mode").then(saved => {
+      if (saved === "chat" || saved === "image" || saved === "video" || saved === "agent") {
+        setMode(saved as AppMode);
+      }
+      setModeHydrated(true);
+    });
   }, []);
 
   useEffect(() => {
     if (modeManuallySet.current) {
-      localStorage.setItem("app_mode", mode);
+      db.set("app_mode", mode);
     }
   }, [mode]);
 
   useEffect(() => {
-    const saved = localStorage.getItem("comfyui_gallery");
-    if (!saved) return;
-    try {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        const migrated: GalleryItem[] = parsed.map((item: GalleryItem | string) => {
-          if (typeof item === "string") {
-            return {
-              filename: item.split('/').pop() || "unknown",
-              prompt: "Previous generation",
-              timestamp: Date.now(),
-              style: "realistic",
-            };
-          }
-          return { ...item, style: item.style || "realistic" };
-        });
-        setGallery(migrated);
-        localStorage.setItem("comfyui_gallery", JSON.stringify(migrated));
-      } else {
-        setGallery(parsed);
+    db.get<GalleryItem[] | string[]>("comfyui_gallery").then(saved => {
+      if (!saved) return;
+      if (Array.isArray(saved) && saved.length > 0) {
+        if (typeof saved[0] === "string") {
+          const migrated: GalleryItem[] = (saved as string[]).map(item => ({
+            filename: item.split('/').pop() || "unknown",
+            prompt: "Previous generation",
+            timestamp: Date.now(),
+            style: "realistic",
+          }));
+          setGallery(migrated);
+          db.set("comfyui_gallery", migrated);
+        } else {
+          const items = saved as GalleryItem[];
+          const withStyle = items.map(item => ({ ...item, style: item.style || "realistic" }));
+          setGallery(withStyle);
+          db.set("comfyui_gallery", withStyle);
+        }
       }
-    } catch (e) {
-      console.error("Failed to load gallery", e);
-    }
+    }).catch(e => console.error("Failed to load gallery", e));
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("image_dimensions", JSON.stringify({ width: imageWidth, height: imageHeight }));
+    db.set("image_dimensions", { width: imageWidth, height: imageHeight });
   }, [imageWidth, imageHeight]);
 
   useEffect(() => {
-    const saved = localStorage.getItem("video_gallery");
-    if (!saved) return;
-    try {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) setVideoGallery(parsed);
-    } catch (e) {
-      console.error("Failed to load video gallery", e);
-    }
+    db.get<VideoGalleryItem[]>("video_gallery").then(saved => {
+      if (!saved) return;
+      if (Array.isArray(saved)) setVideoGallery(saved);
+    }).catch(e => console.error("Failed to load video gallery", e));
   }, []);
 
   useEffect(() => {
-    const saved = localStorage.getItem("video_workspace_state");
-    if (!saved) return;
-    try {
-      const parsed = JSON.parse(saved);
-      setVideoWorkspaceState(prev => ({ ...prev, ...parsed }));
-    } catch (e) {
-      console.error("Failed to load video workspace state", e);
-    }
+    db.get("video_workspace_state").then(saved => {
+      if (!saved) return;
+      setVideoWorkspaceState(prev => ({ ...prev, ...saved }));
+    }).catch(e => console.error("Failed to load video workspace state", e));
   }, []);
 
   useEffect(() => {
     const { uploadedImage, uploadedImageName, ...rest } = videoWorkspaceState;
     try {
-      localStorage.setItem("video_workspace_state", JSON.stringify(rest));
+      db.set("video_workspace_state", JSON.parse(JSON.stringify(rest)));
     } catch {
-      // data URL too large; skip persistence for this update
     }
   }, [videoWorkspaceState]);
 
@@ -388,6 +364,7 @@ export default function App() {
       tasks: [],
       logs: [],
       outputVideo: null,
+      generatedFiles: [],
       createdAt: Date.now(),
       model: selectedModel || availableModels[0] || "",
     };
