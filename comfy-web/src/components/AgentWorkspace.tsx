@@ -677,7 +677,7 @@ export default function AgentWorkspace({
                       <input
                         type="range"
                         min={3}
-                        max={60}
+                        max={15}
                         step={1}
                         value={duration}
                         onChange={(e) => setDuration(parseInt(e.target.value))}

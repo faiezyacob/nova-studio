@@ -167,42 +167,31 @@ export async function generateVideoSegment(
 }
 
 export async function extractLastFrameFromVideo(videoPath: string): Promise<{ dataUrl: string; filename: string } | null> {
-  const videoUrl = `/generated/${videoPath}`;
-
-  const video = document.createElement('video');
-  video.crossOrigin = 'anonymous';
-  video.muted = true;
-
   try {
-    await new Promise<void>((resolve, reject) => {
-      video.onloadedmetadata = () => {
-        video.currentTime = video.duration - 0.01;
-        resolve();
-      };
-      video.onerror = () => reject(new Error('Failed to load video'));
-      video.src = videoUrl;
-      video.load();
-      setTimeout(() => reject(new Error('Video load timeout')), 30000);
+    const res = await fetch('/api/video/extract-frame', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ videoPath }),
     });
 
-    await new Promise<void>((resolve, reject) => {
-      video.onseeked = () => resolve();
-      video.onerror = () => reject(new Error('Seek error'));
-      setTimeout(() => reject(new Error('Seek timeout')), 10000);
-    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Frame extraction failed');
+    }
 
-    const scale = 3;
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth * scale;
-    canvas.height = video.videoHeight * scale;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Could not get canvas context');
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataUrl = canvas.toDataURL('image/png');
+    const { frame_path } = await res.json();
     const frameFilename = videoPath.replace(/\.[^/.]+$/, '_frame.png');
+
+    const imgRes = await fetch(`/generated/${frame_path}`);
+    if (!imgRes.ok) throw new Error('Failed to fetch extracted frame');
+
+    const blob = await imgRes.blob();
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
 
     setLastFrame(dataUrl, frameFilename);
     return { dataUrl, filename: frameFilename };

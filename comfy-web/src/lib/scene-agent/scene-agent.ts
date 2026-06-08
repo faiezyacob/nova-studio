@@ -156,9 +156,7 @@ export class SceneAgent {
       });
 
       imageFilename = await this.queue.runTask(async (task) => {
-        const finalPrompt = options?.styleDescription
-          ? `${options.styleDescription}\n${plan.image_prompt}`
-          : plan.image_prompt;
+        const finalPrompt = plan.image_prompt;
         const result = await generateImage(finalPrompt, imageWidth, imageHeight, options?.lora || null, this.queue, task.id);
         if (!result) throw new Error('Image generation failed');
         return result;
@@ -198,9 +196,7 @@ export class SceneAgent {
             } catch {}
           }
           imageFilename = await this.queue.rerunTask('generate_image', async (task) => {
-            const finalPrompt = options?.styleDescription
-              ? `${options.styleDescription}\n${this._currentImagePrompt}`
-              : this._currentImagePrompt;
+            const finalPrompt = this._currentImagePrompt;
             const result = await generateImage(finalPrompt, imageWidth, imageHeight, options?.lora || null, this.queue, task.id);
             if (!result) throw new Error('Image regeneration failed');
             return result;
