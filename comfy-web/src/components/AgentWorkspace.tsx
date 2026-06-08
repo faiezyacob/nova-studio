@@ -366,9 +366,12 @@ export default function AgentWorkspace({
                 (seg: { filename: string }) => seg.filename,
               );
               const imageFile = event.data?.imageFilename;
+              const frameFiles = (event.data?.frameFiles || []).map(
+                (f: { filename: string }) => f.filename,
+              );
               const allFiles = imageFile
-                ? [...segmentFiles, imageFile]
-                : segmentFiles;
+                ? [...segmentFiles, imageFile, ...frameFiles]
+                : [...segmentFiles, ...frameFiles];
               return {
                 ...s,
                 logs: [...s.logs, '[Complete] Scene generation finished'],

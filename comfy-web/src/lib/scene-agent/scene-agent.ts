@@ -149,6 +149,7 @@ export class SceneAgent {
 
       let imageFilename: string | null = null;
       const videoSegments: { filename: string; subfolder?: string }[] = [];
+      const frameFiles: { filename: string; subfolder: string }[] = [];
       const segmentPrompts = [...plan.video_prompts];
 
       await this.queue.runTask(async () => {
@@ -248,6 +249,13 @@ export class SceneAgent {
           subfolder: videoResult.subfolder,
         });
 
+        if (videoResult.frame_path) {
+          frameFiles.push({
+            filename: videoResult.frame_path,
+            subfolder: videoResult.frame_subfolder || 'frame',
+          });
+        }
+
         if (segIdx < segmentPrompts.length - 1) {
           await this.queue.runTask(async (task) => {
             if (videoResult.frame_path) {
@@ -257,6 +265,10 @@ export class SceneAgent {
             } else {
               const frame = await extractLastFrameFromVideo(videoResult.video_path);
               if (frame) {
+                frameFiles.push({
+                  filename: frame.filename,
+                  subfolder: '',
+                });
                 addContinuityNote(`Segment ${segIdx + 1} completed. Continuity maintained.`);
               }
             }
@@ -285,7 +297,7 @@ export class SceneAgent {
       }
 
       this.setStatus('completed');
-      this.emit({ type: 'complete', data: { videoSegments, scenePlan: plan, imageFilename } });
+      this.emit({ type: 'complete', data: { videoSegments, scenePlan: plan, imageFilename, frameFiles } });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       this.setStatus('failed');

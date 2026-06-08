@@ -318,6 +318,21 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
+    // Also clean from ComfyUI/output/frame/ for image files (e.g. WAN continuity frames)
+    if (!isVideo) {
+      for (const target of targets) {
+        const comfyFrameTarget = path.join(COMFY_OUTPUT_DIR, 'frame', target);
+        try {
+          if (existsSync(comfyFrameTarget)) {
+            await unlink(comfyFrameTarget);
+            deletedFromComfy++;
+          }
+        } catch (e) {
+          console.warn(`[DELETE] Failed to delete frame file: ${comfyFrameTarget}`, e);
+        }
+      }
+    }
+
     return NextResponse.json({
       message: `Deleted ${isVideo ? 'video and associated files' : 'image'}`,
       details: {
