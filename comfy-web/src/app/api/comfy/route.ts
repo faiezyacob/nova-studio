@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateWithSDK } from '@/lib/comfy-sdk';
+import { generateWithSDK, generateWithIdeogramSDK } from '@/lib/comfy-sdk';
 
 interface Lora {
   name: string;
@@ -12,7 +12,7 @@ const COMFYUI_URL = process.env.COMFYUI_URL || 'http://127.0.0.1:8188';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { prompt, width, height, loras, seed } = body;
+    const { prompt, width, height, loras, seed, workflow } = body;
     const generationId = request.headers.get('x-generation-id') || undefined;
 
     if (!prompt) {
@@ -22,10 +22,14 @@ export async function POST(request: NextRequest) {
     const finalWidth = Math.max(256, Math.min(4096, width || 1024));
     const finalHeight = Math.max(256, Math.min(4096, height || 1024));
 
-    const lora = loras && loras.length > 0 ? loras[0] : null;
-    
-    const result = await generateWithSDK(prompt, finalWidth, finalHeight, lora, seed, generationId);
-    
+    let result;
+    if (workflow === 'ideogram4') {
+      result = await generateWithIdeogramSDK(prompt, finalWidth, finalHeight, seed, generationId);
+    } else {
+      const lora = loras && loras.length > 0 ? loras[0] : null;
+      result = await generateWithSDK(prompt, finalWidth, finalHeight, lora, seed, generationId);
+    }
+
     return NextResponse.json({ 
       prompt_id: result.prompt_id,
       images: result.images,

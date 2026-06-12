@@ -140,6 +140,7 @@ export default function ImageWorkspace({
 }: ImageWorkspaceProps) {
   const [selectedImageForUpscale, setSelectedImageForUpscale] = useState<GalleryItem | null>(null);
   const [imageSeed, setImageSeed] = useState<string>("");
+  const [imageWorkflow, setImageWorkflow] = useState<string>("z-image-turbo");
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const [progress, setProgress] = useState<{ value: number; max: number } | null>(null);
@@ -274,7 +275,8 @@ export default function ImageWorkspace({
           prompt: prompt.trim(),
           width: finalWidth,
           height: finalHeight,
-          loras: selectedLora.name ? [selectedLora] : [],
+          workflow: imageWorkflow,
+          loras: imageWorkflow === 'ideogram4' ? [] : (selectedLora.name ? [selectedLora] : []),
           seed: imageSeed ? parseInt(imageSeed) : undefined
         }),
       });
@@ -323,12 +325,172 @@ export default function ImageWorkspace({
     }
   };
 
+  const visualReasoningSystemPrompt = `
+You are an elite visual director, photographer, production designer, cinematographer, and scene planner.
+
+Given a short image concept, construct a complete visual understanding of the image.
+
+Do not merely describe the subject.
+
+Imagine the entire image.
+
+Determine:
+
+- what surrounds the subject
+- where the scene takes place
+- time of day
+- lighting conditions
+- atmosphere
+- mood
+- composition
+- background elements
+- supporting objects
+- visual depth
+- color relationships
+
+Expand sparse prompts into fully realized visual scenes.
+
+VISUAL REASONING PRINCIPLES
+
+When information is missing:
+
+- infer realistic details
+- infer visually appealing composition
+- infer believable surroundings
+- infer professional art direction
+- infer realistic environmental storytelling
+
+Never mention uncertainty.
+
+Never use phrases such as:
+
+- "possibly"
+- "might be"
+- "appears to"
+- "likely"
+
+Instead make confident visual decisions.
+
+STYLE REASONING
+
+Generate:
+
+- aesthetics
+- lighting
+- photographic characteristics
+- medium
+- dominant color palette
+
+COMPOSITION REASONING
+
+Generate:
+
+- foreground
+- primary subjects
+- secondary objects
+- background
+- spatial hierarchy
+
+OBJECT EXTRACTION
+
+Every major visible object should be represented in elements[].
+
+Each object should contain:
+
+- description
+- approximate bounding box
+- dominant colors
+
+BOUNDING BOX RULES
+
+Coordinate space:
+
+0-1000
+
+Format:
+
+[x1, y1, x2, y2]
+
+Estimate positions realistically.
+
+Precise accuracy is not required.
+
+The purpose is scene planning.
+
+COLOR PALETTE RULES
+
+Generate realistic dominant colors.
+
+Use hexadecimal values.
+
+Prefer 3-8 colors.
+
+SCHEMA
+
+{
+  "high_level_description": "",
+  "style_description": {
+    "aesthetics": "",
+    "lighting": "",
+    "photo": "",
+    "medium": "",
+    "color_palette": []
+  },
+  "compositional_deconstruction": {
+    "background": "",
+    "elements": [
+      {
+        "type": "obj",
+        "bbox": [0,0,0,0],
+        "desc": "",
+        "color_palette": []
+      }
+    ]
+  }
+}
+
+QUALITY TARGET
+
+The output should resemble the internal visual planning process of a state-of-the-art image generation model.
+
+The JSON should contain information that could be used to reconstruct the image without access to the original prompt.
+
+A simple prompt such as:
+
+"Young Asian woman holding an ice cream"
+
+should become a complete scene plan including:
+
+- cafe environment
+- furniture
+- lighting
+- atmosphere
+- subject placement
+- ice cream placement
+- supporting objects
+- background elements
+- color palette
+- visual style
+
+The JSON should be substantially richer than the original prompt.
+
+OUTPUT RULES
+
+- Output ONLY valid JSON.
+- No markdown.
+- No explanations.
+- No code fences.
+- No comments.
+- No additional text.
+`;
+
   const enhancePrompt = async () => {
     if (!prompt.trim() || !selectedModel) return;
 
     await db.set("loaded_model", selectedModel);
-    const stylePrefix = STYLE_DESCRIPTIONS[imageStyle] || "";
-    const systemPrompt = `
+
+    const isIdeogram = imageWorkflow === 'ideogram4';
+    const systemPrompt = isIdeogram ? visualReasoningSystemPrompt : `
 You are a prompt enhancer optimized for the z-image-turbo model.
 Return ONLY the final enhanced prompt inside <prompt></prompt>.
 STRICT RULES:
@@ -347,7 +509,7 @@ STRICT RULES:
 - DO NOT mention smartphone, camera, or any device related terms
 - Maintain original pose / action (i.e selfie, etc) if included
 STYLE ENFORCEMENT:
-${stylePrefix}
+${STYLE_DESCRIPTIONS[imageStyle] || ""}
 If you output anything outside <prompt></prompt>, the answer is invalid.
 `;
 
@@ -362,7 +524,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
             { role: "system", content: systemPrompt },
             { role: "user", content: prompt },
           ],
-          temperature: 0.4
+          temperature: isIdeogram ? 0.7 : 0.4
         }),
       });
 
@@ -371,21 +533,27 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
       const rawText =
         data.choices?.[0]?.message?.content || data.choices?.[0]?.message?.reasoning_content || "";
 
-      const match = rawText.match(/<prompt>([\s\S]*?)<\/prompt>/i);
-      let enhanced =
-        match?.[1]?.trim() ||
-        rawText
-          .split("\n")
-          .map((line: string) => line.trim())
-          .filter((line: string) => line.length > 20 && !line.match(/<|>|{|}|\[|\]|```|^[-*]/))
-          .pop() ||
-        prompt;
+      let enhanced: string | null = null;
 
-      enhanced = enhanced.replace(/^["']|["']$/g, "").replace(/\s+/g, " ").trim();
+      if (isIdeogram) {
+        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+        enhanced = jsonMatch ? jsonMatch[0].trim() : rawText.trim();
+      } else {
+        const match = rawText.match(/<prompt>([\s\S]*?)<\/prompt>/i);
+        enhanced =
+          match?.[1]?.trim() ||
+          rawText
+            .split("\n")
+            .map((line: string) => line.trim())
+            .filter((line: string) => line.length > 20 && !line.match(/<|>|{|}|\[|\]|```|^[-*]/))
+            .pop() ||
+          prompt;
+        enhanced = enhanced.replace(/^["']|["']$/g, "").replace(/\s+/g, " ").trim();
+      }
 
       if (enhanced && enhanced !== prompt) {
         setPrompt(enhanced);
-        toast.success("Prompt enhanced");
+        toast.success(isIdeogram ? "Visual plan created" : "Prompt enhanced");
       } else {
         toast.error("Enhancement failed");
       }
@@ -534,12 +702,12 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
         <div className="mx-auto w-full max-w-6xl space-y-7">
           <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] max-w-5xl m-auto p-4 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
 
-            {/* Row 1: Model + Style + Enhance */}
+            {/* Row 1: LLM + Engine + Style + Enhance */}
             <div className="mb-3 flex flex-wrap items-stretch gap-3">
 
-              {/* Model */}
+              {/* LLM Model (for Enhance) */}
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Model</span>
+                <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">LLM</span>
                 <div className="relative min-w-[140px] max-w-[200px]">
                   <select
                     value={selectedModel}
@@ -554,6 +722,23 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                         <option key={model} value={model}>{model}</option>
                       ))
                     )}
+                  </select>
+                  <ChevronIcon />
+                </div>
+              </div>
+
+              {/* Image Engine */}
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Engine</span>
+                <div className="relative min-w-[140px] max-w-[200px]">
+                  <select
+                    value={imageWorkflow}
+                    onChange={(e) => setImageWorkflow(e.target.value)}
+                    disabled={isGenerating}
+                    className="w-full rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none truncate disabled:opacity-50"
+                  >
+                    <option value="z-image-turbo">Z Image Turbo</option>
+                    <option value="ideogram4">Ideogram v4</option>
                   </select>
                   <ChevronIcon />
                 </div>
@@ -607,64 +792,68 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
             {/* Row 2: LoRA + Strength + Ratio */}
             <div className="mb-3 flex flex-wrap items-end gap-3">
 
-              {/* LoRA Select */}
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">LoRA</span>
-                <div className="relative">
-                  <select
-                    value={selectedLora.name}
-                    onChange={(e) => setSelectedLora({ ...selectedLora, name: e.target.value })}
-                    disabled={isGenerating}
-                    className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none disabled:opacity-50"
-                  >
-                    <option value="">None</option>
-                    {AVAILABLE_LORAS.map((loraName) => (
-                      <option key={loraName} value={loraName}>
-                        {loraName.replace('.safetensors', '')}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronIcon />
-                </div>
-              </div>
+              {imageWorkflow !== 'ideogram4' && (
+                <>
+                  {/* LoRA Select */}
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">LoRA</span>
+                    <div className="relative">
+                      <select
+                        value={selectedLora.name}
+                        onChange={(e) => setSelectedLora({ ...selectedLora, name: e.target.value })}
+                        disabled={isGenerating}
+                        className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none disabled:opacity-50"
+                      >
+                        <option value="">None</option>
+                        {AVAILABLE_LORAS.map((loraName) => (
+                          <option key={loraName} value={loraName}>
+                            {loraName.replace('.safetensors', '')}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronIcon />
+                    </div>
+                  </div>
 
-              {/* Strength */}
-              <div className="flex flex-col gap-1 min-w-[140px] max-w-[200px]">
-                <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Strength</span>
-                <div className="flex items-center gap-2 h-[34px]">
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={selectedLora.strength_model}
-                    onChange={(e) =>
-                      setSelectedLora({ ...selectedLora, strength_model: parseFloat(e.target.value) })
-                    }
-                    disabled={isGenerating}
-                    className="
-            flex-1 h-1.5 appearance-none rounded-full outline-none
-            bg-[#494741] disabled:opacity-50 cursor-pointer
-            [&::-webkit-slider-thumb]:appearance-none
-            [&::-webkit-slider-thumb]:h-3.5
-            [&::-webkit-slider-thumb]:w-3.5
-            [&::-webkit-slider-thumb]:rounded-full
-            [&::-webkit-slider-thumb]:bg-[#c9a87a]
-            [&::-webkit-slider-thumb]:cursor-pointer
-            [&::-webkit-slider-thumb]:transition
-            [&::-webkit-slider-thumb]:hover:bg-[#d8b88d]
-            [&::-moz-range-thumb]:h-3.5
-            [&::-moz-range-thumb]:w-3.5
-            [&::-moz-range-thumb]:rounded-full
-            [&::-moz-range-thumb]:bg-[#c9a87a]
-            [&::-moz-range-thumb]:border-0
-          "
-                  />
-                  <span className="w-9 text-center rounded-md bg-[#262624] border border-[#494741] py-0.5 text-[11px] tabular-nums text-[#c9a87a]">
-                    {selectedLora.strength_model.toFixed(2)}
-                  </span>
-                </div>
-              </div>
+                  {/* Strength */}
+                  <div className="flex flex-col gap-1 min-w-[140px] max-w-[200px]">
+                    <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Strength</span>
+                    <div className="flex items-center gap-2 h-[34px]">
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={selectedLora.strength_model}
+                        onChange={(e) =>
+                          setSelectedLora({ ...selectedLora, strength_model: parseFloat(e.target.value) })
+                        }
+                        disabled={isGenerating}
+                        className="
+                flex-1 h-1.5 appearance-none rounded-full outline-none
+                bg-[#494741] disabled:opacity-50 cursor-pointer
+                [&::-webkit-slider-thumb]:appearance-none
+                [&::-webkit-slider-thumb]:h-3.5
+                [&::-webkit-slider-thumb]:w-3.5
+                [&::-webkit-slider-thumb]:rounded-full
+                [&::-webkit-slider-thumb]:bg-[#c9a87a]
+                [&::-webkit-slider-thumb]:cursor-pointer
+                [&::-webkit-slider-thumb]:transition
+                [&::-webkit-slider-thumb]:hover:bg-[#d8b88d]
+                [&::-moz-range-thumb]:h-3.5
+                [&::-moz-range-thumb]:w-3.5
+                [&::-moz-range-thumb]:rounded-full
+                [&::-moz-range-thumb]:bg-[#c9a87a]
+                [&::-moz-range-thumb]:border-0
+              "
+                      />
+                      <span className="w-9 text-center rounded-md bg-[#262624] border border-[#494741] py-0.5 text-[11px] tabular-nums text-[#c9a87a]">
+                        {selectedLora.strength_model.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Dimensions */}
               <div className="flex flex-wrap items-end gap-3">

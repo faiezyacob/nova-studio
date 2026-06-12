@@ -209,4 +209,192 @@ export async function generateWithSDK(
   });
 }
 
+export async function generateWithIdeogramSDK(
+  prompt: string,
+  width: number,
+  height: number,
+  seed?: number,
+  generationId?: string
+): Promise<{ prompt_id: string; images: string[]; seed: number }> {
+  await api.init(5, 2000).waitForReady();
+
+  const prefix = `gen_${Math.floor(Date.now() / 1000)}`;
+  const generationSeed = seed ?? Math.floor(Math.random() * 10000000000000);
+
+  const nodes: Record<string, object> = {};
+
+  nodes["23"] = {
+    class_type: "UNETLoader",
+    inputs: {
+      unet_name: "ideogram4_fp8_scaled.safetensors",
+      weight_dtype: "default",
+    },
+  };
+  nodes["154"] = {
+    class_type: "UNETLoader",
+    inputs: {
+      unet_name: "ideogram4_unconditional_fp8_scaled.safetensors",
+      weight_dtype: "default",
+    },
+  };
+  nodes["14"] = {
+    class_type: "CLIPLoader",
+    inputs: {
+      clip_name: "qwen3vl_8b_fp8_scaled.safetensors",
+      type: "ideogram4",
+    },
+  };
+  nodes["9"] = {
+    class_type: "VAELoader",
+    inputs: {
+      vae_name: "flux2-vae.safetensors",
+    },
+  };
+  nodes["24"] = {
+    class_type: "CLIPTextEncode",
+    inputs: {
+      clip: ["14", 0],
+      text: prompt,
+    },
+  };
+  nodes["10"] = {
+    class_type: "ConditioningZeroOut",
+    inputs: {
+      conditioning: ["24", 0],
+    },
+  };
+  nodes["157"] = {
+    class_type: "CFGOverride",
+    inputs: {
+      model: ["23", 0],
+      cfg: 3,
+      scale: 0.9,
+      start_percent: 0.0,
+      end_percent: 1.0,
+      block: 1,
+    },
+  };
+  nodes["155"] = {
+    class_type: "DualModelGuider",
+    inputs: {
+      model: ["157", 0],
+      positive: ["24", 0],
+      model_negative: ["154", 0],
+      negative: ["10", 0],
+      cfg: 7,
+    },
+  };
+  nodes["16"] = {
+    class_type: "KSamplerSelect",
+    inputs: {
+      sampler_name: "res_multistep",
+    },
+  };
+  nodes["17"] = {
+    class_type: "Ideogram4Scheduler",
+    inputs: {
+      steps: 12,
+      width,
+      height,
+      mu: 0.5,
+      std: 1.75,
+    },
+  };
+  nodes["18"] = {
+    class_type: "RandomNoise",
+    inputs: {
+      noise_seed: generationSeed,
+    },
+  };
+  nodes["11"] = {
+    class_type: "EmptyFlux2LatentImage",
+    inputs: {
+      width,
+      height,
+      batch_size: 1,
+    },
+  };
+  nodes["12"] = {
+    class_type: "SamplerCustomAdvanced",
+    inputs: {
+      noise: ["18", 0],
+      guider: ["155", 0],
+      sampler: ["16", 0],
+      sigmas: ["17", 0],
+      latent_image: ["11", 0],
+    },
+  };
+  nodes["13"] = {
+    class_type: "VAEDecode",
+    inputs: {
+      samples: ["12", 0],
+      vae: ["9", 0],
+    },
+  };
+  nodes["25"] = {
+    class_type: "SaveImage",
+    inputs: {
+      images: ["13", 0],
+      filename_prefix: prefix,
+    },
+  };
+
+  return new Promise((resolve, reject) => {
+    let resolved = false;
+
+    const builder = new PromptBuilder(
+      nodes as any,
+      ["prompt", "width", "height", "seed"],
+      ["images"]
+    );
+
+    builder.setInputNode("prompt", "24.inputs.text");
+    builder.setInputNode("width", "11.inputs.width");
+    builder.setInputNode("height", "11.inputs.height");
+    builder.setInputNode("seed", "18.inputs.noise_seed");
+    builder.setOutputNode("images", "25");
+
+    const wrapper = new CallWrapper(api, builder);
+
+    wrapper.onFinished((data: any, promptId?: string) => {
+      if (resolved) return;
+      resolved = true;
+      try {
+        const images = data.images?.images?.map((img: any) => {
+          const url = api.getPathImage(img);
+          const urlObj = new URL(url);
+          return urlObj.searchParams.get('filename') || img.filename || `${prefix}_00001_.png`;
+        }) || [];
+        if (generationId) {
+          emitComplete(generationId, {
+            video_path: images[0] || '',
+            subfolder: '',
+            prompt_id: promptId || prefix,
+          });
+        }
+        resolve({ prompt_id: promptId || prefix, images, seed: generationSeed });
+      } catch (err) {
+        reject(err);
+      }
+    });
+
+    wrapper.onFailed((err: Error) => {
+      if (resolved) return;
+      resolved = true;
+      if (generationId) {
+        emitError(generationId, { error: err.message || String(err) });
+      }
+      reject(err);
+    });
+
+    wrapper.onProgress((progress: any) => {
+      if (generationId && progress) {
+        emitProgress(generationId, { value: progress.value, max: progress.max });
+      }
+    });
+
+    wrapper.run();
+  });
+}
+
 export { api };

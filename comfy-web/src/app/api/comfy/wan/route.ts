@@ -91,7 +91,7 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
     inputs: {
       model: ["11", 0],
       lora_name: "lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors",
-      strength_model: 3.0, // ✅ HIGH noise gets 3.0 (original node14)
+      strength_model: 4.0,
     },
   };
 
@@ -99,13 +99,12 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
     class_type: "ModelSamplingSD3",
     inputs: {
       model: ["12", 0],
-      shift: 8, // ✅ original uses 8 for both
+      shift: 4,
     },
   };
 
   // =========================
-  // LOW NOISE MODEL PIPELINE
-  // Original: node15 -> node10(sage) -> node12(torch) -> node13(lora 1.5) -> node8(SD3) -> KSampler16 (SECOND)
+  // LOW NOISE MODEL PIPELINE (no LoRA - all motion handled by high-noise stage)
   // =========================
 
   nodes["20"] = {
@@ -124,20 +123,11 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
     },
   };
 
-  nodes["22"] = {
-    class_type: "LoraLoaderModelOnly",
-    inputs: {
-      model: ["21", 0],
-      lora_name: "lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors",
-      strength_model: 1.5, // ✅ LOW noise gets 1.5 (original node13)
-    },
-  };
-
   nodes["23"] = {
     class_type: "ModelSamplingSD3",
     inputs: {
-      model: ["22", 0],
-      shift: 8,
+      model: ["21", 0],
+      shift: 4,
     },
   };
 
@@ -284,13 +274,13 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
       negative: ["50", 1],
       latent_image: ["50", 2],      // ✅ takes latent from WanImageToVideo
       add_noise: "enable",          // ✅ matches original
-      noise_seed: seed,             // ✅ random seed for first pass
-      steps: 6,
+      noise_seed: seed,
+      steps: 10,
       cfg: 1,
-      sampler_name: "euler",
+      sampler_name: "er_sde",
       scheduler: "simple",
       start_at_step: 0,
-      end_at_step: 3,
+      end_at_step: 4,
       return_with_leftover_noise: "enable", // ✅ Changed to enable so Node 61 can continue
     },
   };
@@ -305,11 +295,11 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
       latent_image: ["60", 0],      // ✅ takes latent from FIRST sampler output
       add_noise: "disable",         // ✅ FIXED: Second pass should not re-add noise
       noise_seed: 0,
-      steps: 6,
+      steps: 10,
       cfg: 1,
-      sampler_name: "euler",
+      sampler_name: "er_sde",
       scheduler: "simple",
-      start_at_step: 3,             // ✅ FIXED: Start where first one left off
+      start_at_step: 4,             // ✅ FIXED: Start where first one left off
       end_at_step: 10000,           // ✅ FIXED: Finish all steps
       return_with_leftover_noise: "disable",
     },
