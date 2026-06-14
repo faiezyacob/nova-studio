@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react"
 import { toast } from "sonner";
 import { GalleryItem, HistoryEntry, Lora } from "@/types";
 import ImageUpscaleDialog from "./ImageUpscaleDialog";
+import SceneBlueprintViewer from "./SceneBlueprintViewer";
 import { db } from "@/utils/db";
 
 const AVAILABLE_LORAS = [
@@ -148,6 +149,7 @@ export default function ImageWorkspace({
   useImageForVideo,
 }: ImageWorkspaceProps) {
   const [selectedImageForUpscale, setSelectedImageForUpscale] = useState<GalleryItem | null>(null);
+  const [showBlueprintPanel, setShowBlueprintPanel] = useState(false);
   const [imageSeed, setImageSeed] = useState<string>("");
   const [imageWorkflow, setImageWorkflow] = useState<string>("z-image-turbo");
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -427,14 +429,13 @@ Text:
 
 BBOX RULES
 
-- bbox is optional
+- bbox is a MUST in any object or text element if the prompt implies a specific spatial placement or composition
 - When included, the property name MUST be exactly "bbox"
 - bbox MUST be an array of four integers
 - Format: [y_min,x_min,y_max,x_max]
 - Values must be between 0 and 1000
 - Never output bbox as a string
 - Never output unnamed coordinate arrays
-- Use bbox only when explicit layout control is needed
 
 ────────────────────────
 STRICT CHARACTER RULES
@@ -565,6 +566,7 @@ ${brokenJson}`;
   const repairCurrentJson = async () => {
     if (!prompt.trim() || !selectedModel) return;
 
+    await db.set("loaded_model", selectedModel);
     setIsRepairing(true);
     try {
       const repaired = await repairIdeogramJson(prompt.trim());
@@ -882,24 +884,39 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
               {/* Enhance + Repair */}
               <div className="ml-auto flex items-center gap-2">
                 {imageWorkflow === 'ideogram4' && (
-                  <button
-                    onClick={repairCurrentJson}
-                    disabled={isRepairing || isEnhancing || !prompt.trim() || !selectedModel || availableModels.length === 0}
-                    className="cursor-pointer rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-2 text-xs font-medium text-[#f2dbc0] transition hover:bg-[#4a433a] disabled:cursor-not-allowed disabled:opacity-40"
-                    title="Fix invalid JSON in the prompt field"
-                  >
-                    {isRepairing ? (
+                  <>
+                    <button
+                      onClick={() => setShowBlueprintPanel(true)}
+                      disabled={isGenerating || !prompt.trim()}
+                      className="cursor-pointer rounded-lg border border-[#4BC0C0]/50 bg-[#2a3a3a] px-3 py-2 text-xs font-medium text-[#4BC0C0] transition hover:bg-[#3a4a4a] disabled:cursor-not-allowed disabled:opacity-40"
+                      title="Preview object positions from bbox coordinates"
+                    >
                       <span className="flex items-center gap-1.5">
-                        <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                         </svg>
-                        Fixing…
+                        Preview Layout
                       </span>
-                    ) : (
-                      "⚡ Repair JSON"
-                    )}
-                  </button>
+                    </button>
+                    <button
+                      onClick={repairCurrentJson}
+                      disabled={isRepairing || isEnhancing || !prompt.trim() || !selectedModel || availableModels.length === 0}
+                      className="cursor-pointer rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-2 text-xs font-medium text-[#f2dbc0] transition hover:bg-[#4a433a] disabled:cursor-not-allowed disabled:opacity-40"
+                      title="Fix invalid JSON in the prompt field"
+                    >
+                      {isRepairing ? (
+                        <span className="flex items-center gap-1.5">
+                          <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                          </svg>
+                          Fixing…
+                        </span>
+                      ) : (
+                        "⚡ Repair JSON"
+                      )}
+                    </button>
+                  </>
                 )}
                 <button
                   onClick={enhancePrompt}
@@ -1122,6 +1139,13 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
             </div>
           </div>
 
+          {showBlueprintPanel && (
+            <SceneBlueprintViewer
+              prompt={prompt}
+              onClose={() => setShowBlueprintPanel(false)}
+            />
+          )}
+
           {gallery.length > 0 && (
             <div className="space-y-3 pt-4 max-w-5xl m-auto pb-4">
               <div className="flex items-center justify-between">
@@ -1275,6 +1299,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                           <span className="inline-block rounded-md bg-[#c9a87a]/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#d8b88d] backdrop-blur-sm border border-[#c9a87a]/30">
                             {item.style}
                           </span>
+
                           {item.seed !== undefined && (
                             <span className="inline-block rounded-md bg-[#494741]/60 px-2 py-0.5 text-[9px] font-mono text-[#9f988c] backdrop-blur-sm border border-[#5a5550]">
                               #{item.seed}
