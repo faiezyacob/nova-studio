@@ -152,6 +152,7 @@ export default function ImageWorkspace({
   const [imageWorkflow, setImageWorkflow] = useState<string>("z-image-turbo");
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
+  const [isRepairing, setIsRepairing] = useState(false);
   const [progress, setProgress] = useState<{ value: number; max: number } | null>(null);
   const [showProgressBar, setShowProgressBar] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -405,22 +406,35 @@ Must contain:
 
 ────────────────────────
 
-ELEMENT RULES
-
-Each element is either:
+ELEMENTS
 
 Object:
+
 {
-  "type": "obj",
-  "desc": "detailed description including material, texture, position, and relation to scene"
+  "type":"obj",
+  "desc":"detailed visual description",
+  "bbox":[y_min,x_min,y_max,x_max]
 }
 
 Text:
+
 {
-  "type": "text",
-  "text": "exact text",
-  "desc": "font style, size, color, placement"
+  "type":"text",
+  "text":"exact text",
+  "desc":"font style, size, color, placement",
+  "bbox":[y_min,x_min,y_max,x_max]
 }
+
+BBOX RULES
+
+- bbox is optional
+- When included, the property name MUST be exactly "bbox"
+- bbox MUST be an array of four integers
+- Format: [y_min,x_min,y_max,x_max]
+- Values must be between 0 and 1000
+- Never output bbox as a string
+- Never output unnamed coordinate arrays
+- Use bbox only when explicit layout control is needed
 
 ────────────────────────
 STRICT CHARACTER RULES
@@ -505,6 +519,68 @@ EXAMPLE OUTPUT (FOLLOW THIS STRUCTURE EXACTLY)
   `
 ;
 
+  const repairIdeogramJson = async (brokenJson: string): Promise<string | null> => {
+    const repairSystemPrompt = `You fix broken JSON. Output ONLY valid minified JSON. No markdown, no code fences, no explanations.`;
+
+    const repairUserPrompt = `Fix the following broken JSON so it is valid and parseable by JSON.parse().
+
+Rules:
+- Output ONLY valid minified JSON
+- No markdown, no code fences, no explanations
+- Fix missing quotes, trailing commas, unclosed brackets, unescaped characters
+- Preserve the original structure and values
+- If something is unfixable, infer a reasonable default
+- Never output partial or truncated JSON
+
+Broken JSON:
+${brokenJson}`;
+
+    try {
+      const response = await fetch("/api/lmstudio/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: selectedModel,
+          messages: [
+            { role: "system", content: repairSystemPrompt },
+            { role: "user", content: repairUserPrompt },
+          ],
+          temperature: 0,
+        }),
+      });
+
+      if (!response.ok) return null;
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content || "";
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) return null;
+
+      JSON.parse(jsonMatch[0]);
+      return jsonMatch[0];
+    } catch {
+      return null;
+    }
+  };
+
+  const repairCurrentJson = async () => {
+    if (!prompt.trim() || !selectedModel) return;
+
+    setIsRepairing(true);
+    try {
+      const repaired = await repairIdeogramJson(prompt.trim());
+      if (repaired) {
+        setPrompt(beautifyIfJson(repaired));
+        toast.success("JSON repaired");
+      } else {
+        toast.error("Could not repair JSON");
+      }
+    } catch {
+      toast.error("Failed to repair JSON");
+    } finally {
+      setIsRepairing(false);
+    }
+  };
+
   const enhancePrompt = async () => {
     if (!prompt.trim() || !selectedModel) return;
 
@@ -560,7 +636,20 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
         const jsonMatch = rawText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           let jsonStr = jsonMatch[0].trim().replace(/\\(")/g, '$1');
-          enhanced = beautifyIfJson(jsonStr);
+          try {
+            JSON.parse(jsonStr);
+            enhanced = beautifyIfJson(jsonStr);
+          } catch {
+            toast.loading("Fixing broken JSON...", { id: "json-repair" });
+            const repaired = await repairIdeogramJson(jsonStr);
+            if (repaired) {
+              enhanced = beautifyIfJson(repaired);
+              toast.success("JSON repaired", { id: "json-repair" });
+            } else {
+              toast.error("Auto-repair failed. Try the Repair JSON button.", { id: "json-repair" });
+              enhanced = beautifyIfJson(jsonStr);
+            }
+          }
         } else {
           enhanced = rawText.trim();
         }
@@ -790,8 +879,28 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                 </div>
               </div>
 
-              {/* Enhance */}
-              <div className="ml-auto flex flex-col gap-1 items-center justify-center">
+              {/* Enhance + Repair */}
+              <div className="ml-auto flex items-center gap-2">
+                {imageWorkflow === 'ideogram4' && (
+                  <button
+                    onClick={repairCurrentJson}
+                    disabled={isRepairing || isEnhancing || !prompt.trim() || !selectedModel || availableModels.length === 0}
+                    className="cursor-pointer rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-2 text-xs font-medium text-[#f2dbc0] transition hover:bg-[#4a433a] disabled:cursor-not-allowed disabled:opacity-40"
+                    title="Fix invalid JSON in the prompt field"
+                  >
+                    {isRepairing ? (
+                      <span className="flex items-center gap-1.5">
+                        <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                        </svg>
+                        Fixing…
+                      </span>
+                    ) : (
+                      "⚡ Repair JSON"
+                    )}
+                  </button>
+                )}
                 <button
                   onClick={enhancePrompt}
                   disabled={isEnhancing || !prompt.trim() || !selectedModel || availableModels.length === 0}
