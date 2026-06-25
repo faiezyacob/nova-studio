@@ -472,10 +472,18 @@ export async function generateWithKrea2TurboSDK(
       batch_size: 1,
     },
   };
+  nodes["28"] = {
+    class_type: "PathchSageAttentionKJ",
+    inputs: {
+      model: [unetNodeId, 0],
+      sage_attention: "auto",
+    },
+  };
+
   nodes["5"] = {
     class_type: "KSampler",
     inputs: {
-      model: [unetNodeId, 0],
+      model: ["28", 0],
       positive: ["2", 0],
       negative: ["4", 0],
       latent_image: ["6", 0],

@@ -192,6 +192,7 @@ export default function ImageWorkspace({
               seed: seed,
               width: width,
               height: height,
+              generationTime: Math.round((Date.now() - generationStartTime) / 100) / 10,
             }));
 
             await Promise.all(
@@ -219,6 +220,7 @@ export default function ImageWorkspace({
   const generateImage = async () => {
     if (!prompt.trim()) return;
 
+    const generationStartTime = Date.now();
     const generationId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
     window.dispatchEvent(new Event('vram-stats-request'));
@@ -308,6 +310,7 @@ export default function ImageWorkspace({
           seed: generatedSeed,
           width: finalWidth,
           height: finalHeight,
+          generationTime: Math.round((Date.now() - generationStartTime) / 100) / 10,
         }));
 
         await Promise.all(
@@ -1322,6 +1325,12 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                           <span className="inline-block rounded-md bg-[#c9a87a]/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#d8b88d] backdrop-blur-sm border border-[#c9a87a]/30">
                             {item.style}
                           </span>
+
+                          {item.generationTime !== undefined && (
+                            <span className="inline-block rounded-md bg-[#4a5a3a]/60 px-2 py-0.5 text-[9px] font-mono text-[#a0c080] backdrop-blur-sm border border-[#5a6a4a]">
+                              {item.generationTime}s
+                            </span>
+                          )}
 
                           {item.seed !== undefined && (
                             <span className="inline-block rounded-md bg-[#494741]/60 px-2 py-0.5 text-[9px] font-mono text-[#9f988c] backdrop-blur-sm border border-[#5a5550]">

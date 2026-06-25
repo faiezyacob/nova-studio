@@ -23,6 +23,7 @@ export interface GalleryItem {
   hidden?: boolean;
   width?: number;
   height?: number;
+  generationTime?: number;
 }
 
 export interface VideoGalleryItem {
