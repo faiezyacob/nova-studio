@@ -397,4 +397,167 @@ export async function generateWithIdeogramSDK(
   });
 }
 
+export async function generateWithKrea2TurboSDK(
+  prompt: string,
+  width: number,
+  height: number,
+  lora: Lora | null = null,
+  seed?: number,
+  generationId?: string
+): Promise<{ prompt_id: string; images: string[]; seed: number }> {
+  await api.init(5, 2000).waitForReady();
+
+  const prefix = `gen_${Math.floor(Date.now() / 1000)}`;
+  const generationSeed = seed ?? Math.floor(Math.random() * 10000000000000);
+
+  const nodes: Record<string, object> = {};
+
+  nodes["3"] = {
+    class_type: "UNETLoader",
+    inputs: {
+      unet_name: "krea2_turbo_fp8_scaled.safetensors",
+      weight_dtype: "default",
+    },
+  };
+  nodes["1"] = {
+    class_type: "CLIPLoader",
+    inputs: {
+      clip_name: "qwen3vl_4b_fp8_scaled.safetensors",
+      type: "krea2",
+    },
+  };
+  nodes["7"] = {
+    class_type: "VAELoader",
+    inputs: {
+      vae_name: "qwen_image_vae.safetensors",
+    },
+  };
+
+  let unetNodeId = "3";
+  let clipNodeId = "1";
+
+  if (lora?.name) {
+    nodes["100"] = {
+      class_type: "LoraLoader",
+      inputs: {
+        model: ["3", 0],
+        clip: ["1", 0],
+        lora_name: lora.name,
+        strength_model: lora.strength_model,
+        strength_clip: lora.strength_clip,
+      },
+    };
+    unetNodeId = "100";
+    clipNodeId = "100";
+  }
+
+  nodes["2"] = {
+    class_type: "CLIPTextEncode",
+    inputs: {
+      clip: [clipNodeId, lora ? 1 : 0],
+      text: prompt,
+    },
+  };
+  nodes["4"] = {
+    class_type: "ConditioningZeroOut",
+    inputs: {
+      conditioning: ["2", 0],
+    },
+  };
+  nodes["6"] = {
+    class_type: "EmptyLatentImage",
+    inputs: {
+      width,
+      height,
+      batch_size: 1,
+    },
+  };
+  nodes["5"] = {
+    class_type: "KSampler",
+    inputs: {
+      model: [unetNodeId, 0],
+      positive: ["2", 0],
+      negative: ["4", 0],
+      latent_image: ["6", 0],
+      seed: generationSeed,
+      steps: 8,
+      cfg: 1,
+      sampler_name: "er_sde",
+      scheduler: "simple",
+      denoise: 1,
+    },
+  };
+  nodes["8"] = {
+    class_type: "VAEDecode",
+    inputs: {
+      samples: ["5", 0],
+      vae: ["7", 0],
+    },
+  };
+  nodes["9"] = {
+    class_type: "SaveImage",
+    inputs: {
+      images: ["8", 0],
+      filename_prefix: prefix,
+    },
+  };
+
+  return new Promise((resolve, reject) => {
+    let resolved = false;
+
+    const builder = new PromptBuilder(
+      nodes as any,
+      ["prompt", "width", "height", "seed"],
+      ["images"]
+    );
+
+    builder.setInputNode("prompt", "2.inputs.text");
+    builder.setInputNode("width", "6.inputs.width");
+    builder.setInputNode("height", "6.inputs.height");
+    builder.setInputNode("seed", "5.inputs.seed");
+    builder.setOutputNode("images", "9");
+
+    const wrapper = new CallWrapper(api, builder);
+
+    wrapper.onFinished((data: any, promptId?: string) => {
+      if (resolved) return;
+      resolved = true;
+      try {
+        const images = data.images?.images?.map((img: any) => {
+          const url = api.getPathImage(img);
+          const urlObj = new URL(url);
+          return urlObj.searchParams.get('filename') || img.filename || `${prefix}_00001_.png`;
+        }) || [];
+        if (generationId) {
+          emitComplete(generationId, {
+            video_path: images[0] || '',
+            subfolder: '',
+            prompt_id: promptId || prefix,
+          });
+        }
+        resolve({ prompt_id: promptId || prefix, images, seed: generationSeed });
+      } catch (err) {
+        reject(err);
+      }
+    });
+
+    wrapper.onFailed((err: Error) => {
+      if (resolved) return;
+      resolved = true;
+      if (generationId) {
+        emitError(generationId, { error: err.message || String(err) });
+      }
+      reject(err);
+    });
+
+    wrapper.onProgress((progress: any) => {
+      if (generationId && progress) {
+        emitProgress(generationId, { value: progress.value, max: progress.max });
+      }
+    });
+
+    wrapper.run();
+  });
+}
+
 export { api };

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateWithSDK, generateWithIdeogramSDK } from '@/lib/comfy-sdk';
+import { generateWithSDK, generateWithIdeogramSDK, generateWithKrea2TurboSDK } from '@/lib/comfy-sdk';
 
 interface Lora {
   name: string;
@@ -25,6 +25,9 @@ export async function POST(request: NextRequest) {
     let result;
     if (workflow === 'ideogram4') {
       result = await generateWithIdeogramSDK(prompt, finalWidth, finalHeight, seed, generationId);
+    } else if (workflow === 'krea2-turbo') {
+      const lora = loras && loras.length > 0 ? loras[0] : null;
+      result = await generateWithKrea2TurboSDK(prompt, finalWidth, finalHeight, lora, seed, generationId);
     } else {
       const lora = loras && loras.length > 0 ? loras[0] : null;
       result = await generateWithSDK(prompt, finalWidth, finalHeight, lora, seed, generationId);

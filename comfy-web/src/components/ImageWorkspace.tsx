@@ -611,7 +611,7 @@ ${brokenJson}`;
 
     const isIdeogram = imageWorkflow === 'ideogram4';
     const systemPrompt = isIdeogram ? visualReasoningSystemPrompt : `
-You are a prompt enhancer optimized for the z-image-turbo model.
+You are a prompt enhancer optimized for the z-image-turbo / Krea2 turbo model.
 Return ONLY the final enhanced prompt inside <prompt></prompt>.
 STRICT RULES:
 - Output ONE natural flowing sentence only
@@ -876,6 +876,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                     className="w-full rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none truncate disabled:opacity-50"
                   >
                     <option value="z-image-turbo">Z Image Turbo</option>
+                    <option value="krea2-turbo">Krea2 Turbo Enhanced</option>
                     <option value="ideogram4">Ideogram v4</option>
                   </select>
                   <ChevronIcon />
