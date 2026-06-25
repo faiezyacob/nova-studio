@@ -49,7 +49,7 @@ export async function generateWithSDK(
   nodes["16"] = {
     class_type: "UNETLoader",
     inputs: {
-      unet_name: "z-image-turbo-fp8-e4m3fn.safetensors",
+      unet_name: "z_image_turbo_bf16.safetensors",
       weight_dtype: "fp8_e4m3fn",
     },
   };

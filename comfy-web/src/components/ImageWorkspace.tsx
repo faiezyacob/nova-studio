@@ -396,6 +396,27 @@ RULES:
 - If medium = "photograph", DO NOT include "art_style"
 
 ────────────────────────
+SELECTED STYLE
+────────────────────────
+
+${STYLE_DESCRIPTIONS[imageStyle] || ""}
+
+IMPORTANT:
+
+The selected style must influence the generated JSON.
+
+The style should primarily affect:
+- high_level_description
+- style_description.aesthetics
+- style_description.lighting
+- style_description.medium
+- style_description.art_style (when applicable)
+- background mood and atmosphere
+
+Do not merely describe the subject.
+Describe the scene as if it naturally exists in the selected style.
+
+────────────────────────
 
 3. "compositional_deconstruction"
 
@@ -430,8 +451,8 @@ Text:
 BBOX RULES
 
 - bbox is a MUST in any object or text element if the prompt implies a specific spatial placement or composition
-- When included, the property name MUST be exactly "bbox"
 - bbox MUST be an array of four integers
+- bbox is required for text or obj elements
 - Format: [y_min,x_min,y_max,x_max]
 - Values must be between 0 and 1000
 - Never output bbox as a string
@@ -1143,6 +1164,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
             <SceneBlueprintViewer
               prompt={prompt}
               onClose={() => setShowBlueprintPanel(false)}
+              onChange={setPrompt}
             />
           )}
 

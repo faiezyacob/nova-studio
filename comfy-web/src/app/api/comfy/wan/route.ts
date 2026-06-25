@@ -40,13 +40,13 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
   // HIGH NOISE model (original node 21)
   nodes["1"] = {
     class_type: "UnetLoaderGGUF",
-    inputs: { unet_name: "wan2.2_i2v_high_noise_14B_Q4_K_S.gguf" },
+    inputs: { unet_name: "wan2.2_i2v_high_noise_14B_Q4_K_M.gguf" },
   };
 
   // LOW NOISE model (original node 15)
   nodes["2"] = {
     class_type: "UnetLoaderGGUF",
-    inputs: { unet_name: "wan2.2_i2v_low_noise_14B_Q4_K_S.gguf" }, // ✅ FIXED: was high_noise twice
+    inputs: { unet_name: "wan2.2_i2v_low_noise_14B_Q4_K_M.gguf" },
   };
 
   nodes["3"] = {
@@ -54,8 +54,6 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
     inputs: { vae_name: "wan_2.1_vae.safetensors" },
   };
 
-  // ✅ FIXED: CLIPLoader - match original widget_values exactly
-  // Original: ["umt5_xxl_fp8_e4m3fn_scaled.safetensors", "wan", "default"]
   nodes["4"] = {
     class_type: "CLIPLoader",
     inputs: {
