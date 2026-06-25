@@ -152,6 +152,7 @@ export default function ImageWorkspace({
   const [showBlueprintPanel, setShowBlueprintPanel] = useState(false);
   const [imageSeed, setImageSeed] = useState<string>("");
   const [imageWorkflow, setImageWorkflow] = useState<string>("z-image-turbo");
+  const [sageAttention, setSageAttention] = useState(true);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const [isRepairing, setIsRepairing] = useState(false);
@@ -291,7 +292,8 @@ export default function ImageWorkspace({
           height: finalHeight,
           workflow: imageWorkflow,
           loras: imageWorkflow === 'ideogram4' ? [] : (selectedLora.name ? [selectedLora] : []),
-          seed: imageSeed ? parseInt(imageSeed) : undefined
+          seed: imageSeed ? parseInt(imageSeed) : undefined,
+          sageAttention
         }),
       });
 
@@ -885,6 +887,26 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                   <ChevronIcon />
                 </div>
               </div>
+
+              {/* Sage Attention */}
+              {imageWorkflow !== 'ideogram4' && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Sage Attn</span>
+                  <button
+                    onClick={() => setSageAttention(!sageAttention)}
+                    disabled={isGenerating}
+                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition disabled:opacity-50 ${
+                      sageAttention
+                        ? "border-[#4BC0C0]/50 bg-[#2a3a3a] text-[#4BC0C0]"
+                        : "border-[#494741] bg-[#262624] text-[#6b6560]"
+                    }`}
+                    title="Toggle Sage Attention optimization"
+                  >
+                    <span className={`h-2 w-2 rounded-full ${sageAttention ? "bg-[#4BC0C0]" : "bg-[#6b6560]"}`} />
+                    {sageAttention ? "On" : "Off"}
+                  </button>
+                </div>
+              )}
 
               {/* Style */}
               <div className="flex flex-col gap-1">

@@ -36,7 +36,8 @@ export async function generateWithSDK(
   height: number,
   lora: Lora | null = null,
   seed?: number,
-  generationId?: string
+  generationId?: string,
+  sageAttention: boolean = true
 ): Promise<{ prompt_id: string; images: string[]; seed: number }> {
   await api.init(5, 2000).waitForReady();
 
@@ -85,17 +86,21 @@ export async function generateWithSDK(
       vae_name: "ae.safetensors",
     },
   };
-  nodes["28"] = {
-    class_type: "PathchSageAttentionKJ",
-    inputs: {
-      model: [modelNodeId, 0],
-      sage_attention: "auto",
-    },
-  };
+  if (sageAttention) {
+    nodes["28"] = {
+      class_type: "PathchSageAttentionKJ",
+      inputs: {
+        model: [modelNodeId, 0],
+        sage_attention: "auto",
+      },
+    };
+    modelNodeId = "28";
+  }
+
   nodes["11"] = {
     class_type: "ModelSamplingAuraFlow",
     inputs: {
-      model: ["28", 0],
+      model: [modelNodeId, 0],
       shift: 3,
     },
   };
@@ -403,7 +408,8 @@ export async function generateWithKrea2TurboSDK(
   height: number,
   lora: Lora | null = null,
   seed?: number,
-  generationId?: string
+  generationId?: string,
+  sageAttention: boolean = true
 ): Promise<{ prompt_id: string; images: string[]; seed: number }> {
   await api.init(5, 2000).waitForReady();
 
@@ -472,18 +478,23 @@ export async function generateWithKrea2TurboSDK(
       batch_size: 1,
     },
   };
-  nodes["28"] = {
-    class_type: "PathchSageAttentionKJ",
-    inputs: {
-      model: [unetNodeId, 0],
-      sage_attention: "auto",
-    },
-  };
+  let ksamplerModelNodeId = unetNodeId;
+
+  if (sageAttention) {
+    nodes["28"] = {
+      class_type: "PathchSageAttentionKJ",
+      inputs: {
+        model: [unetNodeId, 0],
+        sage_attention: "auto",
+      },
+    };
+    ksamplerModelNodeId = "28";
+  }
 
   nodes["5"] = {
     class_type: "KSampler",
     inputs: {
-      model: ["28", 0],
+      model: [ksamplerModelNodeId, 0],
       positive: ["2", 0],
       negative: ["4", 0],
       latent_image: ["6", 0],
