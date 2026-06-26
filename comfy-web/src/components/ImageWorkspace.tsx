@@ -9,6 +9,7 @@ import { db } from "@/utils/db";
 
 const AVAILABLE_LORAS = [
   "RealisticSnapshot-Zimage-Turbov5.safetensors",
+  "krea2_realism_lora.safetensors",
 ];
 
 const STYLE_DESCRIPTIONS: Record<string, string> = {
@@ -109,7 +110,7 @@ interface ImageWorkspaceProps {
 
 function ChevronIcon() {
   return (
-    <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6b6560]">
+    <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle">
       <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
       </svg>
@@ -161,7 +162,7 @@ export default function ImageWorkspace({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const itemsPerPage = 12;
 
-  const pollForResult = async (promptId: string, promptText: string, seed: number, width: number, height: number) => {
+  const pollForResult = async (promptId: string, promptText: string, seed: number, width: number, height: number, generationStartTime: number) => {
     const maxAttempts = 90;
     let attempts = 0;
 
@@ -311,7 +312,7 @@ export default function ImageWorkspace({
           newItems.map((item) => fetch(`/api/comfy/images?filename=${item.filename}`).catch(console.error)),
         );
       } else {
-        await pollForResult(result.prompt_id, prompt.trim(), generatedSeed, finalWidth, finalHeight);
+        await pollForResult(result.prompt_id, prompt.trim(), generatedSeed, finalWidth, finalHeight, generationStartTime);
         return;
       }
 
@@ -683,7 +684,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
             .filter((line: string) => line.length > 20 && !line.match(/<|>|{|}|\[|\]|```|^[-*]/))
             .pop() ||
           prompt;
-        enhanced = enhanced.replace(/^["']|["']$/g, "").replace(/\s+/g, " ").trim();
+        enhanced = (enhanced ?? prompt).replace(/^["']|["']$/g, "").replace(/\s+/g, " ").trim();
       }
 
       if (enhanced && enhanced !== prompt) {
@@ -773,13 +774,13 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-[#3a3936] bg-[#2a2a28]/95 px-8 py-5 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-border-subtle bg-surface-3/95 px-8 py-5 backdrop-blur">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-[#c9a87a]" />
+            <div className="h-2 w-2 animate-pulse rounded-full bg-gold" />
             <div>
-              <h1 className="text-base font-semibold text-[#edeae2]">Image Workspace</h1>
-              <p className="text-xs text-[#9f988c]">Prompt, enhance, generate, iterate.</p>
+              <h1 className="text-base font-semibold text-text-primary">Image Workspace</h1>
+              <p className="text-xs text-text-muted">Prompt, enhance, generate, iterate.</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -790,7 +791,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                     setIsSelectMode(!isSelectMode);
                     if (isSelectMode) setSelectedForDeletion(new Set());
                   }}
-                  className={`rounded-lg border px-3 py-1.5 text-xs transition ${isSelectMode ? "border-[#c9a87a] text-[#c9a87a]" : "border-[#5a4a3d] text-[#e1bfa0] hover:border-[#775e4b] hover:text-[#f2cdae]"}`}
+                  className={`rounded-lg border px-3 py-1.5 text-xs transition ${isSelectMode ? "border-gold text-gold" : "border-border-strong text-gold-dim hover:border-gold-focus hover:text-gold-hover"}`}
                 >
                   {isSelectMode ? "Cancel" : "Select"}
                 </button>
@@ -816,14 +817,14 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                       setSelectedForDeletion(new Set());
                       setIsSelectMode(false);
                     })}
-                    className="rounded-lg border border-[#8b3a3a] px-3 py-1.5 text-xs text-[#e87a7a] transition hover:border-[#a84a4a] hover:text-[#f28a8a]"
+                    className="rounded-lg border border-error/30 px-3 py-1.5 text-xs text-error transition hover:border-error hover:text-[#f87171]"
                   >
                     Delete ({selectedForDeletion.size})
                   </button>
                 )}
                 <button
                   onClick={() => openConfirm("Clear Gallery", "This will delete all images from the server.", () => clearGallery())}
-                  className="rounded-lg border border-[#5a4a3d] px-3 py-1.5 text-xs text-[#e1bfa0] transition hover:border-[#775e4b] hover:text-[#f2cdae]"
+                  className="rounded-lg border border-border-strong px-3 py-1.5 text-xs text-gold-dim transition hover:border-gold-focus hover:text-gold-hover"
                 >
                   Clear Gallery
                 </button>
@@ -835,20 +836,20 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
 
       <section className="flex-1 overflow-y-auto px-8 py-8">
         <div className="mx-auto w-full max-w-6xl space-y-7">
-          <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] max-w-5xl m-auto p-4 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
+          <div className="rounded-2xl border border-border-subtle bg-surface-3 max-w-5xl m-auto p-4 shadow-[var(--shadow-card)]">
 
             {/* Row 1: LLM + Engine + Style + Enhance */}
             <div className="mb-3 flex flex-wrap items-stretch gap-3">
 
               {/* LLM Model (for Enhance) */}
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">LLM</span>
+                <span className="text-[10px] uppercase tracking-widest text-text-subtle">LLM</span>
                 <div className="relative min-w-[140px] max-w-[200px]">
                   <select
                     value={selectedModel}
                     onChange={(e) => switchModel(e.target.value)}
                     disabled={isEnhancing || isGenerating || availableModels.length === 0}
-                    className="w-full rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none truncate disabled:opacity-50"
+                    className="w-full rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition focus:border-gold-focus appearance-none truncate disabled:opacity-50"
                   >
                     {availableModels.length === 0 ? (
                       <option value="">No models available</option>
@@ -864,13 +865,13 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
 
               {/* Image Engine */}
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Engine</span>
+                <span className="text-[10px] uppercase tracking-widest text-text-subtle">Engine</span>
                 <div className="relative min-w-[140px] max-w-[200px]">
                   <select
                     value={imageWorkflow}
                     onChange={(e) => setImageWorkflow(e.target.value)}
                     disabled={isGenerating}
-                    className="w-full rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none truncate disabled:opacity-50"
+                    className="w-full rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition focus:border-gold-focus appearance-none truncate disabled:opacity-50"
                   >
                     <option value="z-image-turbo">Z Image Turbo</option>
                     <option value="krea2-turbo">Krea2 Turbo Enhanced</option>
@@ -883,18 +884,18 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
               {/* Sage Attention */}
               {imageWorkflow !== 'ideogram4' && (
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Sage Attn</span>
+                  <span className="text-[10px] uppercase tracking-widest text-text-subtle">Sage Attn</span>
                   <button
                     onClick={() => setSageAttention(!sageAttention)}
                     disabled={isGenerating}
                     className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition disabled:opacity-50 ${
                       sageAttention
-                        ? "border-[#4BC0C0]/50 bg-[#2a3a3a] text-[#4BC0C0]"
-                        : "border-[#494741] bg-[#262624] text-[#6b6560]"
+                        ? "border-gold/50 bg-hover text-gold-dim"
+                        : "border-border-strong bg-surface-2 text-text-subtle"
                     }`}
                     title="Toggle Sage Attention optimization"
                   >
-                    <span className={`h-2 w-2 rounded-full ${sageAttention ? "bg-[#4BC0C0]" : "bg-[#6b6560]"}`} />
+                    <span className={`h-2 w-2 rounded-full ${sageAttention ? "bg-gold" : "bg-text-subtle"}`} />
                     {sageAttention ? "On" : "Off"}
                   </button>
                 </div>
@@ -903,18 +904,18 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
               {/* Krea Rebalance */}
               {imageWorkflow === 'krea2-turbo' && (
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Rebalance</span>
+                  <span className="text-[10px] uppercase tracking-widest text-text-subtle">Rebalance</span>
                   <button
                     onClick={() => setKreaRebalance(!kreaRebalance)}
                     disabled={isGenerating}
                     className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition disabled:opacity-50 ${
                       kreaRebalance
-                        ? "border-[#c9a87a]/50 bg-[#3a352e] text-[#f2dbc0]"
-                        : "border-[#494741] bg-[#262624] text-[#6b6560]"
+                        ? "border-gold/50 bg-hover text-gold-dim"
+                        : "border-border-strong bg-surface-2 text-text-subtle"
                     }`}
                     title="Toggle ConditioningKrea2Rebalance"
                   >
-                    <span className={`h-2 w-2 rounded-full ${kreaRebalance ? "bg-[#c9a87a]" : "bg-[#6b6560]"}`} />
+                    <span className={`h-2 w-2 rounded-full ${kreaRebalance ? "bg-gold" : "bg-text-subtle"}`} />
                     {kreaRebalance ? "On" : "Off"}
                   </button>
                 </div>
@@ -922,13 +923,13 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
 
               {/* Style */}
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Style</span>
+                <span className="text-[10px] uppercase tracking-widest text-text-subtle">Style</span>
                 <div className="relative">
                   <select
                     value={imageStyle}
                     onChange={(e) => setImageStyle(e.target.value)}
                     disabled={isGenerating}
-                    className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none disabled:opacity-50"
+                    className="rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition focus:border-gold-focus appearance-none disabled:opacity-50"
                   >
                     {IMAGE_STYLES.map((style) => (
                       <option key={style} value={style}>
@@ -947,7 +948,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                     <button
                       onClick={() => setShowBlueprintPanel(true)}
                       disabled={isGenerating || !prompt.trim()}
-                      className="cursor-pointer rounded-lg border border-[#4BC0C0]/50 bg-[#2a3a3a] px-3 py-2 text-xs font-medium text-[#4BC0C0] transition hover:bg-[#3a4a4a] disabled:cursor-not-allowed disabled:opacity-40"
+                      className="cursor-pointer rounded-lg border border-cyan/50 bg-cyan/[0.08] px-3 py-2 text-xs font-medium text-cyan transition hover:bg-cyan/[0.12] disabled:cursor-not-allowed disabled:opacity-40"
                       title="Preview object positions from bbox coordinates"
                     >
                       <span className="flex items-center gap-1.5">
@@ -960,7 +961,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                     <button
                       onClick={repairCurrentJson}
                       disabled={isRepairing || isEnhancing || !prompt.trim() || !selectedModel || availableModels.length === 0}
-                      className="cursor-pointer rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-2 text-xs font-medium text-[#f2dbc0] transition hover:bg-[#4a433a] disabled:cursor-not-allowed disabled:opacity-40"
+                      className="cursor-pointer rounded-lg border border-gold-dim/40 bg-hover px-3 py-2 text-xs font-medium text-gold-dim transition hover:bg-active disabled:cursor-not-allowed disabled:opacity-40"
                       title="Fix invalid JSON in the prompt field"
                     >
                       {isRepairing ? (
@@ -980,7 +981,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                 <button
                   onClick={enhancePrompt}
                   disabled={isEnhancing || !prompt.trim() || !selectedModel || availableModels.length === 0}
-                  className="cursor-pointer rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-2 text-xs font-medium text-[#f2dbc0] transition hover:bg-[#4a433a] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="cursor-pointer rounded-lg border border-gold-dim/40 bg-hover px-3 py-2 text-xs font-medium text-gold-dim transition hover:bg-active disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isEnhancing ? (
                     <span className="flex items-center gap-1.5">
@@ -998,7 +999,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
             </div>
 
             {/* Divider */}
-            <div className="mb-3 h-px bg-[#3a3835]" />
+            <div className="mb-3 h-px bg-border-subtle" />
 
             {/* Row 2: LoRA + Strength + Ratio */}
             <div className="mb-3 flex flex-wrap items-end gap-3">
@@ -1007,13 +1008,13 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                 <>
                   {/* LoRA Select */}
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">LoRA</span>
+                    <span className="text-[10px] uppercase tracking-widest text-text-subtle">LoRA</span>
                     <div className="relative">
                       <select
                         value={selectedLora.name}
                         onChange={(e) => setSelectedLora({ ...selectedLora, name: e.target.value })}
                         disabled={isGenerating}
-                        className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none disabled:opacity-50"
+                        className="rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition focus:border-gold-focus appearance-none disabled:opacity-50"
                       >
                         <option value="">None</option>
                         {AVAILABLE_LORAS.map((loraName) => (
@@ -1028,7 +1029,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
 
                   {/* Strength */}
                   <div className="flex flex-col gap-1 min-w-[140px] max-w-[200px]">
-                    <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Strength</span>
+                    <span className="text-[10px] uppercase tracking-widest text-text-subtle">Strength</span>
                     <div className="flex items-center gap-2 h-[34px]">
                       <input
                         type="range"
@@ -1042,23 +1043,23 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                         disabled={isGenerating}
                         className="
                 flex-1 h-1.5 appearance-none rounded-full outline-none
-                bg-[#494741] disabled:opacity-50 cursor-pointer
+                bg-border-strong disabled:opacity-50 cursor-pointer
                 [&::-webkit-slider-thumb]:appearance-none
                 [&::-webkit-slider-thumb]:h-3.5
                 [&::-webkit-slider-thumb]:w-3.5
                 [&::-webkit-slider-thumb]:rounded-full
-                [&::-webkit-slider-thumb]:bg-[#c9a87a]
+                [&::-webkit-slider-thumb]:bg-gold
                 [&::-webkit-slider-thumb]:cursor-pointer
                 [&::-webkit-slider-thumb]:transition
-                [&::-webkit-slider-thumb]:hover:bg-[#d8b88d]
+                [&::-webkit-slider-thumb]:hover:bg-gold-hover
                 [&::-moz-range-thumb]:h-3.5
                 [&::-moz-range-thumb]:w-3.5
                 [&::-moz-range-thumb]:rounded-full
-                [&::-moz-range-thumb]:bg-[#c9a87a]
+                [&::-moz-range-thumb]:bg-gold
                 [&::-moz-range-thumb]:border-0
               "
                       />
-                      <span className="w-9 text-center rounded-md bg-[#262624] border border-[#494741] py-0.5 text-[11px] tabular-nums text-[#c9a87a]">
+                      <span className="w-9 text-center rounded-md bg-surface-2 border border-border-strong py-0.5 text-[11px] tabular-nums text-gold">
                         {selectedLora.strength_model.toFixed(2)}
                       </span>
                     </div>
@@ -1069,7 +1070,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
               {/* Dimensions */}
               <div className="flex flex-wrap items-end gap-3">
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Width</span>
+                  <span className="text-[10px] uppercase tracking-widest text-text-subtle">Width</span>
                   <input
                     type="number"
                     value={imageWidth}
@@ -1085,14 +1086,14 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                     min={256}
                     max={4096}
                     step={8}
-                    className="w-20 rounded-lg border border-[#494741] bg-[#262624] px-2 py-2 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] disabled:opacity-50"
+                    className="w-20 rounded-lg border border-border-strong bg-surface-2 px-2 py-2 text-xs text-text-primary outline-none transition focus:border-gold-focus disabled:opacity-50"
                   />
                 </div>
 
                 <button
                   onClick={() => setLockAspectRatio(!lockAspectRatio)}
                   disabled={isGenerating}
-                  className={`mb-0.5 rounded-lg border p-1.5 transition disabled:opacity-50 ${lockAspectRatio ? "border-[#c9a87a] text-[#c9a87a]" : "border-[#494741] text-[#6b6560]"}`}
+                  className={`mb-0.5 rounded-lg border p-1.5 transition disabled:opacity-50 ${lockAspectRatio ? "border-gold text-gold" : "border-border-strong text-text-subtle"}`}
                   title="Lock aspect ratio"
                 >
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1101,7 +1102,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                 </button>
 
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Height</span>
+                  <span className="text-[10px] uppercase tracking-widest text-text-subtle">Height</span>
                   <input
                     type="number"
                     value={imageHeight}
@@ -1117,20 +1118,20 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                     min={256}
                     max={4096}
                     step={8}
-                    className="w-20 rounded-lg border border-[#494741] bg-[#262624] px-2 py-2 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] disabled:opacity-50"
+                    className="w-20 rounded-lg border border-border-strong bg-surface-2 px-2 py-2 text-xs text-text-primary outline-none transition focus:border-gold-focus disabled:opacity-50"
                   />
                 </div>
 
                 {/* Seed */}
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Seed</span>
+                  <span className="text-[10px] uppercase tracking-widest text-text-subtle">Seed</span>
                   <input
                     type="text"
                     value={imageSeed}
                     onChange={(e) => setImageSeed(e.target.value)}
                     placeholder="Optional"
                     disabled={isGenerating}
-                    className="w-28 rounded-lg border border-[#494741] bg-[#262624] px-2 py-2 text-xs text-[#edeae2] outline-none transition placeholder:text-[#6b6560] focus:border-[#b9986d] disabled:opacity-50"
+                    className="w-28 rounded-lg border border-border-strong bg-surface-2 px-2 py-2 text-xs text-text-primary outline-none transition placeholder:text-text-subtle focus:border-gold-focus disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -1138,7 +1139,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
             </div>
 
             {/* Divider */}
-            <div className="mb-3 h-px bg-[#3a3835]" />
+            <div className="mb-3 h-px bg-border-subtle" />
 
             {/* Row 3: Prompt */}
             <div className="relative">
@@ -1150,31 +1151,31 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                 placeholder="Describe the scene, mood, lens, and details…"
                 rows={4}
                 disabled={isGenerating}
-                className="w-full resize-none rounded-xl border border-[#494741] bg-[#262624] px-3 py-3 text-sm text-[#ece8df] outline-none transition placeholder:text-[#6b6560] focus:border-[#b9986d] disabled:opacity-60"
+                className="w-full resize-none rounded-xl border border-border-strong bg-surface-2 px-3 py-3 text-sm text-text-primary outline-none transition placeholder:text-text-subtle focus:border-gold-focus disabled:opacity-60"
               />
 
               <div className="mt-2 flex flex-col gap-3">
                 {isGenerating && (
-                  <div className="rounded-lg border border-[#494741] bg-[#262624] p-3">
-                    <div className="mb-1.5 flex items-center justify-between text-xs text-[#bcb6aa]">
+                  <div className="rounded-lg border border-border-strong bg-surface-2 p-3">
+                    <div className="mb-1.5 flex items-center justify-between text-xs text-text-secondary">
                       <span>{progress ? `Generating... ${progress.value}/${progress.max}` : 'Starting generation...'}</span>
                       {progress && <span>{Math.round((progress.value / progress.max) * 100)}%</span>}
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-[#3a3936]">
+                    <div className="h-2 overflow-hidden rounded-full bg-active">
                       <div
-                        className={`h-full rounded-full bg-[#c9a87a] ${progress ? 'transition-all duration-500 ease-out' : 'animate-pulse'}`}
+                        className={`h-full rounded-full bg-gold ${progress ? 'transition-all duration-500 ease-out' : 'animate-pulse'}`}
                         style={progress ? { width: `${Math.min(100, (progress.value / progress.max) * 100)}%` } : { width: '30%' }}
                       />
                     </div>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-[#6b6560]">Shift + Enter for new line</span>
+                  <span className="text-[11px] text-text-subtle">Shift + Enter for new line</span>
 
                   <button
                     onClick={generateImage}
                     disabled={isGenerating || !prompt.trim()}
-                    className="cursor-pointer flex items-center gap-1.5 rounded-lg bg-[#c9a87a] px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="cursor-pointer flex items-center gap-1.5 rounded-lg bg-gold px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-gold-hover disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {isGenerating ? (
                       <>
@@ -1209,16 +1210,16 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
           {gallery.length > 0 && (
             <div className="space-y-3 pt-4 max-w-5xl m-auto pb-4">
               <div className="flex items-center justify-between">
-                <p className="text-xs uppercase tracking-[0.24em] text-[#a19a8d]">Library</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-text-muted">Library</p>
                 <div className="flex items-center gap-2">
-                  <div className="flex gap-0.5 rounded-lg border border-[#3f3e3a] bg-[#262624] p-0.5">
+                  <div className="flex gap-0.5 rounded-lg border border-border-subtle bg-surface-2 p-0.5">
                     {filterStyles.map((style) => (
                       <button
                         key={style}
                         onClick={() => setGalleryFilter(style)}
                         className={`cursor-pointer rounded-[12px] px-4 py-1 text-[11px] capitalize transition-all duration-200 ${galleryFilter === style
-                          ? "bg-[#c9a87a] text-[#1f1f1d]"
-                          : "text-[#9f988c] hover:text-[#edeae2]"
+                          ? "bg-gold text-[#1f1f1d]"
+                          : "text-text-muted hover:text-text-primary"
                           }`}
                       >
                         {style} <span className={`ml-0.5 bg-white rounded-sm px-1 text-black text-[11px] ${galleryFilter === style ? "opacity-70" : "opacity-50"}`}>{styleCounts[style]}</span>
@@ -1250,14 +1251,14 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                           window.open(`/generated/${item.filename}`, "_blank");
                         }
                       }}
-                      className={`group relative overflow-hidden rounded-xl border bg-[#32312e] cursor-pointer transition ${isSelectMode
-                        ? isSelected ? "border-[#c9a87a] ring-2 ring-[#c9a87a]/50" : "border-[#3f3e3a] hover:border-[#5a5550]"
-                        : "border-[#3f3e3a] hover:border-[#5a5550]"
+                      className={`group relative overflow-hidden rounded-xl border bg-surface-2 cursor-pointer transition ${isSelectMode
+                        ? isSelected ? "border-gold ring-2 ring-gold/50" : "border-border-subtle hover:border-border-strong"
+                        : "border-border-subtle hover:border-border-strong"
                         }`}
                     >
                       {isSelectMode && (
                         <div className={`absolute top-2 left-2 z-10 flex h-5 w-5 items-center justify-center rounded-md border-2 transition ${isSelected
-                          ? "border-[#c9a87a] bg-[#c9a87a]" : "border-white/50 bg-black/30"
+                          ? "border-gold bg-gold" : "border-white/50 bg-black/30"
                           }`}>
                           {isSelected && (
                             <svg className="h-3 w-3 text-[#1f1f1d]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -1356,7 +1357,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                       </div>
                       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2.5">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="inline-block rounded-md bg-[#c9a87a]/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#d8b88d] backdrop-blur-sm border border-[#c9a87a]/30">
+                          <span className="inline-block rounded-md bg-gold/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#d8b88d] backdrop-blur-sm border border-gold/30">
                             {item.style}
                           </span>
 
@@ -1367,12 +1368,12 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                           )}
 
                           {item.seed !== undefined && (
-                            <span className="inline-block rounded-md bg-[#494741]/60 px-2 py-0.5 text-[9px] font-mono text-[#9f988c] backdrop-blur-sm border border-[#5a5550]">
+                            <span className="inline-block rounded-md bg-border-strong/60 px-2 py-0.5 text-[9px] font-mono text-text-muted backdrop-blur-sm border border-border-strong">
                               #{item.seed}
                             </span>
                           )}
                         </div>
-                        <p className="line-clamp-2 text-[11px] leading-relaxed text-[#e7e2d8] opacity-90">{beautifyIfJson(item.prompt)}</p>
+                        <p className="line-clamp-2 text-[11px] leading-relaxed text-text-primary opacity-90">{beautifyIfJson(item.prompt)}</p>
                       </div>
                     </div>
                   );
@@ -1384,17 +1385,17 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                   <button
                     onClick={() => setGalleryPage(Math.max(1, galleryPage - 1))}
                     disabled={galleryPage === 1}
-                    className="rounded-lg border border-[#494741] px-3 py-1.5 text-xs text-[#bcb6aa] transition hover:border-[#5a4f40] hover:text-[#edeae2] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-lg border border-border-strong px-3 py-1.5 text-xs text-text-secondary transition hover:border-gold-dim/40 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     ← Prev
                   </button>
-                  <span className="text-xs text-[#9f988c]">
+                  <span className="text-xs text-text-muted">
                     {galleryPage} / {totalPages}
                   </span>
                   <button
                     onClick={() => setGalleryPage(Math.min(totalPages, galleryPage + 1))}
                     disabled={galleryPage === totalPages}
-                    className="rounded-lg border border-[#494741] px-3 py-1.5 text-xs text-[#bcb6aa] transition hover:border-[#5a4f40] hover:text-[#edeae2] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-lg border border-border-strong px-3 py-1.5 text-xs text-text-secondary transition hover:border-gold-dim/40 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Next →
                   </button>

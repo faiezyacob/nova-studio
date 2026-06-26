@@ -30,11 +30,11 @@ export default function Toolbar() {
   };
 
   return (
-    <div className="flex items-center gap-2 border-b border-[#3a3936] bg-[#2f2f2d] px-3 py-1.5 shrink-0">
+    <div className="flex items-center gap-2 border-b border-border-subtle bg-surface-3 px-3 py-1.5 shrink-0">
       {/* Transport */}
       <button
         onClick={togglePlay}
-        className="flex h-7 w-7 items-center justify-center rounded-full bg-[#c9a87a] text-[#1f1f1d] transition hover:bg-[#d8b88d]"
+        className="flex h-7 w-7 items-center justify-center rounded-full bg-gold text-[#1f1f1d] transition duration-150 ease-out hover:bg-gold-hover hover:translate-y-[-0.5px] active:scale-[0.97]"
         title={playing ? 'Pause (Space)' : 'Play (Space)'}
       >
         {playing ? (
@@ -53,7 +53,7 @@ export default function Toolbar() {
       <button
         onClick={undo}
         disabled={historyLen === 0}
-        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6b6560] transition hover:bg-[#3a3936] hover:text-[#bcb6aa] disabled:opacity-30"
+        className="flex h-7 w-7 items-center justify-center rounded-lg text-text-subtle transition duration-150 ease-out hover:bg-hover hover:text-text-secondary disabled:opacity-30"
         title="Undo (Ctrl+Z)"
       >
         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -64,7 +64,7 @@ export default function Toolbar() {
       <button
         onClick={redo}
         disabled={futureLen === 0}
-        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6b6560] transition hover:bg-[#3a3936] hover:text-[#bcb6aa] disabled:opacity-30"
+        className="flex h-7 w-7 items-center justify-center rounded-lg text-text-subtle transition duration-150 ease-out hover:bg-hover hover:text-text-secondary disabled:opacity-30"
         title="Redo (Ctrl+Shift+Z)"
       >
         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -73,12 +73,12 @@ export default function Toolbar() {
         </svg>
       </button>
 
-      <div className="mx-1 h-5 w-px bg-[#3a3936]" />
+      <div className="mx-1 h-5 w-px bg-border-subtle" />
 
       {/* Split button */}
       <button
         onClick={handleSplit}
-        className="flex h-7 items-center gap-1 rounded-lg border border-[#5a4f40] px-2 text-[10px] text-[#f2dbc0] transition hover:bg-[#4a433a]"
+        className="flex h-7 items-center gap-1 rounded-lg border border-gold-dim/40 px-2 text-[10px] text-gold-dim transition duration-150 ease-out hover:bg-active"
         title="Split clip at playhead (S)"
       >
         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -87,14 +87,14 @@ export default function Toolbar() {
         Split
       </button>
 
-      <div className="mx-1 h-5 w-px bg-[#3a3936]" />
+      <div className="mx-1 h-5 w-px bg-border-subtle" />
 
       {/* Time display */}
-      <span className="font-mono text-xs tabular-nums text-[#c9a87a] min-w-[40px]">
+      <span className="font-mono text-xs tabular-nums text-gold min-w-[40px]">
         {formatTime(currentTime)}
       </span>
-      <span className="text-[10px] text-[#6b6560]">/</span>
-      <span className="font-mono text-xs tabular-nums text-[#6b6560]">
+      <span className="text-[10px] text-text-subtle">/</span>
+      <span className="font-mono text-xs tabular-nums text-text-subtle">
         {formatTime(duration)}
       </span>
 
@@ -102,30 +102,30 @@ export default function Toolbar() {
         {/* Ripple trim toggle */}
         <button
           onClick={() => setRippleTrimMode(!rippleTrimMode)}
-          className={`flex h-6 items-center gap-1 rounded-lg border px-2 text-[9px] transition ${
+          className={`flex h-6 items-center gap-1 rounded-lg border px-2 text-[9px] transition duration-150 ease-out ${
             rippleTrimMode
-              ? 'border-[#c9a87a]/40 bg-[#c9a87a]/10 text-[#c9a87a]'
-              : 'border-[#3a3936] text-[#6b6560] hover:border-[#5a4f40]'
+              ? 'border-gold/40 bg-gold/[0.08] text-gold'
+              : 'border-border-subtle text-text-subtle hover:border-gold-dim/40'
           }`}
           title="Ripple trim mode"
         >
-          <svg className={`h-3 w-3 ${rippleTrimMode ? 'text-[#c9a87a]' : 'text-[#6b6560]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className={`h-3 w-3 ${rippleTrimMode ? 'text-gold' : 'text-text-subtle'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
           Ripple
         </button>
 
-        <span className="text-[10px] text-[#6b6560] min-w-[32px] text-right">{zoom}%</span>
+        <span className="text-[10px] text-text-subtle min-w-[32px] text-right">{zoom}%</span>
         <input
           type="range"
           min={20}
           max={400}
           value={zoom}
           onChange={(e) => setZoom(parseInt(e.target.value))}
-          className="w-16 appearance-none rounded-full bg-[#494741] h-1 cursor-pointer
+          className="w-16 appearance-none rounded-full bg-border-strong h-1 cursor-pointer
             [&::-webkit-slider-thumb]:appearance-none
             [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3
-            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#c9a87a]
+            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gold
             [&::-webkit-slider-thumb]:cursor-pointer"
           title="Zoom (Ctrl+Scroll)"
         />

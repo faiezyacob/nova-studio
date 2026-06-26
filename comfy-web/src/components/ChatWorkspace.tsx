@@ -30,10 +30,10 @@ function MessageContent({ content }: { content: string }) {
         return <em key={i}>{part.slice(1, -1)}</em>;
       }
       if (part.startsWith("`") && part.endsWith("`")) {
-        return <code key={i} className="rounded bg-[#1f1f1d] px-1.5 py-0.5 text-[#d8bb92] font-mono text-xs">{part.slice(1, -1)}</code>;
+        return <code key={i} className="rounded bg-surface-1 px-1.5 py-0.5 text-gold-hover font-mono text-xs">{part.slice(1, -1)}</code>;
       }
       if (part.startsWith("~~") && part.endsWith("~~")) {
-        return <del key={i} className="text-[#9f988c]">{part.slice(2, -2)}</del>;
+        return <del key={i} className="text-text-muted">{part.slice(2, -2)}</del>;
       }
       return part;
     });
@@ -68,10 +68,10 @@ function MessageContent({ content }: { content: string }) {
       if (codeBlockLines.length > 0) {
         const codeText = stripMarkdown(codeBlockLines.join("\n")).replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
         elements.push(
-          <pre key={`code-${itemKey++}`} className="group relative my-2 rounded-lg bg-[#1f1f1d] p-3 text-xs text-[#d8bb92] font-mono overflow-x-auto">
+          <pre key={`code-${itemKey++}`} className="group relative my-2 rounded-lg bg-surface-1 p-3 text-xs text-gold-hover font-mono overflow-x-auto">
             <button
               onClick={() => { navigator.clipboard.writeText(codeText); toast.success("Copied"); }}
-              className="absolute right-2 top-2 rounded bg-[#3a3936] px-2 py-1 text-[10px] text-[#bcb6aa] opacity-0 transition group-hover:opacity-100 hover:bg-[#4a463f] hover:text-[#f2dbc0]"
+              className="absolute right-2 top-2 rounded bg-hover px-2 py-1 text-[10px] text-text-secondary opacity-0 transition duration-150 ease-out group-hover:opacity-100 hover:bg-active hover:text-gold-dim"
             >
               Copy
             </button>
@@ -98,25 +98,25 @@ function MessageContent({ content }: { content: string }) {
         flushLiGroup();
         const bqText = stripMarkdown(trimmed.slice(2));
         elements.push(
-          <div key={`bq-${i}`} className="group relative my-2 rounded-r-lg border-l-2 border-[#c9a87a] bg-[#1f1f1d]/50 pl-3 pr-8 py-2">
+          <div key={`bq-${i}`} className="group relative my-2 rounded-r-lg border-l-2 border-gold bg-surface-1/50 pl-3 pr-8 py-2">
             <button
               onClick={() => { navigator.clipboard.writeText(bqText); toast.success("Copied"); }}
-              className="absolute right-2 top-2 rounded bg-[#3a3936] px-2 py-1 text-[10px] text-[#bcb6aa] opacity-0 transition group-hover:opacity-100 hover:bg-[#4a463f] hover:text-[#f2dbc0]"
+              className="absolute right-2 top-2 rounded bg-hover px-2 py-1 text-[10px] text-text-secondary opacity-0 transition duration-150 ease-out group-hover:opacity-100 hover:bg-active hover:text-gold-dim"
             >
               Copy
             </button>
-            <span className="text-[#bcb6aa] italic">{formatInline(bqText)}</span>
+            <span className="text-text-secondary italic">{formatInline(bqText)}</span>
           </div>
         );
       } else if (trimmed.startsWith("### ")) {
         flushLiGroup();
-        elements.push(<h3 key={`h3-${i}`} className="mt-3 mb-1 text-sm font-semibold text-[#c9a87a]">{trimmed.slice(4)}</h3>);
+        elements.push(<h3 key={`h3-${i}`} className="mt-3 mb-1 text-sm font-semibold text-gold">{trimmed.slice(4)}</h3>);
       } else if (trimmed.startsWith("## ")) {
         flushLiGroup();
-        elements.push(<h3 key={`h3-${i}`} className="mt-3 mb-1 text-base font-bold text-[#c9a87a]">{trimmed.slice(3)}</h3>);
+        elements.push(<h3 key={`h3-${i}`} className="mt-3 mb-1 text-base font-bold text-gold">{trimmed.slice(3)}</h3>);
       } else if (trimmed === "---") {
         flushLiGroup();
-        elements.push(<hr key={`hr-${i}`} className="my-3 border-[#46443f]" />);
+        elements.push(<hr key={`hr-${i}`} className="my-3 border-border-subtle" />);
       } else if (/^[-*] /.test(trimmed)) {
         liGroup.push(formatInline(trimmed.replace(/^[-*] /, "")));
       } else if (/^\d+\. /.test(trimmed)) {
@@ -448,19 +448,15 @@ export default function ChatWorkspace({
     };
 
     setChatSessions((prev) => [newSession, ...prev]);
-    // Note: We don't set active session ID here because it should be handled by the parent
-    // but actually, we should probably pass it back or set it.
-    // In page.tsx: createNewSession sets activeSessionId.
-    // So I should pass the setActiveSessionId as well.
   };
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-[#3a3936] bg-[#2a2a28]/95 px-8 py-5 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-between">
+      <header className="sticky top-0 z-20 border-b border-border-subtle bg-surface-3/95 px-8 py-5 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between">
           <div>
-            <h1 className="text-base font-semibold text-[#edeae2]">{activeSession?.title || "Chat Workspace"}</h1>
-            <p className="text-xs text-[#9f988c]">Focused local chat with fast model switching.</p>
+            <h1 className="text-base font-semibold text-text-primary">{activeSession?.title || "Chat Workspace"}</h1>
+            <p className="text-xs text-text-muted">Focused local chat with fast model switching.</p>
           </div>
 
           {activeSession && (
@@ -469,7 +465,7 @@ export default function ChatWorkspace({
                 value={activeSession.model}
                 onChange={(e) => switchChatModel(e.target.value)}
                 disabled={isChatLoading || availableModels.length === 0}
-                className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none max-w-[250px] truncate"
+                className="rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition duration-150 ease-out focus:border-gold-focus appearance-none max-w-[250px] truncate"
               >
                 {availableModels.length === 0 ? (
                   <option value="">No models</option>
@@ -481,7 +477,7 @@ export default function ChatWorkspace({
                   ))
                 )}
               </select>
-              <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9d988d]">
+              <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted">
                 <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
@@ -501,7 +497,7 @@ export default function ChatWorkspace({
           >
             {activeSession.messages.length === 0 ? (
               <div className="flex h-full items-center justify-center">
-                <p className="text-sm text-[#9f988c]">Start a new conversation.</p>
+                <p className="text-sm text-text-muted">Start a new conversation.</p>
               </div>
             ) : (
               <div className="mx-auto w-full max-w-5xl space-y-3 pb-4">
@@ -511,9 +507,9 @@ export default function ChatWorkspace({
                     className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed transition ${message.role === "user"
-                        ? "bg-[#c9a87a] text-[#1f1f1d]"
-                        : "border border-[#46443f] bg-[#30302e] text-[#ece8df]"
+                      className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed transition duration-150 ease-out ${message.role === "user"
+                        ? "bg-gold text-[#1f1f1d]"
+                        : "border border-border-subtle bg-surface-3 text-text-primary"
                         }`}
                     >
                       {message.images && message.images.length > 0 && (
@@ -523,13 +519,13 @@ export default function ChatWorkspace({
                               key={idx}
                               src={img}
                               alt="Upload"
-                              className="max-h-48 max-w-full rounded-lg border border-[#46443f] object-contain shadow-sm"
+                              className="max-h-48 max-w-full rounded-lg border border-border-subtle object-contain shadow-[var(--shadow-card)]"
                             />
                           ))}
                         </div>
                       )}
                       <MessageContent content={message.content} />
-                      <p className={`mt-2 text-[11px] ${message.role === "user" ? "text-[#3b3327]" : "text-[#a39d91]"}`}>
+                      <p className={`mt-2 text-[11px] ${message.role === "user" ? "text-[#1f1f1d]" : "text-text-muted"}`}>
                         {formatTime(message.timestamp)}
                       </p>
                     </div>
@@ -538,11 +534,11 @@ export default function ChatWorkspace({
 
                 {isChatLoading && (
                   <div className="flex justify-start">
-                    <div className="rounded-2xl border border-[#46443f] bg-[#30302e] px-4 py-3 text-sm text-[#b7b1a5]">
+                    <div className="rounded-2xl border border-border-subtle bg-surface-3 px-4 py-3 text-sm text-text-secondary">
                       <span className="inline-flex gap-1">
-                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#d8bb92]" />
-                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#c9a87a] [animation-delay:120ms]" />
-                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#b38f62] [animation-delay:240ms]" />
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold-hover" />
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold [animation-delay:120ms]" />
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold/70 [animation-delay:240ms]" />
                       </span>
                     </div>
                   </div>
@@ -551,16 +547,16 @@ export default function ChatWorkspace({
             )}
           </div>
 
-          <div className="sticky bottom-0 border-t border-[#3a3936] bg-[#2a2a28] px-8 py-5">
+          <div className="sticky bottom-0 border-t border-border-subtle bg-surface-3 px-8 py-5">
             <div className="mx-auto w-full max-w-5xl">
               {selectedImages.length > 0 && (
-                <div className="mb-2 flex flex-wrap gap-2 rounded-xl border border-[#46443f] bg-[#30302e] p-2">
+                <div className="mb-2 flex flex-wrap gap-2 rounded-xl border border-border-subtle bg-surface-3 p-2">
                   {selectedImages.map((img, idx) => (
                     <div key={idx} className="group relative h-20 w-20">
                       <img
                         src={img}
                         alt="Preview"
-                        className="h-full w-full rounded-lg border border-[#46443f] object-cover"
+                        className="h-full w-full rounded-lg border border-border-subtle object-cover"
                       />
                       <button
                         onClick={() => removeImage(idx)}
@@ -574,10 +570,10 @@ export default function ChatWorkspace({
                   ))}
                 </div>
               )}
-              <div className="flex items-center gap-2 rounded-xl border border-[#46443f] bg-[#30302e] p-2 focus-within:border-[#c9a87a] transition-colors">
+              <div className="flex items-center gap-2 rounded-xl border border-border-subtle bg-surface-3 p-2 focus-within:border-gold transition-colors duration-150 ease-out">
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex h-10 w-10 items-center justify-center rounded-lg text-[#9f988c] transition hover:bg-[#3a3936] hover:text-[#edeae2]"
+                  className="flex h-10 w-10 items-center justify-center rounded-lg text-text-muted transition duration-150 ease-out hover:bg-hover hover:text-text-primary"
                   title="Upload Image"
                 >
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -600,26 +596,26 @@ export default function ChatWorkspace({
                   onPaste={handlePaste}
                   placeholder="Ask anything..."
                   rows={1}
-                  className="max-h-40 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-[#ece8df] outline-none placeholder:text-[#8f8778]"
+                  className="max-h-40 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-text-primary outline-none placeholder:text-text-muted"
                   disabled={isChatLoading}
                 />
 
                 <button
                   onClick={sendMessage}
                   disabled={isChatLoading || (!chatInput.trim() && selectedImages.length === 0)}
-                  className="rounded-lg bg-[#c9a87a] px-3 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-lg bg-gold px-3 py-2 text-xs font-semibold text-[#1f1f1d] transition duration-150 ease-out hover:bg-gold-hover hover:translate-y-[-1px] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Send
                 </button>
               </div>
             </div>
-            <p className="mx-auto mt-2 w-full max-w-5xl text-xs text-[#8f8778]">Enter to send. Shift + Enter for a new line.</p>
+            <p className="mx-auto mt-2 w-full max-w-5xl text-xs text-text-muted">Enter to send. Shift + Enter for a new line.</p>
           </div>
         </>
       ) : (
         <div className="flex flex-1 items-center justify-center">
           <div className="space-y-3 text-center">
-            <p className="text-sm text-[#9f988c]">No chat selected.</p>
+            <p className="text-sm text-text-muted">No chat selected.</p>
             <button
               onClick={() => {
                 const newSession: ChatSession = {
@@ -630,9 +626,8 @@ export default function ChatWorkspace({
                   createdAt: Date.now(),
                 };
                 setChatSessions((prev) => [newSession, ...prev]);
-                // We'll need to handle activeSessionId in the parent
               }}
-              className="rounded-lg bg-[#c9a87a] px-3 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d]"
+              className="rounded-lg bg-gold px-3 py-2 text-xs font-semibold text-[#1f1f1d] transition duration-150 ease-out hover:bg-gold-hover"
             >
               New Chat
             </button>

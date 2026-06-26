@@ -28,12 +28,12 @@ const STATUS_ICONS: Record<AgentStatus, string> = {
 };
 
 const STATUS_COLORS: Record<AgentStatus, string> = {
-  idle: 'bg-[#6b6560]',
-  clarifying: 'bg-[#c9a87a]',
-  planning: 'bg-[#c9a87a]',
-  running: 'animate-pulse bg-[#c9a87a]',
-  completed: 'bg-[#6bbf7a]',
-  failed: 'bg-[#e87a7a]',
+  idle: 'bg-text-subtle',
+  clarifying: 'bg-gold',
+  planning: 'bg-gold',
+  running: 'animate-pulse bg-gold',
+  completed: 'bg-success',
+  failed: 'bg-error',
 };
 
 const TASK_LABELS: Record<string, string> = {
@@ -140,60 +140,60 @@ function TaskRow({ task }: { task: Task }) {
     <div
       className={`flex items-center gap-3 rounded-lg border px-4 py-3 transition-all ${
         isActive
-          ? 'border-[#c9a87a]/60 bg-[#c9a87a]/10'
+          ? 'border-gold/50 bg-gold/[0.08]'
           : isDone
-            ? 'border-[#3a5540] bg-[#1a2f20]/40'
+            ? 'border-success/40 bg-success/[0.06]'
             : isFailed
-              ? 'border-[#7d463f] bg-[#3f2a27]/40'
-              : 'border-[#3a3936] bg-transparent'
+              ? 'border-error/30 bg-error/[0.06]'
+              : 'border-border-subtle bg-transparent'
       }`}
     >
       <div className="flex h-6 w-6 shrink-0 items-center justify-center">
         {isActive ? (
-          <svg className="h-4 w-4 animate-spin text-[#c9a87a]" viewBox="0 0 24 24" fill="none">
+          <svg className="h-4 w-4 animate-spin text-gold" viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
           </svg>
         ) : isDone ? (
-          <svg className="h-4 w-4 text-[#6bbf7a]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+          <svg className="h-4 w-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         ) : isFailed ? (
-          <svg className="h-4 w-4 text-[#e87a7a]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+          <svg className="h-4 w-4 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         ) : (
-          <div className="h-2 w-2 rounded-full bg-[#4a4944]" />
+          <div className="h-2 w-2 rounded-full bg-border-strong" />
         )}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span
             className={`text-sm font-medium ${
-              isActive ? 'text-[#edeae2]' : isDone ? 'text-[#9bbf9a]' : isFailed ? 'text-[#e87a7a]' : 'text-[#8f887b]'
+              isActive ? 'text-text-primary' : isDone ? 'text-success' : isFailed ? 'text-error' : 'text-text-muted'
             }`}
           >
             {task.label}
           </span>
           {isActive && task.total > 0 && (
-            <span className="text-xs tabular-nums text-[#c9a87a]">
+            <span className="text-xs tabular-nums text-gold">
               {Math.round((task.progress / task.total) * 100)}%
             </span>
           )}
         </div>
         {isActive && task.total > 0 && (
-          <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-[#3a3936]">
+          <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-active">
             <div
-              className="h-full rounded-full bg-[#c9a87a] transition-all duration-500 ease-out"
+              className="h-full rounded-full bg-gold transition-all duration-500 ease-out"
               style={{ width: `${Math.min(100, (task.progress / task.total) * 100)}%` }}
             />
           </div>
         )}
         {promptStr && (
-          <p className="mt-1.5 text-xs text-[#8f887b] line-clamp-2">{promptStr}</p>
+          <p className="mt-1.5 text-xs text-text-muted line-clamp-2">{promptStr}</p>
         )}
         {isFailed && task.error && (
-          <p className="mt-1 text-xs text-[#e87a7a] truncate">{task.error}</p>
+          <p className="mt-1 text-xs text-error truncate">{task.error}</p>
         )}
       </div>
     </div>
@@ -204,30 +204,30 @@ function ScenePreview({ plan }: { plan: ScenePlan | null }) {
   if (!plan) return null;
 
   return (
-    <div className="rounded-xl border border-[#3f3e3a] bg-[#2f2f2d] p-4">
-      <p className="mb-3 text-[10px] uppercase tracking-widest text-[#6b6560]">Scene Plan</p>
+    <div className="rounded-xl border border-border-subtle bg-surface-3 p-4">
+      <p className="mb-3 text-[10px] uppercase tracking-widest text-text-subtle">Scene Plan</p>
       <div className="space-y-2">
         <div className="flex items-center justify-between text-xs">
-          <span className="text-[#9f988c]">Duration</span>
-          <span className="text-[#edeae2] font-medium">{plan.scene.duration}s ({plan.scene.segments} segments)</span>
+          <span className="text-text-muted">Duration</span>
+          <span className="text-text-primary font-medium">{plan.scene.duration}s ({plan.scene.segments} segments)</span>
         </div>
         <div className="flex items-center justify-between text-xs">
-          <span className="text-[#9f988c]">Style</span>
-          <span className="text-[#edeae2] font-medium">{plan.scene.style}</span>
+          <span className="text-text-muted">Style</span>
+          <span className="text-text-primary font-medium">{plan.scene.style}</span>
         </div>
-        <div className="border-t border-[#3a3936] pt-2 mt-2">
-          <p className="mb-1 text-[10px] uppercase tracking-widest text-[#6b6560]">Continuity</p>
+        <div className="border-t border-border-subtle pt-2 mt-2">
+          <p className="mb-1 text-[10px] uppercase tracking-widest text-text-subtle">Continuity</p>
           <div className="space-y-1">
-            <p className="text-xs text-[#bcb6aa]"><span className="text-[#9f988c]">Lighting:</span> {plan.scene.continuity.lighting}</p>
-            <p className="text-xs text-[#bcb6aa]"><span className="text-[#9f988c]">Camera:</span> {plan.scene.continuity.camera_motion}</p>
-            <p className="text-xs text-[#bcb6aa]"><span className="text-[#9f988c]">Subject:</span> {plan.scene.continuity.subject}</p>
+            <p className="text-xs text-text-secondary"><span className="text-text-muted">Lighting:</span> {plan.scene.continuity.lighting}</p>
+            <p className="text-xs text-text-secondary"><span className="text-text-muted">Camera:</span> {plan.scene.continuity.camera_motion}</p>
+            <p className="text-xs text-text-secondary"><span className="text-text-muted">Subject:</span> {plan.scene.continuity.subject}</p>
           </div>
         </div>
         {plan.continuity_notes.length > 0 && (
-          <div className="border-t border-[#3a3936] pt-2 mt-2">
-            <p className="mb-1 text-[10px] uppercase tracking-widest text-[#6b6560]">Notes</p>
+          <div className="border-t border-border-subtle pt-2 mt-2">
+            <p className="mb-1 text-[10px] uppercase tracking-widest text-text-subtle">Notes</p>
             {plan.continuity_notes.map((note, i) => (
-              <p key={i} className="text-xs text-[#bcb6aa]">• {note}</p>
+              <p key={i} className="text-xs text-text-secondary">• {note}</p>
             ))}
           </div>
         )}
@@ -518,6 +518,7 @@ export default function AgentWorkspace({
       filename: activeSession.outputVideo,
       subfolder: 'video',
       prompt: activeSession.description || 'Agent scene',
+      timestamp: Date.now(),
       width: activeRatio.videoWidth,
       height: activeRatio.videoHeight,
     });
@@ -575,20 +576,20 @@ export default function AgentWorkspace({
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-[#3a3936] bg-[#2a2a28]/95 px-8 py-5 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-border-subtle bg-surface-3/95 px-8 py-5 backdrop-blur">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={`h-2 w-2 rounded-full ${STATUS_COLORS[status]}`} />
             <div>
-              <h1 className="text-base font-semibold text-[#edeae2]">{activeSession?.title || 'AI Scene Agent'}</h1>
-              <p className="text-xs text-[#9f988c]">{STATUS_LABELS[status]}</p>
+              <h1 className="text-base font-semibold text-text-primary">{activeSession?.title || 'AI Scene Agent'}</h1>
+              <p className="text-xs text-text-muted">{STATUS_LABELS[status]}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             {isRunning && (
               <button
                 onClick={() => { sceneAgent.abort(); setIsRunning(false); }}
-                className="rounded-lg border border-[#7d463f] bg-[#3f2a27] px-3 py-1.5 text-xs text-[#ffbeb4] transition hover:bg-[#5a3430]"
+                className="rounded-lg border border-error/30 bg-error/[0.08] px-3 py-1.5 text-xs text-error transition hover:bg-error/[0.15] duration-150 ease-out"
               >
                 Abort
               </button>
@@ -601,27 +602,27 @@ export default function AgentWorkspace({
         <div className="mx-auto w-full max-w-4xl space-y-6">
 
           {activeSession && !isRunning && (
-            <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] p-5 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
-              <p className="mb-3 text-[10px] uppercase tracking-widest text-[#6b6560]">Describe Your Scene</p>
+            <div className="rounded-2xl border border-border-subtle bg-surface-3 p-5 shadow-[var(--shadow-card)]">
+              <p className="mb-3 text-[10px] uppercase tracking-widest text-text-subtle">Describe Your Scene</p>
 
               <textarea
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 placeholder="Describe the scene naturally...&#10;&#10;Example: 'Create a 10 second cinematic cyberpunk alley scene with neon rain reflections and a mysterious figure walking through mist.'"
                 rows={5}
-                className="w-full resize-none rounded-xl border border-[#494741] bg-[#262624] px-3 py-3 text-sm text-[#ece8df] outline-none transition placeholder:text-[#6b6560] focus:border-[#b9986d]"
+                className="w-full resize-none rounded-xl border border-border-strong bg-surface-2 px-3 py-3 text-sm text-text-primary outline-none transition placeholder:text-text-subtle focus:border-gold-focus"
               />
 
               <div className="mt-4">
                 <div className="flex flex-wrap items-end gap-3">
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Model</span>
+                    <span className="text-[10px] uppercase tracking-widest text-text-subtle">Model</span>
                     <div className="relative">
                       <select
                         value={selectedModel}
                         onChange={(e) => switchModel(e.target.value)}
                         disabled={availableModels.length === 0}
-                        className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none truncate"
+                        className="rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition focus:border-gold-focus appearance-none truncate"
                       >
                         {availableModels.length === 0 ? (
                           <option value="">No models</option>
@@ -631,7 +632,7 @@ export default function AgentWorkspace({
                           ))
                         )}
                       </select>
-                      <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6b6560]">
+                      <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle">
                         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                         </svg>
@@ -639,12 +640,12 @@ export default function AgentWorkspace({
                     </div>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Style</span>
+                    <span className="text-[10px] uppercase tracking-widest text-text-subtle">Style</span>
                     <div className="relative">
                       <select
                         value={imageStyle}
                         onChange={(e) => setImageStyle(e.target.value)}
-                        className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none"
+                        className="rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition focus:border-gold-focus appearance-none"
                       >
                         {IMAGE_STYLES.map((style) => (
                           <option key={style} value={style}>
@@ -652,7 +653,7 @@ export default function AgentWorkspace({
                           </option>
                         ))}
                       </select>
-                      <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6b6560]">
+                      <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle">
                         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                         </svg>
@@ -662,7 +663,7 @@ export default function AgentWorkspace({
                   <button
                     onClick={handleStartOrRestart}
                     disabled={!userInput.trim() || !selectedModel || isRunning}
-                    className="ml-auto flex items-center gap-1.5 rounded-lg bg-[#c9a87a] px-5 py-2.5 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:opacity-40 self-end"
+                    className="ml-auto flex items-center gap-1.5 rounded-lg bg-gold px-5 py-2.5 text-xs font-semibold text-[#1f1f1d] hover:translate-y-[-1px] active:scale-[0.97] duration-150 ease-out hover:bg-gold-hover disabled:opacity-40 self-end"
                   >
                     <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -671,11 +672,11 @@ export default function AgentWorkspace({
                   </button>
                 </div>
 
-                <div className="mt-3 h-px bg-[#3a3835]" />
+                <div className="mt-3 h-px bg-border-subtle" />
 
                 <div className="mt-3 flex flex-wrap items-end gap-6">
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Duration</span>
+                    <span className="text-[10px] uppercase tracking-widest text-text-subtle">Duration</span>
                     <div className="flex items-center gap-2">
                       <input
                         type="range"
@@ -684,19 +685,19 @@ export default function AgentWorkspace({
                         step={1}
                         value={duration}
                         onChange={(e) => setDuration(parseInt(e.target.value))}
-                        className="w-36 appearance-none rounded-full bg-[#494741] py-1 cursor-pointer
+                        className="w-36 appearance-none rounded-full bg-border-strong py-1 cursor-pointer
                           [&::-webkit-slider-thumb]:appearance-none
                           [&::-webkit-slider-thumb]:h-4
                           [&::-webkit-slider-thumb]:w-4
                           [&::-webkit-slider-thumb]:rounded-full
-                          [&::-webkit-slider-thumb]:bg-[#c9a87a]
+                          [&::-webkit-slider-thumb]:bg-gold
                           [&::-webkit-slider-thumb]:cursor-pointer"
                       />
-                      <span className="w-8 text-center text-sm tabular-nums text-[#c9a87a]">{duration}s</span>
+                      <span className="w-8 text-center text-sm tabular-nums text-gold">{duration}s</span>
                     </div>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Aspect Ratio</span>
+                    <span className="text-[10px] uppercase tracking-widest text-text-subtle">Aspect Ratio</span>
                     <div className="flex gap-1.5">
                       {RATIO_PRESETS.map((r) => (
                         <button
@@ -704,8 +705,8 @@ export default function AgentWorkspace({
                           onClick={() => setAspectRatio(r.label)}
                           className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
                             aspectRatio === r.label
-                              ? 'border-[#c9a87a] bg-[#c9a87a]/15 text-[#edeae2]'
-                              : 'border-[#494741] bg-[#262624] text-[#9f988c] hover:border-[#5a4f40] hover:text-[#edeae2]'
+                              ? 'border-gold bg-gold/[0.1] text-text-primary'
+                              : 'border-border-strong bg-surface-2 text-text-muted hover:border-gold-dim/60 hover:text-text-primary'
                           }`}
                         >
                           {r.label}
@@ -714,7 +715,7 @@ export default function AgentWorkspace({
                     </div>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Resolution</span>
+                    <span className="text-[10px] uppercase tracking-widest text-text-subtle">Resolution</span>
                     <div className="flex gap-1.5">
                       {RESOLUTIONS.map((r) => (
                         <button
@@ -722,8 +723,8 @@ export default function AgentWorkspace({
                           onClick={() => setResolution(r)}
                           className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
                             resolution === r
-                              ? 'border-[#c9a87a] bg-[#c9a87a]/15 text-[#edeae2]'
-                              : 'border-[#494741] bg-[#262624] text-[#9f988c] hover:border-[#5a4f40] hover:text-[#edeae2]'
+                              ? 'border-gold bg-gold/[0.1] text-text-primary'
+                              : 'border-border-strong bg-surface-2 text-text-muted hover:border-gold-dim/60 hover:text-text-primary'
                           }`}
                         >
                           {r}
@@ -735,15 +736,15 @@ export default function AgentWorkspace({
 
                 {AVAILABLE_LORAS.length > 0 && (
                   <>
-                    <div className="mt-3 h-px bg-[#3a3835]" />
+                    <div className="mt-3 h-px bg-border-subtle" />
                     <div className="mt-3 flex flex-wrap items-end gap-3">
                       <div className="flex flex-col gap-1">
-                        <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">LoRA (Image Only)</span>
+                        <span className="text-[10px] uppercase tracking-widest text-text-subtle">LoRA (Image Only)</span>
                         <div className="relative max-w-[280px]">
                           <select
                             value={selectedLora.name}
                             onChange={(e) => setSelectedLora({ ...selectedLora, name: e.target.value })}
-                            className="w-full rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none"
+                            className="w-full rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition focus:border-gold-focus appearance-none"
                           >
                             <option value="">None</option>
                             {AVAILABLE_LORAS.map((loraName) => (
@@ -752,7 +753,7 @@ export default function AgentWorkspace({
                               </option>
                             ))}
                           </select>
-                          <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6b6560]">
+                          <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle">
                             <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                             </svg>
@@ -760,7 +761,7 @@ export default function AgentWorkspace({
                         </div>
                       </div>
                       <div className="flex flex-col gap-1 min-w-[140px] max-w-[200px]">
-                        <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Strength</span>
+                        <span className="text-[10px] uppercase tracking-widest text-text-subtle">Strength</span>
                         <div className="flex items-center gap-2 h-[34px]">
                           <input
                             type="range"
@@ -773,23 +774,23 @@ export default function AgentWorkspace({
                             }
                             className="
                               flex-1 h-1.5 appearance-none rounded-full outline-none
-                              bg-[#494741] cursor-pointer
+                              bg-border-strong cursor-pointer
                               [&::-webkit-slider-thumb]:appearance-none
                               [&::-webkit-slider-thumb]:h-3.5
                               [&::-webkit-slider-thumb]:w-3.5
                               [&::-webkit-slider-thumb]:rounded-full
-                              [&::-webkit-slider-thumb]:bg-[#c9a87a]
+                              [&::-webkit-slider-thumb]:bg-gold
                               [&::-webkit-slider-thumb]:cursor-pointer
                               [&::-webkit-slider-thumb]:transition
-                              [&::-webkit-slider-thumb]:hover:bg-[#d8b88d]
+                              [&::-webkit-slider-thumb]:hover:bg-gold-hover
                               [&::-moz-range-thumb]:h-3.5
                               [&::-moz-range-thumb]:w-3.5
                               [&::-moz-range-thumb]:rounded-full
-                              [&::-moz-range-thumb]:bg-[#c9a87a]
+                              [&::-moz-range-thumb]:bg-gold
                               [&::-moz-range-thumb]:border-0
                             "
                           />
-                          <span className="w-9 text-center rounded-md bg-[#262624] border border-[#494741] py-0.5 text-[11px] tabular-nums text-[#c9a87a]">
+                          <span className="w-9 text-center rounded-md bg-surface-2 border border-border-strong py-0.5 text-[11px] tabular-nums text-gold">
                             {selectedLora.strength_model.toFixed(2)}
                           </span>
                         </div>
@@ -807,15 +808,15 @@ export default function AgentWorkspace({
 
           {activeSession && activeSession.tasks.length > 0 && (
             <div className="space-y-2">
-              <p className="text-[10px] uppercase tracking-widest text-[#6b6560]">Progress</p>
+              <p className="text-[10px] uppercase tracking-widest text-text-subtle">Progress</p>
               {(activeSession.tasks as Task[]).map((task) => (
                 <div key={task.id}>
                   <TaskRow task={task} />
                   {task.type === 'generate_image' && isAwaitingImageConfirm && selectedImagePreview && (
-                    <div className="mb-2 mt-3 rounded-xl border border-[#c9a87a]/30 bg-[#2a2a28] p-4">
-                      <p className="mb-2 text-[10px] uppercase tracking-widest text-[#c9a87a]">Keyframe Preview</p>
-                      <p className="mb-3 text-xs text-[#9f988c]">Review the generated keyframe. Edit the prompt and regenerate if needed, then confirm to continue with video generation.</p>
-                      <div className="overflow-hidden rounded-lg bg-[#1a1a18] mb-3">
+                    <div className="mb-2 mt-3 rounded-xl border border-gold/25 bg-surface-3 p-4">
+                      <p className="mb-2 text-[10px] uppercase tracking-widest text-gold">Keyframe Preview</p>
+                      <p className="mb-3 text-xs text-text-muted">Review the generated keyframe. Edit the prompt and regenerate if needed, then confirm to continue with video generation.</p>
+                      <div className="overflow-hidden rounded-lg bg-surface-1 mb-3">
                         <img
                           src={selectedImagePreview}
                           alt="Generated keyframe"
@@ -827,12 +828,12 @@ export default function AgentWorkspace({
                         onChange={(e) => setEditableImagePrompt(e.target.value)}
                         placeholder="Enter image prompt..."
                         rows={3}
-                        className="w-full resize-none rounded-xl border border-[#494741] bg-[#262624] px-3 py-3 text-sm text-[#ece8df] outline-none transition placeholder:text-[#6b6560] focus:border-[#b9986d] mb-3"
+                        className="w-full resize-none rounded-xl border border-border-strong bg-surface-2 px-3 py-3 text-sm text-text-primary outline-none transition placeholder:text-text-subtle focus:border-gold-focus mb-3"
                       />
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => sceneAgent.regenerateImage(editableImagePrompt)}
-                          className="rounded-lg border border-[#c9a87a]/40 bg-[#3a352e] px-4 py-2 text-xs text-[#f2dbc0] transition hover:bg-[#4a433a] hover:border-[#c9a87a]"
+                          className="rounded-lg border border-gold/30 bg-hover px-4 py-2 text-xs text-gold-dim transition hover:bg-active hover:border-gold duration-150 ease-out"
                         >
                           Regenerate
                         </button>
@@ -842,7 +843,7 @@ export default function AgentWorkspace({
                             setIsAwaitingImageConfirm(false);
                             setSelectedImagePreview(null);
                           }}
-                          className="rounded-lg bg-[#c9a87a] px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d]"
+                          className="rounded-lg bg-gold px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-gold-hover duration-150 ease-out"
                         >
                           Confirm & Continue
                         </button>
@@ -855,20 +856,20 @@ export default function AgentWorkspace({
           )}
 
           {activeSession && activeSession.logs.length > 0 && (
-            <div className="rounded-xl border border-[#3f3e3a] bg-[#1f1f1d] p-4">
-              <p className="mb-2 text-[10px] uppercase tracking-widest text-[#6b6560]">Agent Log</p>
+            <div className="rounded-xl border border-border-subtle bg-surface-1 p-4">
+              <p className="mb-2 text-[10px] uppercase tracking-widest text-text-subtle">Agent Log</p>
               <div ref={logsRef} className="max-h-48 overflow-y-auto space-y-1">
                 {activeSession.logs.map((log, i) => (
-                  <p key={i} className="text-xs font-mono text-[#8f887b]">{log}</p>
+                  <p key={i} className="text-xs font-mono text-text-muted">{log}</p>
                 ))}
               </div>
             </div>
           )}
 
           {activeSession && activeSession.outputVideo && (
-            <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] p-5 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
-              <p className="mb-3 text-[10px] uppercase tracking-widest text-[#6b6560]">Scene Output</p>
-              <div className="overflow-hidden rounded-xl bg-[#1a1a18]">
+            <div className="rounded-2xl border border-border-subtle bg-surface-3 p-5 shadow-[var(--shadow-card)]">
+              <p className="mb-3 text-[10px] uppercase tracking-widest text-text-subtle">Scene Output</p>
+              <div className="overflow-hidden rounded-xl bg-surface-1">
                 <video
                   src={`/generated/${activeSession.outputVideo}`}
                   controls
@@ -878,19 +879,19 @@ export default function AgentWorkspace({
               <div className="mt-3 flex items-center gap-2">
                 <button
                   onClick={() => window.open(`/generated/${activeSession.outputVideo}`, '_blank')}
-                  className="rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-2 text-xs text-[#f2dbc0] transition hover:bg-[#4a433a]"
+                  className="rounded-lg border border-gold-dim/40 bg-hover px-3 py-2 text-xs text-gold-dim transition hover:bg-active duration-150 ease-out"
                 >
                   Open in New Tab
                 </button>
                 <button
                   onClick={openUpscale}
-                  className="rounded-lg border border-[#c9a87a]/40 bg-[#3a352e] px-3 py-2 text-xs text-[#f2dbc0] transition hover:bg-[#4a433a] hover:border-[#c9a87a]"
+                  className="rounded-lg border border-gold/30 bg-hover px-3 py-2 text-xs text-gold-dim transition hover:bg-active hover:border-gold duration-150 ease-out"
                 >
                   Upscale
                 </button>
                 <button
                   onClick={openEditor}
-                  className="rounded-lg border border-[#c9a87a]/40 bg-[#3a352e] px-3 py-2 text-xs text-[#f2dbc0] transition hover:bg-[#4a433a] hover:border-[#c9a87a]"
+                  className="rounded-lg border border-gold/30 bg-hover px-3 py-2 text-xs text-gold-dim transition hover:bg-active hover:border-gold duration-150 ease-out"
                 >
                   Edit
                 </button>
@@ -901,14 +902,14 @@ export default function AgentWorkspace({
           {(status === 'completed' || status === 'failed') && activeSession && (
             <div className="flex items-center gap-3">
               {status === 'failed' && (
-                <p className="text-xs text-[#e87a7a]">Generation failed. You can try again or create a new scene.</p>
+                <p className="text-xs text-error">Generation failed. You can try again or create a new scene.</p>
               )}
               {status === 'completed' && (
-                <p className="text-xs text-[#9bbf9a]">Scene complete. Generate a new scene or restart?</p>
+                <p className="text-xs text-success">Scene complete. Generate a new scene or restart?</p>
               )}
               <button
                 onClick={handleRestart}
-                className="rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-2 text-xs text-[#f2dbc0] transition hover:bg-[#4a433a]"
+                className="rounded-lg border border-gold-dim/40 bg-hover px-3 py-2 text-xs text-gold-dim transition hover:bg-active duration-150 ease-out"
               >
                 Restart
               </button>
@@ -933,7 +934,7 @@ export default function AgentWorkspace({
                   setAgentSessions((prev) => [newSession, ...prev]);
                   setActiveSessionId(newSession.id);
                 }}
-                className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 text-xs text-[#bcb6aa] transition hover:border-[#5a4f40] hover:text-[#edeae2]"
+                className="rounded-lg border border-border-strong bg-surface-2 px-3 py-2 text-xs text-text-secondary transition hover:border-gold-dim/60 hover:text-text-primary duration-150 ease-out"
               >
                 New Scene
               </button>
@@ -943,7 +944,7 @@ export default function AgentWorkspace({
           {!activeSession && (
             <div className="flex flex-1 items-center justify-center py-20">
               <div className="space-y-3 text-center">
-                <p className="text-sm text-[#9f988c]">No scene selected.</p>
+                <p className="text-sm text-text-muted">No scene selected.</p>
                 <button
                   onClick={() => {
                     const newSession: AgentSession = {
@@ -963,7 +964,7 @@ export default function AgentWorkspace({
                     setAgentSessions((prev) => [newSession, ...prev]);
                     setActiveSessionId(newSession.id);
                   }}
-                  className="rounded-lg bg-[#c9a87a] px-3 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d]"
+                  className="rounded-lg bg-gold px-3 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-gold-hover"
                 >
                   New Scene
                 </button>

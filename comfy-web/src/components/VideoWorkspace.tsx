@@ -54,7 +54,7 @@ interface VideoWorkspaceProps {
 
 function ChevronIcon() {
   return (
-    <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6b6560]">
+    <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle">
       <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
       </svg>
@@ -724,14 +724,14 @@ Based on the image, write a prompt that describes exactly enough action to reali
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-[#3a3936] bg-[#2a2a28]/95 px-8 py-5 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-border-subtle bg-surface-3/95 px-8 py-5 backdrop-blur">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-[#c9a87a]" />
+            <div className="h-2 w-2 animate-pulse rounded-full bg-gold" />
             <div className="flex items-center gap-3">
               <div>
-                <h1 className="text-base font-semibold text-[#edeae2]">Video Generator</h1>
-                <p className="text-xs text-[#9f988c]">Image to video</p>
+                <h1 className="text-base font-semibold text-text-primary">Video Generator</h1>
+                <p className="text-xs text-text-muted">Image to video</p>
               </div>
             </div>
           </div>
@@ -743,21 +743,21 @@ Based on the image, write a prompt that describes exactly enough action to reali
                     setIsSelectMode(!isSelectMode);
                     if (isSelectMode) setSelectedForDeletion(new Set());
                   }}
-                  className={`rounded-lg border px-3 py-1.5 text-xs transition ${isSelectMode ? "border-[#c9a87a] text-[#c9a87a]" : "border-[#5a4a3d] text-[#e1bfa0] hover:border-[#775e4b] hover:text-[#f2cdae]"}`}
+                  className={`rounded-lg border px-3 py-1.5 text-xs transition duration-150 ease-out ${isSelectMode ? "border-gold text-gold" : "border-border-strong text-gold-dim hover:border-gold-focus hover:text-gold-hover"}`}
                 >
                   {isSelectMode ? "Cancel" : "Select"}
                 </button>
                 {isSelectMode && selectedForDeletion.size > 0 && (
                   <button
                     onClick={() => openConfirm("Delete Selected", `Delete ${selectedForDeletion.size} video(s)?`, deleteSelectedVideos)}
-                    className="rounded-lg border border-[#8b3a3a] px-3 py-1.5 text-xs text-[#e87a7a] transition hover:border-[#a84a4a] hover:text-[#f28a8a]"
+                    className="rounded-lg border border-error/30 px-3 py-1.5 text-xs text-error transition duration-150 ease-out hover:border-[#a84a4a] hover:text-[#f28a8a]"
                   >
                     Delete ({selectedForDeletion.size})
                   </button>
                 )}
                 <button
                   onClick={() => openConfirm("Clear Gallery", "This will delete all videos from the server.", () => clearVideoGallery())}
-                  className="rounded-lg border border-[#5a4a3d] px-3 py-1.5 text-xs text-[#e1bfa0] transition hover:border-[#775e4b] hover:text-[#f2cdae]"
+                  className="rounded-lg border border-border-strong px-3 py-1.5 text-xs text-gold-dim transition duration-150 ease-out hover:border-gold-focus hover:text-gold-hover"
                 >
                   Clear Gallery
                 </button>
@@ -771,32 +771,32 @@ Based on the image, write a prompt that describes exactly enough action to reali
         <div className="mx-auto w-full max-w-4xl space-y-6">
 
           {/* Image Upload Section */}
-          <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] p-5 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
-            <p className="mb-3 text-[10px] uppercase tracking-widest text-[#6b6560]">Upload Image</p>
+          <div className="rounded-2xl border border-border-subtle bg-surface-3 p-5 shadow-[var(--shadow-card)]">
+            <p className="mb-3 text-[10px] uppercase tracking-widest text-text-subtle">Upload Image</p>
 
             {!uploadedImage ? (
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#4a4944] bg-[#262624] px-6 py-10 transition hover:border-[#5a554a] hover:bg-[#2d2d2b]"
+                className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border-strong bg-surface-2 px-6 py-10 transition duration-150 ease-out hover:border-border-strong hover:bg-hover"
               >
-                <svg className="mb-3 h-10 w-10 text-[#6b6560]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <svg className="mb-3 h-10 w-10 text-text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <p className="text-sm text-[#bcb6aa]">Click to upload an image</p>
-                <p className="mt-1 text-xs text-[#6b6560]">PNG, JPG up to 10MB</p>
+                <p className="text-sm text-text-secondary">Click to upload an image</p>
+                <p className="mt-1 text-xs text-text-subtle">PNG, JPG up to 10MB</p>
               </div>
             ) : (
               <div className="relative flex items-center gap-4">
-                <div className="relative h-32 w-32 overflow-hidden rounded-xl border border-[#4a4944]">
+                <div className="relative h-32 w-32 overflow-hidden rounded-xl border border-border-strong">
                   <img src={uploadedImage} alt="Uploaded" className="h-full w-full object-cover" />
                 </div>
                 <div className="flex flex-1 flex-col justify-center">
-                  <p className="text-sm text-[#edeae2] truncate">{uploadedImageName}</p>
-                  <p className="text-xs text-[#6b6560]">Ready for video generation</p>
+                  <p className="text-sm text-text-primary truncate">{uploadedImageName}</p>
+                  <p className="text-xs text-text-subtle">Ready for video generation</p>
                 </div>
                 <button
                   onClick={() => updateWorkspaceState({ uploadedImage: null, uploadedImageName: '' })}
-                  className="rounded-lg border border-[#5a4a3d] px-3 py-2 text-xs text-[#e1bfa0] transition hover:border-[#775e4b] hover:text-[#f2cdae]"
+                  className="rounded-lg border border-border-strong px-3 py-2 text-xs text-gold-dim transition duration-150 ease-out hover:border-gold-focus hover:text-gold-hover"
                 >
                   Remove
                 </button>
@@ -813,21 +813,21 @@ Based on the image, write a prompt that describes exactly enough action to reali
           </div>
 
           {/* Size & Duration Controls */}
-          <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] p-5 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
+          <div className="rounded-2xl border border-border-subtle bg-surface-3 p-5 shadow-[var(--shadow-card)]">
             <div className="flex flex-wrap items-start gap-6">
 
               {/* Video Size */}
               <div className="flex flex-col gap-2">
-                <p className="text-[10px] uppercase tracking-widest text-[#6b6560]">Video Size</p>
-                <div className="flex h-[38px] items-center gap-1 rounded-xl border border-[#494741] bg-[#262624] p-1">
+                <p className="text-[10px] uppercase tracking-widest text-text-subtle">Video Size</p>
+                <div className="flex h-[38px] items-center gap-1 rounded-xl border border-border-strong bg-surface-2 p-1">
                   {(['480', '540', '720'] as const).map((size) => (
                     <button
                       key={size}
                       onClick={() => updateWorkspaceState({ videoSize: size })}
                       disabled={isGenerating}
-                      className={`h-full rounded-lg px-4 text-sm font-medium transition ${videoSize === size
-                        ? 'bg-[#c9a87a] text-[#1f1f1d]'
-                        : 'text-[#bcb6aa] hover:text-[#edeae2]'
+                      className={`h-full rounded-lg px-4 text-sm font-medium transition duration-150 ease-out ${videoSize === size
+                        ? 'bg-gold text-[#1f1f1d]'
+                        : 'text-text-secondary hover:text-text-primary'
                         } disabled:opacity-50`}
                     >
                       {size}p
@@ -838,14 +838,14 @@ Based on the image, write a prompt that describes exactly enough action to reali
 
               {/* Match Aspect Ratio Toggle */}
               <div className="flex flex-col gap-2">
-                <p className="text-[10px] uppercase tracking-widest text-[#6b6560]">Aspect Ratio</p>
+                <p className="text-[10px] uppercase tracking-widest text-text-subtle">Aspect Ratio</p>
                 <button
                   onClick={() => updateWorkspaceState({ matchImageSize: !matchImageSize })}
                   disabled={isGenerating || !uploadedImage}
-                  className={`flex h-[38px] items-center gap-2 rounded-xl border border-[#494741] bg-[#262624] px-4 text-sm transition hover:border-[#5a554a] disabled:opacity-50 ${matchImageSize && uploadedImage ? 'text-[#c9a87a]' : 'text-[#bcb6aa]'
+                  className={`flex h-[38px] items-center gap-2 rounded-lg border border-border-strong bg-surface-2 px-4 text-sm transition duration-150 ease-out hover:border-border-strong disabled:opacity-50 ${matchImageSize && uploadedImage ? 'text-gold' : 'text-text-secondary'
                     }`}
                 >
-                  <div className={`h-3 w-3 rounded-sm border transition-colors ${matchImageSize && uploadedImage ? 'bg-[#c9a87a] border-[#c9a87a]' : 'border-[#6b6560]'
+                  <div className={`h-3 w-3 rounded-sm border transition-colors duration-150 ease-out ${matchImageSize && uploadedImage ? 'bg-gold border-gold' : 'border-[#6b6560]'
                     }`}>
                     {matchImageSize && uploadedImage && (
                       <svg className="h-full w-full text-[#1f1f1d]" fill="currentColor" viewBox="0 0 20 20">
@@ -859,15 +859,15 @@ Based on the image, write a prompt that describes exactly enough action to reali
 
               {/* Resolution Display */}
               <div className="flex flex-col gap-2">
-                <p className="text-[10px] uppercase tracking-widest text-[#6b6560]">Target Resolution</p>
-                <div className="flex h-[38px] items-center justify-center rounded-lg bg-[#262624] border border-[#494741] px-4 text-sm tabular-nums text-[#c9a87a]">
+                <p className="text-[10px] uppercase tracking-widest text-text-subtle">Target Resolution</p>
+                <div className="flex h-[38px] items-center justify-center rounded-lg bg-surface-2 border border-border-strong px-4 text-sm tabular-nums text-gold">
                   {targetDimensions.width} × {targetDimensions.height}
                 </div>
               </div>
 
               {/* Duration in Frames */}
               <div className="flex flex-col gap-2">
-                <p className="text-[10px] uppercase tracking-widest text-[#6b6560]">Duration (Frames)</p>
+                <p className="text-[10px] uppercase tracking-widest text-text-subtle">Duration (Frames)</p>
                 <div className="flex h-[38px] items-center gap-3">
                   <input
                     type="range"
@@ -882,19 +882,19 @@ Based on the image, write a prompt that describes exactly enough action to reali
                       [&::-webkit-slider-thumb]:h-4
                       [&::-webkit-slider-thumb]:w-4
                       [&::-webkit-slider-thumb]:rounded-full
-                      [&::-webkit-slider-thumb]:bg-[#c9a87a]
+                      [&::-webkit-slider-thumb]:bg-gold
                       [&::-webkit-slider-thumb]:cursor-pointer
                       [&::-moz-range-thumb]:h-4
                       [&::-moz-range-thumb]:w-4
                       [&::-moz-range-thumb]:rounded-full
-                      [&::-moz-range-thumb]:bg-[#c9a87a]
+                      [&::-moz-range-thumb]:bg-gold
                       [&::-moz-range-thumb]:border-0"
                   />
-                  <span className="flex h-[30px] w-12 items-center justify-center rounded-lg bg-[#262624] border border-[#494741] text-center text-sm tabular-nums text-[#c9a87a]">
+                  <span className="flex h-[30px] w-12 items-center justify-center rounded-lg bg-surface-2 border border-border-strong text-center text-sm tabular-nums text-gold">
                     {durationFrames}
                   </span>
                 </div>
-                <p className="text-[11px] text-[#6b6560] leading-none">
+                <p className="text-[11px] text-text-subtle leading-none">
                   ~{(durationFrames / (WORKFLOW_FPS[activeWorkflow] || 16)).toFixed(1)}s at {WORKFLOW_FPS[activeWorkflow] || 16}fps ({activeWorkflow === 'ltx-2.3-i2v' ? '241 frames is 10s' : '81 frames is optimal'})
                 </p>
               </div>
@@ -902,16 +902,16 @@ Based on the image, write a prompt that describes exactly enough action to reali
           </div>
 
           {/* Prompt Input */}
-          <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] p-5 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
+          <div className="rounded-2xl border border-border-subtle bg-surface-3 p-5 shadow-[var(--shadow-card)]">
             <div className="mb-3 flex items-center justify-between gap-2">
               <div className="flex items-center gap-4">
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Workflow</span>
+                  <span className="text-[10px] uppercase tracking-widest text-text-subtle">Workflow</span>
                   <div className="relative min-w-[160px]">
                     <select
                       value={activeWorkflow}
                       onChange={(e) => updateWorkspaceState({ activeWorkflow: e.target.value })}
-                      className="w-full h-[32px] rounded-lg border border-[#494741] bg-[#262624] px-3 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none disabled:opacity-50"
+                      className="w-full h-[32px] rounded-lg border border-border-strong bg-surface-2 px-3 pr-8 text-xs text-text-primary outline-none transition duration-150 ease-out focus:border-gold-focus appearance-none disabled:opacity-50"
                     >
                       {WORKFLOW_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -922,13 +922,13 @@ Based on the image, write a prompt that describes exactly enough action to reali
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Motion Model</span>
+                  <span className="text-[10px] uppercase tracking-widest text-text-subtle">Motion Model</span>
                   <div className="relative min-w-[200px]">
                     <select
                       value={selectedModel}
                       onChange={(e) => setSelectedModel(e.target.value)}
                       disabled={isEnhancing || availableModels.length === 0}
-                      className="w-full h-[32px] rounded-lg border border-[#494741] bg-[#262624] px-3 pr-8 text-xs text-[#edeae2] outline-none transition focus:border-[#b9986d] appearance-none truncate disabled:opacity-50"
+                      className="w-full h-[32px] rounded-lg border border-border-strong bg-surface-2 px-3 pr-8 text-xs text-text-primary outline-none transition duration-150 ease-out focus:border-gold-focus appearance-none truncate disabled:opacity-50"
                     >
                       {availableModels.length === 0 ? (
                         <option value="">Loading models...</option>
@@ -947,7 +947,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                 <button
                   onClick={enhancePrompt}
                   disabled={isEnhancing || !prompt.trim() || !selectedModel || availableModels.length === 0}
-                  className="cursor-pointer h-[32px] flex items-center gap-1.5 rounded-lg border border-[#5a4f40] bg-[#3a352e] px-4 text-xs font-medium text-[#f2dbc0] transition hover:bg-[#4a433a] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="cursor-pointer h-[32px] flex items-center gap-1.5 rounded-lg border border-gold-dim/40 bg-hover px-4 text-xs font-medium text-gold-dim transition duration-150 ease-out hover:bg-active disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isEnhancing ? (
                     <>
@@ -968,43 +968,43 @@ Based on the image, write a prompt that describes exactly enough action to reali
               placeholder="Describe the motion, camera movement, and action..."
               rows={4}
               disabled={isGenerating}
-              className="w-full resize-none rounded-xl border border-[#494741] bg-[#262624] px-3 py-3 text-sm text-[#ece8df] outline-none transition placeholder:text-[#6b6560] focus:border-[#b9986d] disabled:opacity-60"
+              className="w-full resize-none rounded-lg border border-border-strong bg-surface-2 px-3 py-3 text-sm text-text-primary outline-none transition duration-150 ease-out placeholder:text-text-subtle focus:border-gold-focus disabled:opacity-60"
             />
 
             <div className="mt-4 space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Negative Prompt</span>
+              <span className="text-[10px] uppercase tracking-widest text-text-subtle">Negative Prompt</span>
               <textarea
                 value={negative_prompt}
                 onChange={(e) => updateWorkspaceState({ negative_prompt: e.target.value })}
                 placeholder="List failure modes to avoid (blurry, morphing, etc.)..."
                 rows={2}
                 disabled={isGenerating}
-                className="w-full resize-none rounded-xl border border-[#494741] bg-[#262624] px-3 py-3 text-xs text-[#bcb6aa] outline-none transition placeholder:text-[#6b6560] focus:border-[#b9986d] disabled:opacity-60"
+                className="w-full resize-none rounded-lg border border-border-strong bg-surface-2 px-3 py-3 text-xs text-text-secondary outline-none transition duration-150 ease-out placeholder:text-text-subtle focus:border-gold-focus disabled:opacity-60"
               />
             </div>
 
             <div className="mt-3 flex flex-col gap-3">
               {isGenerating && (
-                <div className="rounded-lg border border-[#494741] bg-[#262624] p-3">
-                  <div className="mb-1.5 flex items-center justify-between text-xs text-[#bcb6aa]">
+                <div className="rounded-lg border border-border-strong bg-surface-2 p-3">
+                  <div className="mb-1.5 flex items-center justify-between text-xs text-text-secondary">
                     <span>{progress ? `Generating... ${progress.value}/${progress.max}` : 'Starting generation...'}</span>
                     {progress && <span>{Math.round((progress.value / progress.max) * 100)}%</span>}
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-[#3a3936]">
                     <div
-                      className={`h-full rounded-full bg-[#c9a87a] ${progress ? 'transition-all duration-500 ease-out' : 'animate-pulse'}`}
+                      className={`h-full rounded-full bg-gold ${progress ? 'transition-all duration-500 ease-out' : 'animate-pulse'}`}
                       style={progress ? { width: `${Math.min(100, (progress.value / progress.max) * 100)}%` } : { width: '30%' }}
                     />
                   </div>
                 </div>
               )}
               <div className="flex items-center justify-between">
-                <p className="text-xs text-[#6b6560]">Describe how the image should animate</p>
+                <p className="text-xs text-text-subtle">Describe how the image should animate</p>
 
                 <button
                   onClick={generateVideo}
                   disabled={isGenerating || !uploadedImage || !prompt.trim()}
-                  className="cursor-pointer flex items-center gap-1.5 rounded-lg bg-[#c9a87a] px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="cursor-pointer flex items-center gap-1.5 rounded-lg bg-gold px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition duration-150 ease-out hover:translate-y-[-1px] hover:bg-gold-hover active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isGenerating ? (
                     <>
@@ -1028,17 +1028,17 @@ Based on the image, write a prompt that describes exactly enough action to reali
           </div>
 
           {error && (
-            <p className="rounded-lg border border-[#7d463f] bg-[#3f2a27] px-3 py-2 text-sm text-[#ffbeb4]">
+            <p className="rounded-lg border border-error/30 bg-error/[0.08] px-3 py-2 text-sm text-error">
               {error}
             </p>
           )}
 
           {/* Video Result */}
           {videoResult && (
-            <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] p-5 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
-              <p className="mb-3 text-[10px] uppercase tracking-widest text-[#6b6560]">Video Preview</p>
+            <div className="rounded-2xl border border-border-subtle bg-surface-3 p-5 shadow-[var(--shadow-card)]">
+              <p className="mb-3 text-[10px] uppercase tracking-widest text-text-subtle">Video Preview</p>
               <div className="flex items-center gap-4">
-                <div className="flex-1 overflow-hidden rounded-xl bg-[#1a1a18]">
+                <div className="flex-1 overflow-hidden rounded-xl bg-surface-1">
                   <video
                     src={`/generated/${videoResult.filename}`}
                     controls
@@ -1049,25 +1049,25 @@ Based on the image, write a prompt that describes exactly enough action to reali
                 <div className="flex flex-col gap-2">
                   <button
                     onClick={() => window.open(`/generated/${videoResult.filename}`, '_blank')}
-                    className="rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-2 text-xs text-[#f2dbc0] transition hover:bg-[#4a433a]"
+                    className="rounded-lg border border-gold-dim/40 bg-hover px-3 py-2 text-xs text-gold-dim transition duration-150 ease-out hover:bg-active"
                   >
                     View
                   </button>
                   <button
                     onClick={() => openUpscale(videoResult)}
-                    className="rounded-lg border border-[#c9a87a]/40 bg-[#c9a87a]/10 px-3 py-2 text-xs text-[#c9a87a] transition hover:bg-[#c9a87a]/20"
+                    className="rounded-lg border border-gold/30 bg-gold/[0.08] px-3 py-2 text-xs text-gold transition duration-150 ease-out hover:bg-gold/[0.15]"
                   >
                     Upscale
                   </button>
                   <button
                     onClick={() => navigator.clipboard.writeText(videoResult.prompt)}
-                    className="rounded-lg border border-[#494741] bg-[#262624] px-3 py-2 text-xs text-[#bcb6aa] transition hover:border-[#5a4f40] hover:text-[#edeae2]"
+                    className="rounded-lg border border-border-strong bg-surface-2 px-3 py-2 text-xs text-text-secondary transition duration-150 ease-out hover:border-gold-dim/60 hover:text-text-primary"
                   >
                     Copy Prompt
                   </button>
                   <button
                     onClick={() => openConfirm("Delete Video", "This will delete the video from the server.", () => deleteVideo(videoResult.id))}
-                    className="rounded-lg border border-[#7d463f] bg-[#3f2a27] px-3 py-2 text-xs text-[#ffbeb4] transition hover:bg-[#5a3430] hover:text-white"
+                    className="rounded-lg border border-error/30 bg-error/[0.08] px-3 py-2 text-xs text-error transition duration-150 ease-out hover:bg-error/[0.15] hover:text-white"
                   >
                     Delete
                   </button>
@@ -1078,16 +1078,16 @@ Based on the image, write a prompt that describes exactly enough action to reali
 
           {/* Video Gallery */}
           {videoGallery.length > 0 && (
-            <div className="rounded-2xl border border-[#3f3e3a] bg-[#2f2f2d] p-5 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
+            <div className="rounded-2xl border border-border-subtle bg-surface-3 p-5 shadow-[var(--shadow-card)]">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <p className="text-[10px] uppercase tracking-widest text-[#6b6560]">Video History</p>
-                  <span className="text-xs text-[#6b6560]">{videoGallery.length}</span>
+                  <p className="text-[10px] uppercase tracking-widest text-text-subtle">Video History</p>
+                  <span className="text-xs text-text-subtle">{videoGallery.length}</span>
                 </div>
                 {!isSelectMode && (
                   <button
                     onClick={() => setIsEditorOpen(true)}
-                    className="rounded-lg border border-[#5a4f40] bg-[#3a352e] px-3 py-1.5 text-xs text-[#f2dbc0] transition hover:bg-[#4a433a]"
+                    className="rounded-lg border border-gold-dim/40 bg-hover px-3 py-1.5 text-xs text-gold-dim transition duration-150 ease-out hover:bg-active"
                   >
                     <svg className="mr-1.5 inline-block h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M11 4a.5.5 0 01.5-.5h1a.5.5 0 01.5.5v1a.5.5 0 01-.5.5h-1a.5.5 0 01-.5-.5V4zM12.5 8.5a.5.5 0 00-1 0v3.793l-1.146-1.147a.5.5 0 00-.708.708l2 2a.5.5 0 00.708 0l2-2a.5.5 0 00-.708-.708L12.5 12.293V8.5zM4 5.5A2.5 2.5 0 016.5 3h1A1.5 1.5 0 019 4.5V5h6v-.5A1.5 1.5 0 0116.5 3h1A2.5 2.5 0 0120 5.5v12a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 012 17.5v-12z" />
@@ -1123,13 +1123,13 @@ Based on the image, write a prompt that describes exactly enough action to reali
                     }}
                     role="button"
                     tabIndex={0}
-                    className={`group relative aspect-[1/1] cursor-pointer overflow-hidden rounded-lg bg-[#1a1a18] transition hover:ring-2 hover:ring-[#c9a87a] outline-none ${isSelectMode
-                      ? selectedForDeletion.has(video.id) ? "border-[#c9a87a] ring-2 ring-[#c9a87a]/50" : "border-[#3f3e3a] hover:border-[#5a5550]"
+                    className={`group relative aspect-[1/1] cursor-pointer overflow-hidden rounded-lg bg-surface-1 transition duration-150 ease-out hover:ring-2 hover:ring-gold outline-none ${isSelectMode
+                      ? selectedForDeletion.has(video.id) ? "border-gold ring-2 ring-gold/50" : "border-border-subtle hover:border-[#5a5550]"
                       : ''}`}
                   >
                     {isSelectMode && (
-                      <div className={`absolute top-2 left-2 z-10 flex h-5 w-5 items-center justify-center rounded-md border-2 transition ${selectedForDeletion.has(video.id)
-                        ? "border-[#c9a87a] bg-[#c9a87a]" : "border-white/50 bg-black/30"
+                      <div className={`absolute top-2 left-2 z-10 flex h-5 w-5 items-center justify-center rounded-md border-2 transition duration-150 ease-out ${selectedForDeletion.has(video.id)
+                        ? "border-gold bg-gold" : "border-white/50 bg-black/30"
                         }`}>
                         {selectedForDeletion.has(video.id) && (
                           <svg className="h-3 w-3 text-[#1f1f1d]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -1162,7 +1162,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                               e.stopPropagation();
                               useVideoAsInput(video);
                             }}
-                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition duration-150 ease-out hover:bg-black/60 cursor-pointer"
                             title="Use Last Frame as Input"
                           >
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1175,7 +1175,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                               navigator.clipboard.writeText(video.prompt);
                               toast.success('Copied');
                             }}
-                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition duration-150 ease-out hover:bg-black/60 cursor-pointer"
                             title="Copy Prompt"
                           >
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1187,7 +1187,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                               e.stopPropagation();
                               openUpscale(video);
                             }}
-                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition duration-150 ease-out hover:bg-black/60 cursor-pointer"
                             title="Upscale"
                           >
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1199,7 +1199,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                               e.stopPropagation();
                               window.open(`/generated/${video.filename}`, '_blank');
                             }}
-                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition duration-150 ease-out hover:bg-black/60 cursor-pointer"
                             title="View"
                           >
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1211,7 +1211,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                               e.stopPropagation();
                               openConfirm("Delete Video", "This will delete the video from the server.", () => deleteVideo(video.id));
                             }}
-                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 cursor-pointer"
+                            className="rounded-lg bg-black/40 p-2 text-white/70 backdrop-blur-sm transition duration-150 ease-out hover:bg-black/60 cursor-pointer"
                             title="Delete"
                           >
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1224,7 +1224,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent p-3 pt-12">
                       <div className="mb-2 flex flex-wrap items-center gap-1.5">
                         {video.resolution && (
-                          <span className="inline-block rounded-md border border-[#c9a87a]/20 bg-black/70 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-[#c9a87a] backdrop-blur-sm">
+                          <span className="inline-block rounded-md border border-gold/20 bg-black/70 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-gold backdrop-blur-sm">
                             {video.resolution}
                           </span>
                         )}
@@ -1234,7 +1234,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                           </span>
                         )}
                       </div>
-                      <p className="line-clamp-2 text-[11px] font-medium leading-snug text-[#edeae2] drop-shadow-md opacity-90">
+                      <p className="line-clamp-2 text-[11px] font-medium leading-snug text-text-primary drop-shadow-md opacity-90">
                         {video.prompt}
                       </p>
                     </div>
@@ -1248,7 +1248,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                   <button
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#4a4944] bg-[#262624] text-[#bcb6aa] transition hover:border-[#5a554a] hover:text-[#edeae2] disabled:opacity-30"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-border-strong bg-surface-2 text-text-secondary transition duration-150 ease-out hover:border-border-strong hover:text-text-primary disabled:opacity-30"
                   >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -1259,9 +1259,9 @@ Based on the image, write a prompt that describes exactly enough action to reali
                       <button
                         key={i}
                         onClick={() => setCurrentPage(i + 1)}
-                        className={`h-8 w-8 rounded-lg text-xs font-medium transition ${currentPage === i + 1
-                          ? 'bg-[#c9a87a] text-[#1f1f1d]'
-                          : 'border border-[#4a4944] bg-[#262624] text-[#bcb6aa] hover:border-[#5a554a] hover:text-[#edeae2]'
+                        className={`h-8 w-8 rounded-lg text-xs font-medium transition duration-150 ease-out ${currentPage === i + 1
+                          ? 'bg-gold text-[#1f1f1d] hover:translate-y-[-0.5px]'
+                          : 'border border-border-strong bg-surface-2 text-text-secondary hover:border-border-strong hover:text-text-primary'
                           }`}
                       >
                         {i + 1}
@@ -1271,7 +1271,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                   <button
                     onClick={() => setCurrentPage(p => Math.min(Math.ceil(videoGallery.length / itemsPerPage), p + 1))}
                     disabled={currentPage === Math.ceil(videoGallery.length / itemsPerPage)}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#4a4944] bg-[#262624] text-[#bcb6aa] transition hover:border-[#5a554a] hover:text-[#edeae2] disabled:opacity-30"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-border-strong bg-surface-2 text-text-secondary transition duration-150 ease-out hover:border-border-strong hover:text-text-primary disabled:opacity-30"
                   >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />

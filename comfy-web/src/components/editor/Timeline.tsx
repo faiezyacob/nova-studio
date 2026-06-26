@@ -104,7 +104,7 @@ export default function Timeline() {
 
   return (
     <div className="flex flex-1 flex-col min-h-0">
-      <div ref={timelineRef} className="flex-1 overflow-auto overscroll-contain bg-[#2a2a28]">
+      <div ref={timelineRef} className="flex-1 overflow-auto overscroll-contain bg-surface-3">
         <div style={{ minWidth: totalWidth, position: 'relative' }}>
           {/* Ruler */}
           <div
@@ -114,7 +114,7 @@ export default function Timeline() {
               position: 'sticky',
               top: 0,
               zIndex: 20,
-              background: '#2a2a28',
+              background: '#222220',
               borderBottom: '1px solid #3a3936',
             }}
             onPointerDown={handleRulerPointerDown}
@@ -131,7 +131,7 @@ export default function Timeline() {
                       top: isEven ? '18px' : '22px',
                       width: '1px',
                       height: isEven ? '10px' : '6px',
-                      background: '#4a4944',
+                      background: '#494741',
                     }}
                   />
                   {isEven && (
@@ -175,7 +175,7 @@ export default function Timeline() {
               height: RULER_HEIGHT + trackTotalHeight,
               background: '#c9a87a',
               zIndex: 30,
-              boxShadow: '0 0 8px #c9a87a88',
+              boxShadow: '0 0 8px rgba(201,168,122,.45)',
               pointerEvents: 'none',
             }}
           >
@@ -208,7 +208,7 @@ export default function Timeline() {
                 top: 0,
                 width: 1,
                 height: RULER_HEIGHT + trackTotalHeight,
-                background: '#ff6b6b',
+                background: '#ef4444',
                 zIndex: 29,
                 pointerEvents: 'none',
                 transition: 'none',

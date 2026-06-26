@@ -420,43 +420,45 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen bg-[#252523] text-[#edeae2]">
+    <div className="min-h-screen bg-background text-text-primary">
       <Toaster
         theme="dark"
         position="top-right"
         visibleToasts={1}
         toastOptions={{
           style: {
-            background: '#2f2f2d',
-            border: '1px solid #3f3e3a',
+            background: '#222220',
+            border: '1px solid #3a3936',
             color: '#edeae2',
+            borderRadius: '10px',
+            boxShadow: '0 14px 34px rgba(0,0,0,.35)',
           },
         }}
       />
 
       <div className="flex min-h-screen w-full">
-        <aside className="sticky top-0 h-screen w-72 border-r border-[#3a3936] bg-[#2b2b29]">
+        <aside className="sticky top-0 h-screen w-72 border-r border-border-subtle bg-sidebar">
           <div className="flex h-full flex-col">
-            <div className="border-b border-[#3a3936] px-3 py-5">
+            <div className="border-b border-border-subtle px-3 py-5">
               <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#4a4944] bg-[#32312e]">
-                  <div className="h-4 w-4 rounded-full border-2 border-[#c9a87a]" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-hover shadow-[var(--shadow-card)]">
+                  <div className="h-4 w-4 rounded-full border-2 border-gold" />
                 </div>
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.24em] text-[#9d988d]">Nova Studio</p>
-                  <p className="text-sm font-semibold text-[#edeae2]">Local AI Workspace</p>
+                  <p className="text-[11px] uppercase tracking-[0.24em] text-text-muted">Nova Studio</p>
+                  <p className="text-sm font-semibold text-text-primary">Local AI Workspace</p>
                 </div>
               </div>
 
               {modeHydrated && (
-                <div className="grid grid-cols-4 rounded-xl border border-[#4a4944] bg-[#32312e] p-1">
+                <div className="grid grid-cols-4 rounded-[10px] border border-border-strong bg-hover p-0.5">
                   {(["chat", "image", "video", "agent"] as AppMode[]).map((tab) => (
                     <button
                       key={tab}
                       onClick={() => handleSetMode(tab)}
-                      className={`rounded-lg px-3 py-2 text-xs font-medium capitalize transition ${mode === tab
-                        ? "bg-[#c9a87a] text-[#1f1f1d]"
-                        : "text-[#bcb6aa] hover:text-[#ece8df]"
+                      className={`rounded-lg px-3 py-2 text-xs font-medium capitalize transition duration-150 ${mode === tab
+                        ? "bg-gold text-[#1f1f1d] shadow-sm"
+                        : "text-text-secondary hover:text-text-primary"
                         }`}
                     >
                       {tab}
@@ -471,7 +473,7 @@ export default function App() {
                 <div className="p-3">
                   <button
                     onClick={createNewSession}
-                    className="w-full rounded-lg bg-[#c9a87a] px-3 py-2.5 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d]"
+                    className="btn-primary w-full"
                   >
                     New Chat
                   </button>
@@ -479,23 +481,23 @@ export default function App() {
 
                 <div className="p-3 flex-1 space-y-1 overflow-y-auto pb-3">
                   {chatSessions.length === 0 && (
-                    <p className="px-3 py-8 text-center text-xs text-[#9f988c]">No chats yet</p>
+                    <p className="px-3 py-8 text-center text-xs text-text-muted">No chats yet</p>
                   )}
 
                   {chatSessions.map((session) => (
                     <div
                       key={session.id}
                       onClick={() => setActiveSessionId(session.id)}
-                      className={`group flex cursor-pointer items-center gap-2 rounded-lg mb-2 border px-3 py-2 transition ${activeSessionId === session.id
-                        ? "border-[#555149] bg-[#383733] text-[#f1ede4]"
-                        : "border-[#3a3936] text-[#bcb6aa] hover:border-[#4b4740] hover:bg-[#343330] hover:text-[#f1ede4]"
+                      className={`group flex cursor-pointer items-center gap-2 rounded-[10px] mb-2 border px-3 py-2 transition duration-150 ${activeSessionId === session.id
+                        ? "border-gold/60 bg-gold/[0.08] text-text-primary"
+                        : "border-transparent text-text-secondary hover:border-border-strong hover:bg-hover hover:text-text-primary"
                         }`}
                     >
-                      <span className="truncate text-xs">{session.title}</span>
+                      <span className="truncate text-xs font-medium">{session.title}</span>
                       <span className="ml-auto" />
                       <button
                         onClick={(e) => deleteSession(session.id, e)}
-                        className="rounded p-1 text-[#958d80] opacity-0 transition group-hover:opacity-100 hover:bg-[#4a463f] hover:text-[#f5d4a7]"
+                        className="rounded-md p-1 text-text-subtle opacity-0 transition duration-150 group-hover:opacity-100 hover:bg-active hover:text-gold"
                         type="button"
                       >
                         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -510,12 +512,12 @@ export default function App() {
               <div className="flex-1 overflow-y-auto p-3">
                 {mode === "video" ? (
                   <>
-                    <div className="mb-2 flex items-center justify-between px-1">
-                      <p className="text-[11px] uppercase tracking-[0.22em] text-[#9f988c]">Recent Videos</p>
-                      {videoGallery.length > 0 && <p className="text-[11px] text-[#9f988c]">{videoGallery.length}</p>}
+                    <div className="mb-3 flex items-center justify-between px-1">
+                      <p className="text-[11px] uppercase tracking-[0.22em] text-text-muted">Recent Videos</p>
+                      {videoGallery.length > 0 && <p className="text-[11px] text-text-muted">{videoGallery.length}</p>}
                     </div>
                     {videoGallery.length === 0 ? (
-                      <p className="px-3 py-8 text-center text-xs text-[#9f988c]">No videos yet</p>
+                      <p className="px-3 py-8 text-center text-xs text-text-muted">No videos yet</p>
                     ) : (
                       <div className="space-y-1">
                         {videoGallery.slice(0, 10).map((video, index) => (
@@ -524,22 +526,22 @@ export default function App() {
                             onClick={() => {
                               setVideoResult(video);
                             }}
-                            className="flex w-full items-center gap-2 rounded-lg border border-transparent px-2 py-1.5 text-left transition hover:border-[#4b4740] hover:bg-[#343330]"
+                            className="flex w-full items-center gap-2 rounded-[10px] border border-transparent px-2 py-1.5 text-left transition duration-150 hover:border-border-strong hover:bg-hover"
                           >
                             {video.thumbnail ? (
                               <img
                                 src={video.thumbnail}
                                 alt=""
-                                className="h-9 w-9 aspect-square rounded object-cover"
+                                className="h-9 w-9 aspect-square rounded-lg object-cover"
                               />
                             ) : (
                               <video
                                 src={`/generated/${video.filename}`}
-                                className="h-9 w-9 aspect-square rounded object-cover"
+                                className="h-9 w-9 aspect-square rounded-lg object-cover"
                                 preload="none"
                               />
                             )}
-                            <span className="truncate text-xs text-[#cec8bb]">{video.prompt}</span>
+                            <span className="truncate text-xs text-text-secondary">{video.prompt}</span>
                           </button>
                         ))}
                       </div>
@@ -550,14 +552,14 @@ export default function App() {
                     <div className="p-3">
                       <button
                         onClick={createAgentSession}
-                        className="w-full rounded-lg bg-[#c9a87a] px-3 py-2.5 text-xs font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d]"
+                        className="btn-primary w-full"
                       >
                         New Scene
                       </button>
                     </div>
                     <div className="p-3 flex-1 space-y-1 overflow-y-auto pb-3">
                       {agentSessions.length === 0 && (
-                        <p className="px-3 py-8 text-center text-xs text-[#9f988c]">No scenes yet</p>
+                        <p className="px-3 py-8 text-center text-xs text-text-muted">No scenes yet</p>
                       )}
                       {agentSessions.map((session) => {
                         const statusIcon =
@@ -568,17 +570,17 @@ export default function App() {
                           <div
                             key={session.id}
                             onClick={() => setActiveAgentSessionId(session.id)}
-                            className={`group flex cursor-pointer items-center gap-2 rounded-lg mb-2 border px-3 py-2 transition ${
+                            className={`group flex cursor-pointer items-center gap-2 rounded-[10px] mb-2 border px-3 py-2 transition duration-150 ${
                               activeAgentSessionId === session.id
-                                ? "border-[#555149] bg-[#383733] text-[#f1ede4]"
-                                : "border-[#3a3936] text-[#bcb6aa] hover:border-[#4b4740] hover:bg-[#343330] hover:text-[#f1ede4]"
+                                ? "border-gold/60 bg-gold/[0.08] text-text-primary"
+                                : "border-transparent text-text-secondary hover:border-border-strong hover:bg-hover hover:text-text-primary"
                             }`}
                           >
                             <span className="text-[10px] w-4 text-center shrink-0">{statusIcon}</span>
-                            <span className="truncate text-xs flex-1">{session.title}</span>
+                            <span className="truncate text-xs font-medium flex-1">{session.title}</span>
                             <button
                               onClick={(e) => deleteAgentSession(session.id, e)}
-                              className="rounded p-1 text-[#958d80] opacity-0 transition group-hover:opacity-100 hover:bg-[#4a463f] hover:text-[#f5d4a7]"
+                              className="rounded-md p-1 text-text-subtle opacity-0 transition duration-150 group-hover:opacity-100 hover:bg-active hover:text-gold"
                               type="button"
                             >
                               <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -592,22 +594,22 @@ export default function App() {
                   </>
                 ) : (
                   <>
-                    <div className="mb-2 flex items-center justify-between px-1">
-                      <p className="text-[11px] uppercase tracking-[0.22em] text-[#9f988c]">Recent Images</p>
-                      {gallery.length > 0 && <p className="text-[11px] text-[#9f988c]">{gallery.length}</p>}
+                    <div className="mb-3 flex items-center justify-between px-1">
+                      <p className="text-[11px] uppercase tracking-[0.22em] text-text-muted">Recent Images</p>
+                      {gallery.length > 0 && <p className="text-[11px] text-text-muted">{gallery.length}</p>}
                     </div>
                     <div className="space-y-1">
                       {gallery.length === 0 && (
-                        <p className="px-3 py-8 text-center text-xs text-[#9f988c]">No images yet</p>
+                        <p className="px-3 py-8 text-center text-xs text-text-muted">No images yet</p>
                       )}
                       {gallery.slice(0, 10).map((item, index) => (
                         <button
                           key={`${item.filename}-${index}`}
                           onClick={() => window.open(`/generated/${item.filename}`, "_blank")}
-                          className="flex w-full items-center gap-2 rounded-lg border border-transparent px-2 py-1.5 text-left transition hover:border-[#4b4740] hover:bg-[#343330]"
+                          className="flex w-full items-center gap-2 rounded-[10px] border border-transparent px-2 py-1.5 text-left transition duration-150 hover:border-border-strong hover:bg-hover"
                         >
-                          <img src={`/generated/${item.filename}`} alt={item.prompt} className={`aspect-square h-9 w-9 rounded transition duration-500 object-cover ${item.hidden ? "blur-[4px]" : ""}`} />
-                          <span className="truncate text-xs text-[#cec8bb]">{item.prompt}</span>
+                          <img src={`/generated/${item.filename}`} alt={item.prompt} className={`aspect-square h-9 w-9 rounded-lg transition duration-500 object-cover ${item.hidden ? "blur-[4px]" : ""}`} />
+                          <span className="truncate text-xs text-text-secondary">{item.prompt}</span>
                         </button>
                       ))}
                     </div>
@@ -616,13 +618,13 @@ export default function App() {
               </div>
             )}
 
-            <div className="border-t border-[#3a3936] p-3">
-              <div className="space-y-1 text-xs text-[#bcb6aa]">
+            <div className="border-t border-border-subtle p-3">
+              <div className="space-y-1 text-xs text-text-secondary">
                 <a
                   href="http://127.0.0.1:1234"
                   target="_blank"
                   rel="noreferrer"
-                  className="block rounded-lg border border-transparent px-3 py-2 transition hover:border-[#4b4740] hover:bg-[#343330] hover:text-[#f1ede4]"
+                  className="block rounded-[10px] border border-transparent px-3 py-2 transition duration-150 hover:border-border-strong hover:bg-hover hover:text-text-primary"
                 >
                   LM Studio
                 </a>
@@ -630,7 +632,7 @@ export default function App() {
                   href="http://127.0.0.1:8188"
                   target="_blank"
                   rel="noreferrer"
-                  className="block rounded-lg border border-transparent px-3 py-2 transition hover:border-[#4b4740] hover:bg-[#343330] hover:text-[#f1ede4]"
+                  className="block rounded-[10px] border border-transparent px-3 py-2 transition duration-150 hover:border-border-strong hover:bg-hover hover:text-text-primary"
                 >
                   ComfyUI
                 </a>
@@ -639,31 +641,30 @@ export default function App() {
                   <div className="mt-4 px-3 space-y-3">
                     {vramStats.ram && (
                       <div>
-                        <div className="mb-1.5 flex items-center justify-between text-[10px] uppercase tracking-wider text-[#6b6560]">
+                        <div className="mb-1.5 flex items-center justify-between text-[10px] uppercase tracking-wider text-text-subtle">
                           <span>RAM Usage</span>
-                          <span className={vramStats.ram.percent > 85 ? "text-red-400" : "text-[#c9a87a]"}>
+                          <span className={vramStats.ram.percent > 85 ? "text-error" : "text-gold"}>
                             {vramStats.ram.used.toFixed(1)} / {vramStats.ram.total.toFixed(1)} GB
                           </span>
                         </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#1a1a18]">
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-1">
                           <div
-                            className={`h-full transition-all duration-500 ${vramStats.ram.percent > 85 ? "bg-red-500" : "bg-[#c9a87a]"}`}
+                            className={`h-full rounded-full transition-all duration-500 ${vramStats.ram.percent > 85 ? "bg-error" : "bg-gold"}`}
                             style={{ width: `${vramStats.ram.percent}%` }}
                           />
                         </div>
                       </div>
                     )}
                     <div>
-                      <div className="mb-1.5 flex items-center justify-between text-[10px] uppercase tracking-wider text-[#6b6560]">
+                      <div className="mb-1.5 flex items-center justify-between text-[10px] uppercase tracking-wider text-text-subtle">
                         <span>VRAM Usage</span>
-                        <span className={vramStats.percent > 85 ? "text-red-400" : "text-[#c9a87a]"}>
+                        <span className={vramStats.percent > 85 ? "text-error" : "text-gold"}>
                           {vramStats.used.toFixed(1)} / {vramStats.total.toFixed(1)} GB
                         </span>
                       </div>
-                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#1a1a18]">
+                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-1">
                         <div
-                          className={`h-full transition-all duration-500 ${vramStats.percent > 85 ? "bg-red-500" : "bg-[#c9a87a]"
-                            }`}
+                          className={`h-full rounded-full transition-all duration-500 ${vramStats.percent > 85 ? "bg-error" : "bg-gold"}`}
                           style={{ width: `${vramStats.percent}%` }}
                         />
                       </div>
@@ -674,7 +675,7 @@ export default function App() {
                 <button
                   onClick={restartComfy}
                   disabled={isRestarting}
-                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-[#4a4944] bg-[#262624] px-3 py-2 text-[11px] font-medium text-[#c9a87a] transition hover:bg-[#2d2d2b] hover:text-[#d8bb92] disabled:opacity-50"
+                  className="btn-secondary w-full mt-4"
                 >
                   <svg className={`h-3 w-3 ${isRestarting ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -685,7 +686,7 @@ export default function App() {
                 <button
                   onClick={purgeVRAM}
                   disabled={isPurging}
-                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-[#4a4944] bg-[#262624] px-3 py-2 text-[11px] font-medium text-[#c9a87a] transition hover:bg-[#2d2d2b] hover:text-[#d8bb92] disabled:opacity-50"
+                  className="btn-secondary w-full mt-2"
                 >
                   <svg className={`h-3 w-3 ${isPurging ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -697,7 +698,7 @@ export default function App() {
           </div>
         </aside>
 
-        <main className="flex min-w-0 flex-1 flex-col bg-[#252523]">
+        <main className="flex min-w-0 flex-1 flex-col bg-background">
           {mode === "image" ? (
             <ImageWorkspace
               gallery={gallery}
@@ -774,13 +775,13 @@ export default function App() {
 
       {confirmModal?.open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="mx-4 w-full max-w-sm rounded-2xl border border-[#4a4944] bg-[#2a2a28] p-5 shadow-xl">
-            <h2 className="mb-2 text-base font-semibold text-[#edeae2]">{confirmModal.title}</h2>
-            <p className="mb-5 text-sm text-[#a39d91]">{confirmModal.message}</p>
-            <div className="flex gap-2">
+          <div className="mx-4 w-full max-w-sm rounded-[20px] border border-border-strong bg-surface-3 p-6 shadow-[var(--shadow-dialog)]">
+            <h2 className="mb-2 text-base font-semibold text-text-primary">{confirmModal.title}</h2>
+            <p className="mb-6 text-sm text-text-muted">{confirmModal.message}</p>
+            <div className="flex gap-3">
               <button
                 onClick={closeConfirm}
-                className="flex-1 rounded-lg border border-[#4a4944] px-3 py-2 text-sm font-medium text-[#bcb6aa] transition hover:border-[#5a5955] hover:text-[#ece8df]"
+                className="btn-ghost flex-1"
               >
                 Cancel
               </button>
@@ -788,7 +789,7 @@ export default function App() {
                 onClick={() => {
                   confirmModal.onConfirm();
                 }}
-                className="flex-1 rounded-lg bg-[#c9a87a] px-3 py-2 text-sm font-semibold text-[#1f1f1d] transition hover:bg-[#d8b88d]"
+                className="btn-primary flex-1"
               >
                 Delete
               </button>
