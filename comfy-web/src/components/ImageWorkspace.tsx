@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { toast } from "sonner";
 import { GalleryItem, HistoryEntry, Lora } from "@/types";
 import ImageUpscaleDialog from "./ImageUpscaleDialog";
@@ -153,22 +153,13 @@ export default function ImageWorkspace({
   const [imageSeed, setImageSeed] = useState<string>("");
   const [imageWorkflow, setImageWorkflow] = useState<string>("z-image-turbo");
   const [sageAttention, setSageAttention] = useState(true);
+  const [kreaRebalance, setKreaRebalance] = useState(true);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const [isRepairing, setIsRepairing] = useState(false);
   const [progress, setProgress] = useState<{ value: number; max: number } | null>(null);
-  const [showProgressBar, setShowProgressBar] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const itemsPerPage = 12;
-
-  useEffect(() => {
-    if (isGenerating) {
-      const timer = setTimeout(() => setShowProgressBar(true), 2000);
-      return () => { clearTimeout(timer); setShowProgressBar(false); };
-    } else {
-      setShowProgressBar(false);
-    }
-  }, [isGenerating]);
 
   const pollForResult = async (promptId: string, promptText: string, seed: number, width: number, height: number) => {
     const maxAttempts = 90;
@@ -293,7 +284,8 @@ export default function ImageWorkspace({
           workflow: imageWorkflow,
           loras: imageWorkflow === 'ideogram4' ? [] : (selectedLora.name ? [selectedLora] : []),
           seed: imageSeed ? parseInt(imageSeed) : undefined,
-          sageAttention
+          sageAttention,
+          kreaRebalance
         }),
       });
 
@@ -908,6 +900,26 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                 </div>
               )}
 
+              {/* Krea Rebalance */}
+              {imageWorkflow === 'krea2-turbo' && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Rebalance</span>
+                  <button
+                    onClick={() => setKreaRebalance(!kreaRebalance)}
+                    disabled={isGenerating}
+                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition disabled:opacity-50 ${
+                      kreaRebalance
+                        ? "border-[#c9a87a]/50 bg-[#3a352e] text-[#f2dbc0]"
+                        : "border-[#494741] bg-[#262624] text-[#6b6560]"
+                    }`}
+                    title="Toggle ConditioningKrea2Rebalance"
+                  >
+                    <span className={`h-2 w-2 rounded-full ${kreaRebalance ? "bg-[#c9a87a]" : "bg-[#6b6560]"}`} />
+                    {kreaRebalance ? "On" : "Off"}
+                  </button>
+                </div>
+              )}
+
               {/* Style */}
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] uppercase tracking-widest text-[#6b6560]">Style</span>
@@ -1142,7 +1154,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
               />
 
               <div className="mt-2 flex flex-col gap-3">
-                {(isGenerating && (progress || showProgressBar)) && (
+                {isGenerating && (
                   <div className="rounded-lg border border-[#494741] bg-[#262624] p-3">
                     <div className="mb-1.5 flex items-center justify-between text-xs text-[#bcb6aa]">
                       <span>{progress ? `Generating... ${progress.value}/${progress.max}` : 'Starting generation...'}</span>

@@ -409,7 +409,8 @@ export async function generateWithKrea2TurboSDK(
   lora: Lora | null = null,
   seed?: number,
   generationId?: string,
-  sageAttention: boolean = true
+  sageAttention: boolean = true,
+  kreaRebalance: boolean = true
 ): Promise<{ prompt_id: string; images: string[]; seed: number }> {
   await api.init(5, 2000).waitForReady();
 
@@ -491,12 +492,31 @@ export async function generateWithKrea2TurboSDK(
     ksamplerModelNodeId = "28";
   }
 
+  if (kreaRebalance) {
+    nodes["30"] = {
+      class_type: "ConditioningKrea2Rebalance",
+      inputs: {
+        conditioning: ["2", 0],
+        multiplier: 4.0,
+        per_layer_weights: "1.0,1.0,1.0,1.0,1.0,1.0,1.0,2.5,5.0,1.1,4.0,1.0",
+      },
+    };
+    nodes["31"] = {
+      class_type: "ConditioningKrea2Rebalance",
+      inputs: {
+        conditioning: ["4", 0],
+        multiplier: 1.0,
+        per_layer_weights: "1.0,1.0,1.0,1.0,1.0,1.0,1.0,2.5,5.0,1.1,4.0,1.0",
+      },
+    };
+  }
+
   nodes["5"] = {
     class_type: "KSampler",
     inputs: {
       model: [ksamplerModelNodeId, 0],
-      positive: ["2", 0],
-      negative: ["4", 0],
+      positive: kreaRebalance ? ["30", 0] : ["2", 0],
+      negative: kreaRebalance ? ["31", 0] : ["4", 0],
       latent_image: ["6", 0],
       seed: generationSeed,
       steps: 8,
