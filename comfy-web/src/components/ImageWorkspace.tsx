@@ -9,7 +9,7 @@ import { db } from "@/utils/db";
 
 const AVAILABLE_LORAS = [
   "RealisticSnapshot-Zimage-Turbov5.safetensors",
-  "krea2_realism_lora.safetensors",
+  "Krea2-realism-V1.safetensors",
 ];
 
 const STYLE_DESCRIPTIONS: Record<string, string> = {
@@ -154,7 +154,6 @@ export default function ImageWorkspace({
   const [imageSeed, setImageSeed] = useState<string>("");
   const [imageWorkflow, setImageWorkflow] = useState<string>("z-image-turbo");
   const [sageAttention, setSageAttention] = useState(true);
-  const [kreaRebalance, setKreaRebalance] = useState(true);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const [isRepairing, setIsRepairing] = useState(false);
@@ -285,8 +284,7 @@ export default function ImageWorkspace({
           workflow: imageWorkflow,
           loras: imageWorkflow === 'ideogram4' ? [] : (selectedLora.name ? [selectedLora] : []),
           seed: imageSeed ? parseInt(imageSeed) : undefined,
-          sageAttention,
-          kreaRebalance
+          sageAttention
         }),
       });
 
@@ -901,26 +899,6 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                 </div>
               )}
 
-              {/* Krea Rebalance */}
-              {imageWorkflow === 'krea2-turbo' && (
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] uppercase tracking-widest text-text-subtle">Rebalance</span>
-                  <button
-                    onClick={() => setKreaRebalance(!kreaRebalance)}
-                    disabled={isGenerating}
-                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition disabled:opacity-50 ${
-                      kreaRebalance
-                        ? "border-gold/50 bg-hover text-gold-dim"
-                        : "border-border-strong bg-surface-2 text-text-subtle"
-                    }`}
-                    title="Toggle ConditioningKrea2Rebalance"
-                  >
-                    <span className={`h-2 w-2 rounded-full ${kreaRebalance ? "bg-gold" : "bg-text-subtle"}`} />
-                    {kreaRebalance ? "On" : "Off"}
-                  </button>
-                </div>
-              )}
-
               {/* Style */}
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] uppercase tracking-widest text-text-subtle">Style</span>
@@ -1034,7 +1012,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                       <input
                         type="range"
                         min="0"
-                        max="1"
+                        max="2"
                         step="0.1"
                         value={selectedLora.strength_model}
                         onChange={(e) =>

@@ -28,6 +28,7 @@ interface Lora {
   name: string;
   strength_model: number;
   strength_clip: number;
+  trigger_word?: string;
 }
 
 export async function generateWithSDK(
@@ -410,68 +411,125 @@ export async function generateWithKrea2TurboSDK(
   seed?: number,
   generationId?: string,
   sageAttention: boolean = true,
-  kreaRebalance: boolean = true
+  _kreaRebalance: boolean = false
 ): Promise<{ prompt_id: string; images: string[]; seed: number }> {
   await api.init(5, 2000).waitForReady();
 
   const prefix = `gen_${Math.floor(Date.now() / 1000)}`;
   const generationSeed = seed ?? Math.floor(Math.random() * 10000000000000);
+  const enableLora = !!lora?.name;
+  const loraTriggerWord = lora?.trigger_word ?? '';
 
   const nodes: Record<string, object> = {};
 
-  nodes["3"] = {
+  // Loaders
+  nodes["10"] = {
     class_type: "UNETLoader",
     inputs: {
       unet_name: "krea2_turbo_fp8_scaled.safetensors",
       weight_dtype: "default",
     },
   };
-  nodes["1"] = {
+  nodes["11"] = {
     class_type: "CLIPLoader",
     inputs: {
       clip_name: "qwen3vl_4b_fp8_scaled.safetensors",
       type: "krea2",
     },
   };
-  nodes["7"] = {
+  nodes["12"] = {
     class_type: "VAELoader",
     inputs: {
-      vae_name: "qwen_image_vae.safetensors",
+      vae_name: "wan_2.1_vae.safetensors",
     },
   };
 
-  let unetNodeId = "3";
-  let clipNodeId = "1";
-
-  if (lora?.name) {
-    nodes["100"] = {
-      class_type: "LoraLoader",
+  // LoRA (optional)
+  if (enableLora) {
+    nodes["15"] = {
+      class_type: "LoraLoaderModelOnly",
       inputs: {
-        model: ["3", 0],
-        clip: ["1", 0],
-        lora_name: lora.name,
-        strength_model: lora.strength_model,
-        strength_clip: lora.strength_clip,
+        model: ["10", 0],
+        lora_name: lora!.name,
+        strength_model: lora!.strength_model,
       },
     };
-    unetNodeId = "100";
-    clipNodeId = "100";
   }
 
-  nodes["2"] = {
+  // Model switch: base UNET or LoRA-modified
+  nodes["23"] = {
+    class_type: "PrimitiveBoolean",
+    inputs: {
+      value: enableLora,
+    },
+  };
+  nodes["22"] = {
+    class_type: "ComfySwitchNode",
+    inputs: {
+      on_false: ["10", 0],
+      on_true: enableLora ? ["15", 0] : ["10", 0],
+      switch: ["23", 0],
+    },
+  };
+
+  // Sage attention (optional performance wrapper)
+  let modelOutput = "22";
+  if (sageAttention) {
+    nodes["28"] = {
+      class_type: "PathchSageAttentionKJ",
+      inputs: {
+        model: ["22", 0],
+        sage_attention: "auto",
+      },
+    };
+    modelOutput = "28";
+  }
+
+  // User prompt
+  nodes["19"] = {
+    class_type: "PrimitiveStringMultiline",
+    inputs: {
+      value: prompt,
+    },
+  };
+
+  // LoRA trigger word concatenation
+  nodes["27"] = {
+    class_type: "StringConcatenate",
+    inputs: {
+      string_a: ["19", 0],
+      string_b: loraTriggerWord,
+      delimiter: ", ",
+    },
+  };
+  nodes["29"] = {
+    class_type: "ComfySwitchNode",
+    inputs: {
+      on_false: ["19", 0],
+      on_true: ["27", 0],
+      switch: ["23", 0],
+    },
+  };
+
+  // CLIP Text Encode
+  nodes["6"] = {
     class_type: "CLIPTextEncode",
     inputs: {
-      clip: [clipNodeId, lora ? 1 : 0],
-      text: prompt,
+      clip: ["11", 0],
+      text: ["29", 0],
     },
   };
-  nodes["4"] = {
+
+  // Negative conditioning
+  nodes["13"] = {
     class_type: "ConditioningZeroOut",
     inputs: {
-      conditioning: ["2", 0],
+      conditioning: ["6", 0],
     },
   };
-  nodes["6"] = {
+
+  // Latent image
+  nodes["5"] = {
     class_type: "EmptyLatentImage",
     inputs: {
       width,
@@ -479,60 +537,34 @@ export async function generateWithKrea2TurboSDK(
       batch_size: 1,
     },
   };
-  let ksamplerModelNodeId = unetNodeId;
 
-  if (sageAttention) {
-    nodes["28"] = {
-      class_type: "PathchSageAttentionKJ",
-      inputs: {
-        model: [unetNodeId, 0],
-        sage_attention: "auto",
-      },
-    };
-    ksamplerModelNodeId = "28";
-  }
-
-  if (kreaRebalance) {
-    nodes["30"] = {
-      class_type: "ConditioningKrea2Rebalance",
-      inputs: {
-        conditioning: ["2", 0],
-        multiplier: 4.0,
-        per_layer_weights: "1.0,1.0,1.0,1.0,1.0,1.0,1.0,2.5,5.0,1.1,4.0,1.0",
-      },
-    };
-    nodes["31"] = {
-      class_type: "ConditioningKrea2Rebalance",
-      inputs: {
-        conditioning: ["4", 0],
-        multiplier: 1.0,
-        per_layer_weights: "1.0,1.0,1.0,1.0,1.0,1.0,1.0,2.5,5.0,1.1,4.0,1.0",
-      },
-    };
-  }
-
-  nodes["5"] = {
+  // KSampler
+  nodes["3"] = {
     class_type: "KSampler",
     inputs: {
-      model: [ksamplerModelNodeId, 0],
-      positive: kreaRebalance ? ["30", 0] : ["2", 0],
-      negative: kreaRebalance ? ["31", 0] : ["4", 0],
-      latent_image: ["6", 0],
+      model: [modelOutput, 0],
+      positive: ["6", 0],
+      negative: ["13", 0],
+      latent_image: ["5", 0],
       seed: generationSeed,
       steps: 8,
       cfg: 1,
-      sampler_name: "er_sde",
+      sampler_name: "euler",
       scheduler: "simple",
       denoise: 1,
     },
   };
+
+  // VAE Decode
   nodes["8"] = {
     class_type: "VAEDecode",
     inputs: {
-      samples: ["5", 0],
-      vae: ["7", 0],
+      samples: ["3", 0],
+      vae: ["12", 0],
     },
   };
+
+  // Save Image
   nodes["9"] = {
     class_type: "SaveImage",
     inputs: {
@@ -550,10 +582,10 @@ export async function generateWithKrea2TurboSDK(
       ["images"]
     );
 
-    builder.setInputNode("prompt", "2.inputs.text");
-    builder.setInputNode("width", "6.inputs.width");
-    builder.setInputNode("height", "6.inputs.height");
-    builder.setInputNode("seed", "5.inputs.seed");
+    builder.setInputNode("prompt", "19.inputs.string");
+    builder.setInputNode("width", "5.inputs.width");
+    builder.setInputNode("height", "5.inputs.height");
+    builder.setInputNode("seed", "3.inputs.seed");
     builder.setOutputNode("images", "9");
 
     const wrapper = new CallWrapper(api, builder);

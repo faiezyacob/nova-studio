@@ -5,6 +5,7 @@ interface Lora {
   name: string;
   strength_model: number;
   strength_clip: number;
+  trigger_word?: string;
 }
 
 const COMFYUI_URL = process.env.COMFYUI_URL || 'http://127.0.0.1:8188';
@@ -12,7 +13,7 @@ const COMFYUI_URL = process.env.COMFYUI_URL || 'http://127.0.0.1:8188';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { prompt, width, height, loras, seed, workflow, sageAttention, kreaRebalance } = body;
+    const { prompt, width, height, loras, seed, workflow, sageAttention } = body;
     const generationId = request.headers.get('x-generation-id') || undefined;
 
     if (!prompt) {
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
       result = await generateWithIdeogramSDK(prompt, finalWidth, finalHeight, seed, generationId);
     } else if (workflow === 'krea2-turbo') {
       const lora = loras && loras.length > 0 ? loras[0] : null;
-      result = await generateWithKrea2TurboSDK(prompt, finalWidth, finalHeight, lora, seed, generationId, sageAttention !== false, kreaRebalance !== false);
+      result = await generateWithKrea2TurboSDK(prompt, finalWidth, finalHeight, lora, seed, generationId, sageAttention !== false);
     } else {
       const lora = loras && loras.length > 0 ? loras[0] : null;
       result = await generateWithSDK(prompt, finalWidth, finalHeight, lora, seed, generationId, sageAttention !== false);

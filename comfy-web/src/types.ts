@@ -50,6 +50,7 @@ export interface Lora {
   name: string;
   strength_model: number;
   strength_clip: number;
+  trigger_word?: string;
 }
 
 export interface AgentSession {
