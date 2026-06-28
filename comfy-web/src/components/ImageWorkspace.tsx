@@ -959,7 +959,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                 <button
                   onClick={enhancePrompt}
                   disabled={isEnhancing || !prompt.trim() || !selectedModel || availableModels.length === 0}
-                  className="cursor-pointer rounded-lg border border-gold-dim/40 bg-hover px-3 py-2 text-xs font-medium text-gold-dim transition hover:bg-active disabled:cursor-not-allowed disabled:opacity-40"
+                  className="cursor-pointer rounded-lg border border-gold/50 bg-hover px-3 py-2 text-xs font-medium text-gold-dim transition hover:bg-active disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isEnhancing ? (
                     <span className="flex items-center gap-1.5">

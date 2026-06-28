@@ -52,13 +52,13 @@ export async function generateWithSDK(
     class_type: "UNETLoader",
     inputs: {
       unet_name: "z_image_turbo_bf16.safetensors",
-      weight_dtype: "fp8_e4m3fn",
+      weight_dtype: "default",
     },
   };
   nodes["32"] = {
-    class_type: "CLIPLoaderGGUF",
+    class_type: "CLIPLoader",
     inputs: {
-      clip_name: "Qwen3-4B-Q4_K_S.gguf",
+      clip_name: "qwen_3_4b.safetensors",
       type: "lumina2",
     },
   };
@@ -112,14 +112,13 @@ export async function generateWithSDK(
       text: fullPrompt,
     },
   };
-  nodes["7"] = {
-    class_type: "CLIPTextEncode",
+  nodes["13"] = {
+    class_type: "ConditioningZeroOut",
     inputs: {
-      clip: [clipNodeId, lora ? 1 : 0],
-      text: "",
+      conditioning: ["6", 0],
     },
   };
-  nodes["13"] = {
+  nodes["7"] = {
     class_type: "EmptySD3LatentImage",
     inputs: {
       width,
@@ -132,12 +131,12 @@ export async function generateWithSDK(
     inputs: {
       model: ["11", 0],
       positive: ["6", 0],
-      negative: ["7", 0],
-      latent_image: ["13", 0],
+      negative: ["13", 0],
+      latent_image: ["7", 0],
       seed: generationSeed,
-      steps: 9,
+      steps: 8,
       cfg: 1.0,
-      sampler_name: "euler",
+      sampler_name: "res_multistep",
       scheduler: "simple",
       denoise: 1.0,
     },
@@ -167,8 +166,8 @@ export async function generateWithSDK(
     );
     
     builder.setInputNode("prompt", "6.inputs.text");
-    builder.setInputNode("width", "13.inputs.width");
-    builder.setInputNode("height", "13.inputs.height");
+    builder.setInputNode("width", "7.inputs.width");
+    builder.setInputNode("height", "7.inputs.height");
     builder.setInputNode("seed", "3.inputs.seed");
     builder.setOutputNode("images", "9");
 
