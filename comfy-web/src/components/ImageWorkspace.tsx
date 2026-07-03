@@ -14,6 +14,7 @@ const AVAILABLE_LORAS = [
 ];
 
 const STYLE_DESCRIPTIONS: Record<string, string> = {
+  none: ``,
   realistic: `
 - ALWAYS describe as a candid photo taken on a modern smartphone camera in everyday conditions
 - lighting must feel completely uncontrolled and ambient: harsh overhead indoor LEDs, mixed color temperature from multiple sources, flat overcast daylight, warm yellow tungsten, or uneven window light casting hard shadows
@@ -66,7 +67,7 @@ const STYLE_DESCRIPTIONS: Record<string, string> = {
 `,
 };
 
-const IMAGE_STYLES = ["realistic", "photography", "cinematic", "anime", "cgi"];
+const IMAGE_STYLES = ["none", "realistic", "photography", "cinematic", "anime", "cgi"];
 
 const ENGINE_LABELS: Record<string, string> = {
   "z-image-turbo": "Z Image Turbo",
@@ -1238,7 +1239,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                       <button
                         key={style}
                         onClick={() => setGalleryFilter(style)}
-                        className={`cursor-pointer rounded-[12px] px-4 py-1 text-[11px] capitalize transition-all duration-200 ${galleryFilter === style
+                        className={`cursor-pointer rounded-[6px] px-4 py-1 text-[11px] capitalize transition-all duration-200 ${galleryFilter === style
                           ? "bg-gold text-[#1f1f1d]"
                           : "text-text-muted hover:text-text-primary"
                           }`}
@@ -1413,23 +1414,41 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
 
               {totalPages > 1 && (
                 <div className="flex items-center justify-between pt-4">
-                  <button
-                    onClick={() => setGalleryPage(Math.max(1, galleryPage - 1))}
-                    disabled={galleryPage === 1}
-                    className="rounded-lg border border-border-strong px-3 py-1.5 text-xs text-text-secondary transition hover:border-gold-dim/40 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    ← Prev
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setGalleryPage(1)}
+                      disabled={galleryPage === 1}
+                      className="rounded-lg border border-border-strong px-2.5 py-1.5 text-xs text-text-secondary transition hover:border-gold-dim/40 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      « First
+                    </button>
+                    <button
+                      onClick={() => setGalleryPage(Math.max(1, galleryPage - 1))}
+                      disabled={galleryPage === 1}
+                      className="rounded-lg border border-border-strong px-3 py-1.5 text-xs text-text-secondary transition hover:border-gold-dim/40 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      ← Prev
+                    </button>
+                  </div>
                   <span className="text-xs text-text-muted">
                     {galleryPage} / {totalPages}
                   </span>
-                  <button
-                    onClick={() => setGalleryPage(Math.min(totalPages, galleryPage + 1))}
-                    disabled={galleryPage === totalPages}
-                    className="rounded-lg border border-border-strong px-3 py-1.5 text-xs text-text-secondary transition hover:border-gold-dim/40 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    Next →
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setGalleryPage(Math.min(totalPages, galleryPage + 1))}
+                      disabled={galleryPage === totalPages}
+                      className="rounded-lg border border-border-strong px-3 py-1.5 text-xs text-text-secondary transition hover:border-gold-dim/40 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Next →
+                    </button>
+                    <button
+                      onClick={() => setGalleryPage(totalPages)}
+                      disabled={galleryPage === totalPages}
+                      className="rounded-lg border border-border-strong px-2.5 py-1.5 text-xs text-text-secondary transition hover:border-gold-dim/40 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Last »
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
