@@ -103,6 +103,7 @@ export default function ImageUpscaleDialog({ isOpen, onClose, image, selectedMod
         prompt: `[${modelLabel}] ${image.prompt}`,
         timestamp: Date.now(),
         style: 'upscale',
+        engine: 'upscale',
       };
 
       onSuccess(newImage);

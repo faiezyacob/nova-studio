@@ -9,7 +9,8 @@ import { db } from "@/utils/db";
 
 const AVAILABLE_LORAS = [
   "RealisticSnapshot-Zimage-Turbov5.safetensors",
-  "Krea2-realism-V1.safetensors",
+  "ultra_real_krea2_v1.safetensors",
+  "Krea2-realism-V2.safetensors",
 ];
 
 const STYLE_DESCRIPTIONS: Record<string, string> = {
@@ -66,6 +67,13 @@ const STYLE_DESCRIPTIONS: Record<string, string> = {
 };
 
 const IMAGE_STYLES = ["realistic", "photography", "cinematic", "anime", "cgi"];
+
+const ENGINE_LABELS: Record<string, string> = {
+  "z-image-turbo": "Z Image Turbo",
+  "krea2-turbo": "Krea2 Turbo",
+  "ideogram4": "Ideogram v4",
+  "upscale": "Upscaled",
+};
 
 function beautifyIfJson(text: string): string {
   try {
@@ -181,6 +189,7 @@ export default function ImageWorkspace({
               prompt: promptText,
               timestamp: Date.now(),
               style: imageStyle,
+              engine: imageWorkflow,
               seed: seed,
               width: width,
               height: height,
@@ -300,6 +309,7 @@ export default function ImageWorkspace({
           prompt: prompt.trim(),
           timestamp: Date.now(),
           style: imageStyle,
+          engine: imageWorkflow,
           seed: generatedSeed,
           width: finalWidth,
           height: finalHeight,
@@ -1333,20 +1343,30 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                           </div>
                         </div>
                       </div>
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2.5">
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2.5 translate-y-full opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="inline-block rounded-md bg-gold/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#d8b88d] backdrop-blur-sm border border-gold/30">
+                          {item.engine && (
+                            <span className="inline-block rounded-md bg-gold/20 px-2 py-0.5 text-[9px] font-medium text-[#d8b88d] backdrop-blur-sm border border-gold/30">
+                              {ENGINE_LABELS[item.engine] || item.engine}
+                            </span>
+                          )}
+                          {item.width && item.height && (
+                            <span className="inline-block rounded-md bg-gold/20 px-2 py-0.5 text-[9px] font-medium text-[#d8b88d] backdrop-blur-sm border border-gold/30">
+                              {item.width}×{item.height}
+                            </span>
+                          )}
+                          <span className="inline-block rounded-md bg-gold/20 px-2 py-0.5 text-[9px] font-medium text-[#d8b88d] backdrop-blur-sm border border-gold/30">
                             {item.style}
                           </span>
 
                           {item.generationTime !== undefined && (
-                            <span className="inline-block rounded-md bg-[#4a5a3a]/60 px-2 py-0.5 text-[9px] font-mono text-[#a0c080] backdrop-blur-sm border border-[#5a6a4a]">
+                            <span className="inline-block rounded-md bg-gold/20 px-2 py-0.5 text-[9px] font-medium text-[#d8b88d] backdrop-blur-sm border border-gold/30">
                               {item.generationTime}s
                             </span>
                           )}
 
                           {item.seed !== undefined && (
-                            <span className="inline-block rounded-md bg-border-strong/60 px-2 py-0.5 text-[9px] font-mono text-text-muted backdrop-blur-sm border border-border-strong">
+                            <span className="inline-block rounded-md bg-gold/20 px-2 py-0.5 text-[9px] font-medium text-[#d8b88d] backdrop-blur-sm border border-gold/30">
                               #{item.seed}
                             </span>
                           )}

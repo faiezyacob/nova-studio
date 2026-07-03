@@ -19,6 +19,7 @@ export interface GalleryItem {
   prompt: string;
   timestamp: number;
   style: string;
+  engine?: string;
   seed?: number;
   hidden?: boolean;
   width?: number;
