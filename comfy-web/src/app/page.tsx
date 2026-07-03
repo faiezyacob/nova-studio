@@ -549,7 +549,7 @@ export default function App() {
                   </>
                 ) : mode === "agent" ? (
                   <>
-                    <div className="p-3">
+                    <div className="mb-3">
                       <button
                         onClick={createAgentSession}
                         className="btn-primary w-full"
@@ -557,7 +557,7 @@ export default function App() {
                         New Scene
                       </button>
                     </div>
-                    <div className="p-3 flex-1 space-y-1 overflow-y-auto pb-3">
+                    <div className="pt-3 flex-1 space-y-1 overflow-y-auto pb-3">
                       {agentSessions.length === 0 && (
                         <p className="px-3 py-8 text-center text-xs text-text-muted">No scenes yet</p>
                       )}

@@ -99,6 +99,7 @@ export default function VideoWorkspace({
   const [isUpscaleOpen, setIsUpscaleOpen] = useState(false);
   const [videoToUpscale, setVideoToUpscale] = useState<VideoGalleryItem | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [promptEnhancement, setPromptEnhancement] = useState(false);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
@@ -447,13 +448,42 @@ Based on the image, write a prompt that describes exactly enough action to reali
   const generateVideo = async () => {
     if (!uploadedImage || !prompt.trim()) return;
 
-    const generationId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-
-    window.dispatchEvent(new Event('vram-stats-request'));
     setIsGenerating(true);
     setError('');
     setVideoResult(null);
     setProgress(null);
+
+    if (promptEnhancement) {
+      try {
+        await fetch("/api/comfy/free", { method: "POST" });
+      } catch { /* ignore */ }
+      try {
+        await fetch("/api/system/free", { method: "POST" });
+      } catch { /* ignore */ }
+      if (selectedModel) {
+        try {
+          await fetch('/api/lmstudio/unload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: selectedModel }),
+          });
+        } catch (err) {
+          console.warn("Unload request failed:", err);
+        }
+      }
+      window.dispatchEvent(new Event('vram-stats-request'));
+      await enhancePrompt();
+      if (!prompt.trim()) return;
+      try {
+        await fetch("/api/comfy/free", { method: "POST" });
+      } catch { /* ignore */ }
+      try {
+        await fetch("/api/system/free", { method: "POST" });
+      } catch { /* ignore */ }
+      window.dispatchEvent(new Event('vram-stats-request'));
+    }
+
+    const generationId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
     let eventSource: EventSource | null = null;
 
@@ -906,7 +936,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
             <div className="mb-3 flex items-center justify-between gap-2">
               <div className="flex items-center gap-4">
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] uppercase tracking-widest text-text-subtle">Workflow</span>
+                  <span className="text-[10px] uppercase tracking-widest text-text-subtle">Engine</span>
                   <div className="relative min-w-[160px]">
                     <select
                       value={activeWorkflow}
@@ -922,7 +952,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] uppercase tracking-widest text-text-subtle">Motion Model</span>
+                  <span className="text-[10px] uppercase tracking-widest text-text-subtle">LLM</span>
                   <div className="relative min-w-[200px]">
                     <select
                       value={selectedModel}
@@ -941,24 +971,23 @@ Based on the image, write a prompt that describes exactly enough action to reali
                     <ChevronIcon />
                   </div>
                 </div>
-              </div>
 
-              <div className="flex flex-col gap-1 items-end self-end">
-                <button
-                  onClick={enhancePrompt}
-                  disabled={isEnhancing || !prompt.trim() || !selectedModel || availableModels.length === 0}
-                  className="cursor-pointer h-[32px] flex items-center gap-1.5 rounded-lg border border-gold/50 bg-hover px-4 text-xs font-medium text-gold-dim transition duration-150 ease-out hover:bg-active disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  {isEnhancing ? (
-                    <>
-                      <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                      </svg>
-                      Enhancing...
-                    </>
-                  ) : '✦ Enhance'}
-                </button>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase tracking-widest text-text-subtle">Enhance</span>
+                  <button
+                    onClick={() => setPromptEnhancement(!promptEnhancement)}
+                    disabled={isGenerating}
+                    className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs transition disabled:opacity-50 ${
+                      promptEnhancement
+                        ? "border-gold/50 bg-hover text-gold-dim"
+                        : "border-border-strong bg-surface-2 text-text-subtle"
+                    }`}
+                    title="Enable automatic prompt enhancement before generation"
+                  >
+                    <span className={`h-2 w-2 rounded-full ${promptEnhancement ? "bg-gold" : "bg-text-subtle"}`} />
+                    {promptEnhancement ? "On" : "Off"}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -1003,7 +1032,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
 
                 <button
                   onClick={generateVideo}
-                  disabled={isGenerating || !uploadedImage || !prompt.trim()}
+                  disabled={isGenerating || isEnhancing || !uploadedImage || !prompt.trim()}
                   className="cursor-pointer flex items-center gap-1.5 rounded-lg bg-gold px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition duration-150 ease-out hover:translate-y-[-1px] hover:bg-gold-hover active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isGenerating ? (

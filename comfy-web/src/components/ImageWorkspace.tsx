@@ -162,6 +162,7 @@ export default function ImageWorkspace({
   const [imageSeed, setImageSeed] = useState<string>("");
   const [imageWorkflow, setImageWorkflow] = useState<string>("z-image-turbo");
   const [sageAttention, setSageAttention] = useState(true);
+  const [promptEnhancement, setPromptEnhancement] = useState(false);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const [isRepairing, setIsRepairing] = useState(false);
@@ -221,12 +222,43 @@ export default function ImageWorkspace({
   const generateImage = async () => {
     if (!prompt.trim()) return;
 
+    setIsGenerating(true);
+    setProgress(null);
+
+    if (promptEnhancement) {
+      try {
+        await fetch("/api/comfy/free", { method: "POST" });
+      } catch { /* ignore */ }
+      try {
+        await fetch("/api/system/free", { method: "POST" });
+      } catch { /* ignore */ }
+      if (currentModel) {
+        try {
+          await fetch("/api/lmstudio/unload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ model: currentModel }),
+          });
+        } catch (err) {
+          console.warn("Unload request failed:", err);
+        }
+      }
+      window.dispatchEvent(new Event('vram-stats-request'));
+      await enhancePrompt();
+      if (!prompt.trim()) return;
+      try {
+        await fetch("/api/comfy/free", { method: "POST" });
+      } catch { /* ignore */ }
+      try {
+        await fetch("/api/system/free", { method: "POST" });
+      } catch { /* ignore */ }
+      window.dispatchEvent(new Event('vram-stats-request'));
+    }
+
     const generationStartTime = Date.now();
     const generationId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
     window.dispatchEvent(new Event('vram-stats-request'));
-    setIsGenerating(true);
-    setProgress(null);
 
     let eventSource: EventSource | null = null;
 
@@ -871,6 +903,44 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                 </div>
               </div>
 
+              {/* Style */}
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] uppercase tracking-widest text-text-subtle">Style</span>
+                <div className="relative">
+                  <select
+                    value={imageStyle}
+                    onChange={(e) => setImageStyle(e.target.value)}
+                    disabled={isGenerating}
+                    className="rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition focus:border-gold-focus appearance-none disabled:opacity-50"
+                  >
+                    {IMAGE_STYLES.map((style) => (
+                      <option key={style} value={style}>
+                        {style.charAt(0).toUpperCase() + style.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronIcon />
+                </div>
+              </div>
+
+              {/* Enhance toggle */}
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] uppercase tracking-widest text-text-subtle">Enhance</span>
+                <button
+                  onClick={() => setPromptEnhancement(!promptEnhancement)}
+                  disabled={isGenerating}
+                  className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition disabled:opacity-50 ${
+                    promptEnhancement
+                      ? "border-gold/50 bg-hover text-gold-dim"
+                      : "border-border-strong bg-surface-2 text-text-subtle"
+                  }`}
+                  title="Enable automatic prompt enhancement before generation"
+                >
+                  <span className={`h-2 w-2 rounded-full ${promptEnhancement ? "bg-gold" : "bg-text-subtle"}`} />
+                  {promptEnhancement ? "On" : "Off"}
+                </button>
+              </div>
+
               {/* Image Engine */}
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] uppercase tracking-widest text-text-subtle">Engine</span>
@@ -909,33 +979,13 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                 </div>
               )}
 
-              {/* Style */}
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] uppercase tracking-widest text-text-subtle">Style</span>
-                <div className="relative">
-                  <select
-                    value={imageStyle}
-                    onChange={(e) => setImageStyle(e.target.value)}
-                    disabled={isGenerating}
-                    className="rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition focus:border-gold-focus appearance-none disabled:opacity-50"
-                  >
-                    {IMAGE_STYLES.map((style) => (
-                      <option key={style} value={style}>
-                        {style.charAt(0).toUpperCase() + style.slice(1)}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronIcon />
-                </div>
-              </div>
-
-              {/* Enhance + Repair */}
+              {/* Ideogram-specific actions */}
               <div className="ml-auto flex items-center gap-2">
                 {imageWorkflow === 'ideogram4' && (
                   <>
                     <button
                       onClick={() => setShowBlueprintPanel(true)}
-                      disabled={isGenerating || !prompt.trim()}
+                    disabled={isGenerating || isEnhancing || !prompt.trim()}
                       className="cursor-pointer rounded-lg border border-cyan/50 bg-cyan/[0.08] px-3 py-2 text-xs font-medium text-cyan transition hover:bg-cyan/[0.12] disabled:cursor-not-allowed disabled:opacity-40"
                       title="Preview object positions from bbox coordinates"
                     >
@@ -966,23 +1016,6 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                     </button>
                   </>
                 )}
-                <button
-                  onClick={enhancePrompt}
-                  disabled={isEnhancing || !prompt.trim() || !selectedModel || availableModels.length === 0}
-                  className="cursor-pointer rounded-lg border border-gold/50 bg-hover px-3 py-2 text-xs font-medium text-gold-dim transition hover:bg-active disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  {isEnhancing ? (
-                    <span className="flex items-center gap-1.5">
-                      <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                      </svg>
-                      Enhancing…
-                    </span>
-                  ) : (
-                    "✦ Enhance"
-                  )}
-                </button>
               </div>
             </div>
 
@@ -1344,7 +1377,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                         </div>
                       </div>
                       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2.5 translate-y-full opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-1 flex-wrap mb-1">
                           {item.engine && (
                             <span className="inline-block rounded-md bg-gold/20 px-2 py-0.5 text-[9px] font-medium text-[#d8b88d] backdrop-blur-sm border border-gold/30">
                               {ENGINE_LABELS[item.engine] || item.engine}
