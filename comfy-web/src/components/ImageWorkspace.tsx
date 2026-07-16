@@ -9,7 +9,6 @@ import { db } from "@/utils/db";
 
 const AVAILABLE_LORAS = [
   "RealisticSnapshot-Zimage-Turbov5.safetensors",
-  "ultra_real_krea2_v1.safetensors",
   "Krea2-realism-V2.safetensors",
 ];
 
