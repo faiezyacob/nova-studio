@@ -1,27 +1,249 @@
 [
-  { "name": "Clear sky", "weight": 8, "tags": ["default"] },
-  { "name": "Sunny", "weight": 9, "tags": ["default"] },
-  { "name": "Cloudy", "weight": 7, "tags": ["default"] },
-  { "name": "Overcast", "weight": 6, "tags": ["default"] },
-  { "name": "Rain", "weight": 6, "tags": ["weather"] },
-  { "name": "Heavy rain", "weight": 5, "tags": ["weather"] },
-  { "name": "Drizzle", "weight": 4, "tags": ["weather"] },
-  { "name": "Thunderstorm", "weight": 5, "tags": ["weather"] },
-  { "name": "Snow", "weight": 6, "tags": ["winter"] },
-  { "name": "Heavy snowfall", "weight": 4, "tags": ["winter"] },
-  { "name": "Blizzard", "weight": 3, "tags": ["winter"] },
-  { "name": "Fog", "weight": 5, "tags": ["default"] },
-  { "name": "Mist", "weight": 5, "tags": ["default"] },
-  { "name": "Sandstorm", "weight": 3, "tags": ["desert"] },
-  { "name": "Heat haze", "weight": 3, "tags": ["desert"] },
-  { "name": "Wind", "weight": 5, "tags": ["default"] },
-  { "name": "Calm", "weight": 6, "tags": ["default"] },
-  { "name": "Rainbow", "weight": 3, "tags": ["default"] },
-  { "name": "Aurora", "weight": 3, "tags": ["nature"] },
-  { "name": "Ethereal glow", "weight": 3, "tags": ["fantasy"] },
-  { "name": "Ashfall", "weight": 2, "tags": ["dark", "fantasy"] },
-  { "name": "Lightning", "weight": 4, "tags": ["weather"] },
-  { "name": "Hail", "weight": 3, "tags": ["weather"] },
-  { "name": "Dust storm", "weight": 3, "tags": ["desert"] },
-  { "name": "Gentle breeze", "weight": 5, "tags": ["default"] }
+  {
+    "name": "Clear sky",
+    "weight": 8,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Sunny",
+    "weight": 9,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Cloudy",
+    "weight": 7,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Overcast",
+    "weight": 6,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Rain",
+    "weight": 6,
+    "tags": [
+      "weather"
+    ]
+  },
+  {
+    "name": "Heavy rain",
+    "weight": 5,
+    "tags": [
+      "weather"
+    ]
+  },
+  {
+    "name": "Drizzle",
+    "weight": 4,
+    "tags": [
+      "weather"
+    ]
+  },
+  {
+    "name": "Thunderstorm",
+    "weight": 5,
+    "tags": [
+      "weather"
+    ]
+  },
+  {
+    "name": "Snow",
+    "weight": 6,
+    "tags": [
+      "winter"
+    ]
+  },
+  {
+    "name": "Heavy snowfall",
+    "weight": 4,
+    "tags": [
+      "winter"
+    ]
+  },
+  {
+    "name": "Blizzard",
+    "weight": 3,
+    "tags": [
+      "winter"
+    ]
+  },
+  {
+    "name": "Fog",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Mist",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Sandstorm",
+    "weight": 3,
+    "tags": [
+      "desert"
+    ]
+  },
+  {
+    "name": "Heat haze",
+    "weight": 3,
+    "tags": [
+      "desert"
+    ]
+  },
+  {
+    "name": "Wind",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Calm",
+    "weight": 6,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Rainbow",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Aurora",
+    "weight": 3,
+    "tags": [
+      "nature"
+    ]
+  },
+  {
+    "name": "Ethereal glow",
+    "weight": 3,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Ashfall",
+    "weight": 2,
+    "tags": [
+      "dark",
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Lightning",
+    "weight": 4,
+    "tags": [
+      "weather"
+    ]
+  },
+  {
+    "name": "Hail",
+    "weight": 3,
+    "tags": [
+      "weather"
+    ]
+  },
+  {
+    "name": "Dust storm",
+    "weight": 3,
+    "tags": [
+      "desert"
+    ]
+  },
+  {
+    "name": "Gentle breeze",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Magical storm",
+    "weight": 7,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Ethereal mist",
+    "weight": 7,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Dragon fire rain",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Arcane lightning",
+    "weight": 6,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Snow in enchanted forest",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Floating embers",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Blood moon",
+    "weight": 5,
+    "tags": [
+      "fantasy",
+      "dark"
+    ]
+  },
+  {
+    "name": "Clear starlit sky",
+    "weight": 6,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Magical aurora",
+    "weight": 6,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Eternal twilight",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  }
 ]

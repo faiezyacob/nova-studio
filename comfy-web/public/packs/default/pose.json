@@ -1,32 +1,398 @@
 [
-  { "name": "Standing", "weight": 9, "tags": ["default"] },
-  { "name": "Sitting", "weight": 8, "tags": ["default"] },
-  { "name": "Walking", "weight": 7, "tags": ["default"] },
-  { "name": "Running", "weight": 6, "tags": ["action"] },
-  { "name": "Kneeling", "weight": 5, "tags": ["default"] },
-  { "name": "Jumping", "weight": 5, "tags": ["action"] },
-  { "name": "Flying", "weight": 5, "tags": ["fantasy", "action"] },
-  { "name": "Dancing", "weight": 5, "tags": ["art"] },
-  { "name": "Fighting stance", "weight": 6, "tags": ["action"] },
-  { "name": "Leaning against wall", "weight": 5, "tags": ["default"] },
-  { "name": "Lying down", "weight": 4, "tags": ["default"] },
-  { "name": "Crouching", "weight": 5, "tags": ["action"] },
-  { "name": "Reaching out", "weight": 4, "tags": ["default"] },
-  { "name": "Arms crossed", "weight": 5, "tags": ["default"] },
-  { "name": "Hands on hips", "weight": 5, "tags": ["default"] },
-  { "name": "Meditating", "weight": 4, "tags": ["fantasy"] },
-  { "name": "Reading", "weight": 4, "tags": ["default"] },
-  { "name": "Looking over shoulder", "weight": 5, "tags": ["default"] },
-  { "name": "Back turned", "weight": 4, "tags": ["default"] },
-  { "name": "Floating", "weight": 3, "tags": ["fantasy"] },
-  { "name": "Climbing", "weight": 4, "tags": ["action"] },
-  { "name": "Casting spell", "weight": 4, "tags": ["fantasy"] },
-  { "name": "Wielding weapon", "weight": 5, "tags": ["action", "fantasy"] },
-  { "name": "Hugging", "weight": 4, "tags": ["default"] },
-  { "name": "Sleeping", "weight": 3, "tags": ["default"] },
-  { "name": "Crying", "weight": 3, "tags": ["default"] },
-  { "name": "Crouching in fear", "weight": 3, "tags": ["horror"] },
-  { "name": "Leaping through air", "weight": 4, "tags": ["action"] },
-  { "name": "Cradling something", "weight": 3, "tags": ["default"] },
-  { "name": "Pointing", "weight": 4, "tags": ["default"] }
+  {
+    "name": "Standing",
+    "weight": 9,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Sitting",
+    "weight": 8,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Walking",
+    "weight": 7,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Running",
+    "weight": 6,
+    "tags": [
+      "action"
+    ]
+  },
+  {
+    "name": "Kneeling",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Jumping",
+    "weight": 5,
+    "tags": [
+      "action"
+    ]
+  },
+  {
+    "name": "Flying",
+    "weight": 5,
+    "tags": [
+      "fantasy",
+      "action"
+    ]
+  },
+  {
+    "name": "Dancing",
+    "weight": 5,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "Fighting stance",
+    "weight": 6,
+    "tags": [
+      "action"
+    ]
+  },
+  {
+    "name": "Leaning against wall",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Lying down",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Crouching",
+    "weight": 5,
+    "tags": [
+      "action"
+    ]
+  },
+  {
+    "name": "Reaching out",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Arms crossed",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Hands on hips",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Meditating",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Reading",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Looking over shoulder",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Back turned",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Floating",
+    "weight": 3,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Climbing",
+    "weight": 4,
+    "tags": [
+      "action"
+    ]
+  },
+  {
+    "name": "Casting spell",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Wielding weapon",
+    "weight": 5,
+    "tags": [
+      "action",
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Hugging",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Sleeping",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Crying",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Crouching in fear",
+    "weight": 3,
+    "tags": [
+      "horror"
+    ]
+  },
+  {
+    "name": "Leaping through air",
+    "weight": 4,
+    "tags": [
+      "action"
+    ]
+  },
+  {
+    "name": "Cradling something",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Pointing",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Seductive pose",
+    "weight": 5,
+    "tags": [
+      "seductive"
+    ]
+  },
+  {
+    "name": "Blowing a kiss",
+    "weight": 5,
+    "tags": [
+      "seductive"
+    ]
+  },
+  {
+    "name": "Lying on side",
+    "weight": 4,
+    "tags": [
+      "seductive"
+    ]
+  },
+  {
+    "name": "Arching back",
+    "weight": 5,
+    "tags": [
+      "seductive"
+    ]
+  },
+  {
+    "name": "Peeking over shoulder",
+    "weight": 5,
+    "tags": [
+      "seductive"
+    ]
+  },
+  {
+    "name": "Tongue out",
+    "weight": 4,
+    "tags": [
+      "seductive",
+      "playful"
+    ]
+  },
+  {
+    "name": "Hip pop",
+    "weight": 5,
+    "tags": [
+      "seductive"
+    ]
+  },
+  {
+    "name": "Over-the-shoulder glance",
+    "weight": 5,
+    "tags": [
+      "seductive"
+    ]
+  },
+  {
+    "name": "Chin tilt",
+    "weight": 4,
+    "tags": [
+      "seductive"
+    ]
+  },
+  {
+    "name": "Languid stretch",
+    "weight": 4,
+    "tags": [
+      "seductive"
+    ]
+  },
+  {
+    "name": "Biting lip",
+    "weight": 4,
+    "tags": [
+      "seductive"
+    ]
+  },
+  {
+    "name": "Hand through hair",
+    "weight": 5,
+    "tags": [
+      "seductive"
+    ]
+  },
+  {
+    "name": "Legs crossed",
+    "weight": 5,
+    "tags": [
+      "seductive"
+    ]
+  },
+  {
+    "name": "Leaning forward",
+    "weight": 4,
+    "tags": [
+      "seductive"
+    ]
+  },
+  {
+    "name": "Lying on stomach",
+    "weight": 4,
+    "tags": [
+      "seductive"
+    ]
+  },
+  {
+    "name": "Winking at camera",
+    "weight": 4,
+    "tags": [
+      "seductive",
+      "playful"
+    ]
+  },
+  {
+    "name": "Pouty pose",
+    "weight": 4,
+    "tags": [
+      "seductive"
+    ]
+  },
+  {
+    "name": "Action pose",
+    "weight": 7,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Cute sitting pose",
+    "weight": 6,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Floating in wind",
+    "weight": 5,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Dramatic battle stance",
+    "weight": 6,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Peaceful standing",
+    "weight": 5,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Hand on hip",
+    "weight": 5,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Mid-jump",
+    "weight": 4,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Shy hugging self",
+    "weight": 4,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Power-up stance",
+    "weight": 5,
+    "tags": [
+      "anime"
+    ]
+  }
 ]

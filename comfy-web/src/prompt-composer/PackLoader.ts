@@ -3,39 +3,21 @@ import {
   ThemePackMeta,
   PromptCategoryKey,
   PromptValue,
+  RelationshipRule,
 } from "@/types/prompt-composer";
 
-const PACK_BASE_PATH = "/packs";
+const PACK_BASE_PATH = "/packs/default";
 
-const cachedPacks: Map<string, ThemePackData> = new Map();
-let discoveredPacks: string[] = [];
+let cachedPack: ThemePackData | null = null;
 
-export async function discoverPacks(): Promise<string[]> {
-  try {
-    const res = await fetch(`${PACK_BASE_PATH}/index.json`);
-    if (!res.ok) {
-      discoveredPacks = ["default"];
-      return discoveredPacks;
-    }
-    const data = await res.json();
-    discoveredPacks = Array.isArray(data) ? data : ["default"];
-    return discoveredPacks;
-  } catch {
-    discoveredPacks = ["default"];
-    return discoveredPacks;
-  }
-}
+export async function loadPack(): Promise<ThemePackData> {
+  if (cachedPack) return cachedPack;
 
-export async function loadPack(packName: string): Promise<ThemePackData> {
-  if (cachedPacks.has(packName)) {
-    return cachedPacks.get(packName)!;
-  }
-
-  const meta = await fetchJSON<ThemePackMeta>(`${PACK_BASE_PATH}/${packName}/meta.json`);
+  const meta = await fetchJSON<ThemePackMeta>(`${PACK_BASE_PATH}/meta.json`);
   const categories: Partial<Record<PromptCategoryKey, PromptValue[]>> = {};
 
   const categoryKeys: PromptCategoryKey[] = [
-    "subject", "species", "gender", "age", "hair", "eyes",
+    "subject", "species", "ethnicity", "age", "hair", "eyes",
     "expression", "pose", "clothing", "accessories",
     "location", "environment", "weather", "season", "time",
     "lighting", "camera", "lens", "composition",
@@ -45,7 +27,7 @@ export async function loadPack(packName: string): Promise<ThemePackData> {
   const results = await Promise.allSettled(
     categoryKeys.map(async (key) => {
       try {
-        const values = await fetchJSON<PromptValue[]>(`${PACK_BASE_PATH}/${packName}/${key}.json`);
+        const values = await fetchJSON<PromptValue[]>(`${PACK_BASE_PATH}/${key}.json`);
         return { key, values };
       } catch {
         return { key, values: [] as PromptValue[] };
@@ -59,37 +41,16 @@ export async function loadPack(packName: string): Promise<ThemePackData> {
     }
   }
 
-  const pack: ThemePackData = { meta, categories };
-  cachedPacks.set(packName, pack);
-  return pack;
+  cachedPack = { meta, categories };
+  return cachedPack;
 }
 
-export async function loadAllPacks(): Promise<ThemePackData[]> {
-  const packNames = await discoverPacks();
-  const packs = await Promise.allSettled(
-    packNames.map(name => loadPack(name))
-  );
-  return packs
-    .filter((r): r is PromiseFulfilledResult<ThemePackData> => r.status === "fulfilled")
-    .map(r => r.value);
-}
-
-export async function loadRules(packName: string): Promise<import("@/types/prompt-composer").RelationshipRule[]> {
+export async function loadRules(): Promise<RelationshipRule[]> {
   try {
-    return await fetchJSON<import("@/types/prompt-composer").RelationshipRule[]>(
-      `${PACK_BASE_PATH}/${packName}/rules.json`
-    );
+    return await fetchJSON<RelationshipRule[]>(`${PACK_BASE_PATH}/rules.json`);
   } catch {
     return [];
   }
-}
-
-export function getCachedPack(packName: string): ThemePackData | undefined {
-  return cachedPacks.get(packName);
-}
-
-export function clearPackCache(): void {
-  cachedPacks.clear();
 }
 
 async function fetchJSON<T>(url: string): Promise<T> {

@@ -1,32 +1,408 @@
 [
-  { "name": "Necklace", "weight": 7, "tags": ["default"] },
-  { "name": "Earrings", "weight": 6, "tags": ["default"] },
-  { "name": "Ring", "weight": 6, "tags": ["default"] },
-  { "name": "Glasses", "weight": 6, "tags": ["modern"] },
-  { "name": "Crown", "weight": 5, "tags": ["fantasy"] },
-  { "name": "Tiara", "weight": 4, "tags": ["fantasy"] },
-  { "name": "Scarf", "weight": 5, "tags": ["default"] },
-  { "name": "Gloves", "weight": 5, "tags": ["default"] },
-  { "name": "Boots", "weight": 6, "tags": ["default"] },
-  { "name": "Sword", "weight": 5, "tags": ["fantasy", "action"] },
-  { "name": "Shield", "weight": 4, "tags": ["fantasy"] },
-  { "name": "Staff", "weight": 4, "tags": ["fantasy"] },
-  { "name": "Wand", "weight": 3, "tags": ["fantasy"] },
-  { "name": "Gun", "weight": 5, "tags": ["modern", "action"] },
-  { "name": "Bow and arrow", "weight": 4, "tags": ["fantasy", "action"] },
-  { "name": "Mask", "weight": 5, "tags": ["default"] },
-  { "name": "Face paint", "weight": 4, "tags": ["fantasy"] },
-  { "name": "Tattoos", "weight": 5, "tags": ["default"] },
-  { "name": "Piercings", "weight": 4, "tags": ["default"] },
-  { "name": "Bracelet", "weight": 5, "tags": ["default"] },
-  { "name": "Choker", "weight": 4, "tags": ["default"] },
-  { "name": "Headband", "weight": 4, "tags": ["default"] },
-  { "name": "Wings", "weight": 3, "tags": ["fantasy"] },
-  { "name": "Horns", "weight": 3, "tags": ["fantasy", "dark"] },
-  { "name": "Tail", "weight": 3, "tags": ["fantasy"] },
-  { "name": "Floating orbs", "weight": 3, "tags": ["fantasy"] },
-  { "name": "Mechanical arm", "weight": 3, "tags": ["sci-fi"] },
-  { "name": "Energy weapon", "weight": 3, "tags": ["sci-fi"] },
-  { "name": "Journal", "weight": 3, "tags": ["default"] },
-  { "name": "Flower bouquet", "weight": 3, "tags": ["default"] }
+  {
+    "name": "Necklace",
+    "weight": 7,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Earrings",
+    "weight": 6,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Ring",
+    "weight": 6,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Glasses",
+    "weight": 6,
+    "tags": [
+      "modern"
+    ]
+  },
+  {
+    "name": "Crown",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Tiara",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Scarf",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Gloves",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Boots",
+    "weight": 6,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Sword",
+    "weight": 5,
+    "tags": [
+      "fantasy",
+      "action"
+    ]
+  },
+  {
+    "name": "Shield",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Staff",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Wand",
+    "weight": 3,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Gun",
+    "weight": 5,
+    "tags": [
+      "modern",
+      "action"
+    ]
+  },
+  {
+    "name": "Bow and arrow",
+    "weight": 4,
+    "tags": [
+      "fantasy",
+      "action"
+    ]
+  },
+  {
+    "name": "Mask",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Face paint",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Tattoos",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Piercings",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Bracelet",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Choker",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Headband",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Wings",
+    "weight": 3,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Horns",
+    "weight": 3,
+    "tags": [
+      "fantasy",
+      "dark"
+    ]
+  },
+  {
+    "name": "Tail",
+    "weight": 3,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Floating orbs",
+    "weight": 3,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Mechanical arm",
+    "weight": 3,
+    "tags": [
+      "sci-fi"
+    ]
+  },
+  {
+    "name": "Energy weapon",
+    "weight": 3,
+    "tags": [
+      "sci-fi"
+    ]
+  },
+  {
+    "name": "Journal",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Flower bouquet",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Enchanted sword",
+    "weight": 8,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Magic staff",
+    "weight": 8,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Shield with crest",
+    "weight": 7,
+    "tags": [
+      "fantasy",
+      "medieval"
+    ]
+  },
+  {
+    "name": "Grimoire",
+    "weight": 6,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Crystal amulet",
+    "weight": 6,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Elven circlet",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Runic gauntlets",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Dragon tooth pendant",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Ancient crown",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Phoenix feather quill",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "War horn",
+    "weight": 4,
+    "tags": [
+      "fantasy",
+      "medieval"
+    ]
+  },
+  {
+    "name": "Enchanted ring",
+    "weight": 6,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Potion belt",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Battle axe",
+    "weight": 5,
+    "tags": [
+      "fantasy",
+      "medieval"
+    ]
+  },
+  {
+    "name": "Orb of power",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Cybernetic arm",
+    "weight": 8,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Neural headset",
+    "weight": 7,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Holographic display",
+    "weight": 6,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Implanted eye scanner",
+    "weight": 6,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Data gloves",
+    "weight": 5,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Nanotech bracelet",
+    "weight": 5,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Shoulder-mounted drone",
+    "weight": 4,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Spinal implant",
+    "weight": 5,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Glowing tattoos",
+    "weight": 6,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Facial HUD",
+    "weight": 5,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Monowire",
+    "weight": 4,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Smart glasses",
+    "weight": 6,
+    "tags": [
+      "cyberpunk"
+    ]
+  }
 ]

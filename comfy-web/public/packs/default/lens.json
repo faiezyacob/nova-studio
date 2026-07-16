@@ -1,22 +1,142 @@
 [
-  { "name": "50mm prime", "weight": 8, "tags": ["default"] },
-  { "name": "85mm portrait lens", "weight": 7, "tags": ["portrait"] },
-  { "name": "35mm wide angle", "weight": 7, "tags": ["default"] },
-  { "name": "24mm ultra wide", "weight": 5, "tags": ["default"] },
-  { "name": "135mm telephoto", "weight": 5, "tags": ["default"] },
-  { "name": "200mm long telephoto", "weight": 4, "tags": ["default"] },
-  { "name": "100mm macro", "weight": 4, "tags": ["default"] },
-  { "name": "24-70mm zoom", "weight": 6, "tags": ["default"] },
-  { "name": "70-200mm zoom", "weight": 5, "tags": ["default"] },
-  { "name": "Fisheye", "weight": 3, "tags": ["default"] },
-  { "name": "Tilt-shift", "weight": 3, "tags": ["default"] },
-  { "name": "Anamorphic", "weight": 4, "tags": ["cinematic"] },
-  { "name": "Shallow depth of field", "weight": 7, "tags": ["default"] },
-  { "name": "Deep depth of field", "weight": 6, "tags": ["default"] },
-  { "name": "Bokeh background", "weight": 6, "tags": ["default"] },
-  { "name": "Sharp focus on subject", "weight": 7, "tags": ["default"] },
-  { "name": "Soft focus", "weight": 4, "tags": ["default"] },
-  { "name": "Motion blur", "weight": 3, "tags": ["default"] },
-  { "name": "Lens flare", "weight": 3, "tags": ["default"] },
-  { "name": "Chromatic aberration", "weight": 2, "tags": ["default"] }
+  {
+    "name": "50mm prime",
+    "weight": 8,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "85mm portrait lens",
+    "weight": 7,
+    "tags": [
+      "portrait"
+    ]
+  },
+  {
+    "name": "35mm wide angle",
+    "weight": 7,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "24mm ultra wide",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "135mm telephoto",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "200mm long telephoto",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "100mm macro",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "24-70mm zoom",
+    "weight": 6,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "70-200mm zoom",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Fisheye",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Tilt-shift",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Anamorphic",
+    "weight": 4,
+    "tags": [
+      "cinematic"
+    ]
+  },
+  {
+    "name": "Shallow depth of field",
+    "weight": 7,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Deep depth of field",
+    "weight": 6,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Bokeh background",
+    "weight": 6,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Sharp focus on subject",
+    "weight": 7,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Soft focus",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Motion blur",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Lens flare",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Chromatic aberration",
+    "weight": 2,
+    "tags": [
+      "default"
+    ]
+  }
 ]

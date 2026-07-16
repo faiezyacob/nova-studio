@@ -1,38 +1,457 @@
 [
-  { "name": "Photorealistic", "weight": 8, "tags": ["default"] },
-  { "name": "Oil painting", "weight": 7, "tags": ["art"] },
-  { "name": "Watercolor", "weight": 6, "tags": ["art"] },
-  { "name": "Digital painting", "weight": 8, "tags": ["default"] },
-  { "name": "Concept art", "weight": 7, "tags": ["default"] },
-  { "name": "Anime style", "weight": 6, "tags": ["anime"] },
-  { "name": "Manga style", "weight": 5, "tags": ["anime"] },
-  { "name": "Pixar style", "weight": 5, "tags": ["3d"] },
-  { "name": "Studio Ghibli style", "weight": 4, "tags": ["anime"] },
-  { "name": "Art Nouveau", "weight": 5, "tags": ["art"] },
-  { "name": "Art Deco", "weight": 4, "tags": ["art"] },
-  { "name": "Impressionist", "weight": 5, "tags": ["art"] },
-  { "name": "Surrealist", "weight": 4, "tags": ["art"] },
-  { "name": "Pop art", "weight": 4, "tags": ["art"] },
-  { "name": "Pixel art", "weight": 3, "tags": ["retro"] },
-  { "name": "Pencil sketch", "weight": 5, "tags": ["art"] },
-  { "name": "Ink drawing", "weight": 4, "tags": ["art"] },
-  { "name": "Charcoal drawing", "weight": 4, "tags": ["art"] },
-  { "name": "Ukiyo-e", "weight": 3, "tags": ["asian", "art"] },
-  { "name": "Baroque", "weight": 4, "tags": ["art"] },
-  { "name": "Renaissance", "weight": 4, "tags": ["art"] },
-  { "name": "Gothic", "weight": 4, "tags": ["dark", "art"] },
-  { "name": "Cyberpunk", "weight": 6, "tags": ["sci-fi", "cyberpunk"] },
-  { "name": "Steampunk", "weight": 5, "tags": ["sci-fi"] },
-  { "name": "Solarpunk", "weight": 3, "tags": ["sci-fi"] },
-  { "name": "Film noir", "weight": 4, "tags": ["cinematic"] },
-  { "name": "Cinematic", "weight": 7, "tags": ["cinematic"] },
-  { "name": "Studio photography", "weight": 6, "tags": ["modern"] },
-  { "name": "HDR", "weight": 4, "tags": ["modern"] },
-  { "name": "Vintage photograph", "weight": 4, "tags": ["retro"] },
-  { "name": "Polaroid", "weight": 3, "tags": ["retro"] },
-  { "name": "Double exposure", "weight": 3, "tags": ["art"] },
-  { "name": "Flat design", "weight": 3, "tags": ["modern"] },
-  { "name": "Isometric", "weight": 3, "tags": ["3d"] },
-  { "name": "Comic book", "weight": 4, "tags": ["art"] },
-  { "name": "Storyboard", "weight": 3, "tags": ["art"] }
+  {
+    "name": "Photorealistic",
+    "weight": 8,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Oil painting",
+    "weight": 7,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "Watercolor",
+    "weight": 6,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "Digital painting",
+    "weight": 8,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Concept art",
+    "weight": 7,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Anime style",
+    "weight": 6,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Manga style",
+    "weight": 5,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Pixar style",
+    "weight": 5,
+    "tags": [
+      "3d"
+    ]
+  },
+  {
+    "name": "Studio Ghibli style",
+    "weight": 4,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Art Nouveau",
+    "weight": 5,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "Art Deco",
+    "weight": 4,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "Impressionist",
+    "weight": 5,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "Surrealist",
+    "weight": 4,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "Pop art",
+    "weight": 4,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "Pixel art",
+    "weight": 3,
+    "tags": [
+      "retro"
+    ]
+  },
+  {
+    "name": "Pencil sketch",
+    "weight": 5,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "Ink drawing",
+    "weight": 4,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "Charcoal drawing",
+    "weight": 4,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "Ukiyo-e",
+    "weight": 3,
+    "tags": [
+      "asian",
+      "art"
+    ]
+  },
+  {
+    "name": "Baroque",
+    "weight": 4,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "Renaissance",
+    "weight": 4,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "Gothic",
+    "weight": 4,
+    "tags": [
+      "dark",
+      "art"
+    ]
+  },
+  {
+    "name": "Cyberpunk",
+    "weight": 6,
+    "tags": [
+      "sci-fi",
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Steampunk",
+    "weight": 5,
+    "tags": [
+      "sci-fi"
+    ]
+  },
+  {
+    "name": "Solarpunk",
+    "weight": 3,
+    "tags": [
+      "sci-fi"
+    ]
+  },
+  {
+    "name": "Film noir",
+    "weight": 4,
+    "tags": [
+      "cinematic"
+    ]
+  },
+  {
+    "name": "Cinematic",
+    "weight": 7,
+    "tags": [
+      "cinematic"
+    ]
+  },
+  {
+    "name": "Studio photography",
+    "weight": 6,
+    "tags": [
+      "modern"
+    ]
+  },
+  {
+    "name": "HDR",
+    "weight": 4,
+    "tags": [
+      "modern"
+    ]
+  },
+  {
+    "name": "Vintage photograph",
+    "weight": 4,
+    "tags": [
+      "retro"
+    ]
+  },
+  {
+    "name": "Polaroid",
+    "weight": 3,
+    "tags": [
+      "retro"
+    ]
+  },
+  {
+    "name": "Double exposure",
+    "weight": 3,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "Flat design",
+    "weight": 3,
+    "tags": [
+      "modern"
+    ]
+  },
+  {
+    "name": "Isometric",
+    "weight": 3,
+    "tags": [
+      "3d"
+    ]
+  },
+  {
+    "name": "Comic book",
+    "weight": 4,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "Storyboard",
+    "weight": 3,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "High fantasy painting",
+    "weight": 8,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Dark fantasy",
+    "weight": 7,
+    "tags": [
+      "fantasy",
+      "dark"
+    ]
+  },
+  {
+    "name": "Fairy tale illustration",
+    "weight": 6,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Epic concept art",
+    "weight": 7,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Medieval tapestry",
+    "weight": 4,
+    "tags": [
+      "fantasy",
+      "medieval"
+    ]
+  },
+  {
+    "name": "Renaissance oil painting",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Gothic fantasy",
+    "weight": 5,
+    "tags": [
+      "fantasy",
+      "dark"
+    ]
+  },
+  {
+    "name": "Storybook illustration",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Mythological art",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Dark academia",
+    "weight": 4,
+    "tags": [
+      "fantasy",
+      "dark"
+    ]
+  },
+  {
+    "name": "Cyberpunk concept art",
+    "weight": 8,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Neon noir",
+    "weight": 7,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Blade Runner style",
+    "weight": 7,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Ghost in the Shell style",
+    "weight": 6,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Akira style",
+    "weight": 6,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Synthwave art",
+    "weight": 5,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Retro-futurism",
+    "weight": 5,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Tech noir photography",
+    "weight": 5,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Glitch art",
+    "weight": 4,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Anime cel shading",
+    "weight": 8,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Manga ink style",
+    "weight": 6,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Makoto Shinkai style",
+    "weight": 6,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Fate/Grand Order style",
+    "weight": 5,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Key visual novel style",
+    "weight": 5,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "90s anime style",
+    "weight": 5,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Watercolor anime",
+    "weight": 4,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Chibi style",
+    "weight": 3,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Detailed anime illustration",
+    "weight": 7,
+    "tags": [
+      "anime"
+    ]
+  }
 ]

@@ -6,13 +6,12 @@ import {
   PromptCategoryKey,
   PromptState,
   ThemePackData,
-  ThemePackMeta,
   RelationshipRule,
   CATEGORY_CONFIGS,
   CATEGORY_ORDER,
   createEmptyState,
 } from "@/types/prompt-composer";
-import { loadPack, discoverPacks, loadRules } from "@/prompt-composer/PackLoader";
+import { loadPack, loadRules } from "@/prompt-composer/PackLoader";
 import {
   randomizeAll,
   randomizeUnlocked,
@@ -27,28 +26,29 @@ import {
 } from "@/prompt-composer/PresetManager";
 import PromptCategoryCard from "./PromptCategoryCard";
 import PromptSearchDialog from "./PromptSearchDialog";
-import ThemePackSelector from "./ThemePackSelector";
 import MutationDialog from "./MutationDialog";
 import PromptPreview from "./PromptPreview";
 import type { ComposerPreset } from "@/types/prompt-composer";
 
 interface PromptComposerProps {
   onUsePrompt: (prompt: string) => void;
-  onEnhance: () => void;
-  isEnhancing: boolean;
+  composerState: PromptState;
+  onComposerStateChange: React.Dispatch<React.SetStateAction<PromptState>>;
+  mutationPercent: number;
+  onMutationPercentChange: (percent: number) => void;
 }
 
 export default function PromptComposer({
   onUsePrompt,
-  onEnhance,
-  isEnhancing,
+  composerState,
+  onComposerStateChange,
+  mutationPercent,
+  onMutationPercentChange,
 }: PromptComposerProps) {
-  const [state, setState] = useState<PromptState>(createEmptyState);
-  const [packs, setPacks] = useState<ThemePackMeta[]>([]);
+  const state = composerState;
+  const setState = onComposerStateChange;
   const [packData, setPackData] = useState<ThemePackData | null>(null);
-  const [selectedPack, setSelectedPack] = useState("default");
   const [rules, setRules] = useState<RelationshipRule[]>([]);
-  const [mutationPercent, setMutationPercent] = useState(25);
   const [loading, setLoading] = useState(true);
 
   const [searchCategory, setSearchCategory] = useState<PromptCategoryKey | null>(null);
@@ -59,32 +59,24 @@ export default function PromptComposer({
   const [presetName, setPresetName] = useState("");
 
   useEffect(() => {
-    initPacks();
+    initPack();
   }, []);
 
   useEffect(() => {
     loadPresets();
   }, []);
 
-  const initPacks = async () => {
+  const initPack = async () => {
     setLoading(true);
     try {
-      const packNames = await discoverPacks();
-      const metaList: ThemePackMeta[] = [];
-      for (const name of packNames) {
-        const pack = await loadPack(name);
-        metaList.push(pack.meta);
-      }
-      setPacks(metaList);
+      const pack = await loadPack();
+      setPackData(pack);
 
-      const defaultPack = await loadPack("default");
-      setPackData(defaultPack);
-
-      const defaultRules = await loadRules("default");
-      setRules(defaultRules);
+      const packRules = await loadRules();
+      setRules(packRules);
     } catch (err) {
-      console.error("Failed to load packs:", err);
-      toast.error("Failed to load prompt packs");
+      console.error("Failed to load prompt pack:", err);
+      toast.error("Failed to load prompt pack");
     } finally {
       setLoading(false);
     }
@@ -93,14 +85,6 @@ export default function PromptComposer({
   const loadPresets = async () => {
     const list = await listPresets();
     setPresets(list);
-  };
-
-  const handlePackChange = async (packName: string) => {
-    setSelectedPack(packName);
-    const pack = await loadPack(packName);
-    setPackData(pack);
-    const packRules = await loadRules(packName);
-    setRules(packRules);
   };
 
   const getValuesForCategory = useCallback(
@@ -157,7 +141,7 @@ export default function PromptComposer({
 
   const handleMutate = (percent: number) => {
     if (!packData) return;
-    setMutationPercent(percent);
+    onMutationPercentChange(percent);
     setState((prev) => mutateState(prev, percent, packData, rules));
     setShowMutationDialog(false);
     toast.success(`Mutated at ${percent}%`);
@@ -203,6 +187,10 @@ export default function PromptComposer({
     });
   };
 
+  const handleReset = () => {
+    setState(createEmptyState());
+  };
+
   const handleSelectValues = (category: PromptCategoryKey, values: string[]) => {
     setState((prev) => ({
       ...prev,
@@ -231,7 +219,7 @@ export default function PromptComposer({
 
   const handleSavePreset = async () => {
     if (!presetName.trim()) return;
-    await savePreset(presetName, state, selectedPack, mutationPercent);
+    await savePreset(presetName, state, "default", mutationPercent);
     setPresetName("");
     setShowPresetDialog(false);
     await loadPresets();
@@ -240,10 +228,7 @@ export default function PromptComposer({
 
   const handleLoadPreset = async (preset: ComposerPreset) => {
     setState(preset.state);
-    if (preset.packName !== selectedPack) {
-      await handlePackChange(preset.packName);
-    }
-    setMutationPercent(preset.mutationPercent);
+    onMutationPercentChange(preset.mutationPercent);
     toast.success(`Loaded "${preset.name}"`);
   };
 
@@ -263,7 +248,7 @@ export default function PromptComposer({
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
           </svg>
-          Loading prompt packs...
+          Loading prompt pack...
         </div>
       </div>
     );
@@ -272,50 +257,49 @@ export default function PromptComposer({
   return (
     <div className="space-y-3">
       {/* Top toolbar */}
-      <div className="flex flex-wrap items-center gap-2">
-        <ThemePackSelector
-          packs={packs}
-          selectedPack={selectedPack}
-          onSelect={handlePackChange}
-        />
-
-        <div className="ml-auto flex items-center gap-1.5">
-          <button
-            onClick={handleRandomizeAll}
-            className="rounded-lg border border-border-strong bg-surface-2 px-2.5 py-1.5 text-[11px] text-text-secondary transition hover:border-gold/40 hover:text-gold"
-            title="Randomize all"
-          >
-            All
-          </button>
-          <button
-            onClick={handleRandomizeUnlocked}
-            className="rounded-lg border border-border-strong bg-surface-2 px-2.5 py-1.5 text-[11px] text-text-secondary transition hover:border-gold/40 hover:text-gold"
-            title="Randomize unlocked"
-          >
-            Unlocked
-          </button>
-          <button
-            onClick={() => setShowMutationDialog(true)}
-            className="rounded-lg border border-border-strong bg-surface-2 px-2.5 py-1.5 text-[11px] text-text-secondary transition hover:border-gold/40 hover:text-gold"
-            title="Mutate"
-          >
-            Mutate
-          </button>
-          <button
-            onClick={handleLockAll}
-            className="rounded-lg border border-border-strong bg-surface-2 px-2.5 py-1.5 text-[11px] text-text-secondary transition hover:border-gold/40 hover:text-gold"
-            title="Lock all"
-          >
-            Lock
-          </button>
-          <button
-            onClick={handleUnlockAll}
-            className="rounded-lg border border-border-strong bg-surface-2 px-2.5 py-1.5 text-[11px] text-text-secondary transition hover:border-gold/40 hover:text-gold"
-            title="Unlock all"
-          >
-            Unlock
-          </button>
-        </div>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <button
+          onClick={handleRandomizeAll}
+          className="rounded-lg border border-border-strong bg-surface-2 px-2.5 py-1.5 text-[11px] text-text-secondary transition hover:border-gold/40 hover:text-gold"
+          title="Randomize all"
+        >
+          All
+        </button>
+        <button
+          onClick={handleRandomizeUnlocked}
+          className="rounded-lg border border-border-strong bg-surface-2 px-2.5 py-1.5 text-[11px] text-text-secondary transition hover:border-gold/40 hover:text-gold"
+          title="Randomize unlocked"
+        >
+          Unlocked
+        </button>
+        <button
+          onClick={() => setShowMutationDialog(true)}
+          className="rounded-lg border border-border-strong bg-surface-2 px-2.5 py-1.5 text-[11px] text-text-secondary transition hover:border-gold/40 hover:text-gold"
+          title="Mutate"
+        >
+          Mutate
+        </button>
+        <button
+          onClick={handleLockAll}
+          className="rounded-lg border border-border-strong bg-surface-2 px-2.5 py-1.5 text-[11px] text-text-secondary transition hover:border-gold/40 hover:text-gold"
+          title="Lock all"
+        >
+          Lock
+        </button>
+        <button
+          onClick={handleUnlockAll}
+          className="rounded-lg border border-border-strong bg-surface-2 px-2.5 py-1.5 text-[11px] text-text-secondary transition hover:border-gold/40 hover:text-gold"
+          title="Unlock all"
+        >
+          Unlock
+        </button>
+        <button
+          onClick={handleReset}
+          className="rounded-lg border border-border-strong bg-surface-2 px-2.5 py-1.5 text-[11px] text-text-secondary transition hover:border-red-500/40 hover:text-red-400"
+          title="Reset all"
+        >
+          Reset
+        </button>
       </div>
 
       {/* Category cards grid */}
@@ -371,17 +355,9 @@ export default function PromptComposer({
       <div className="flex items-center gap-2">
         <button
           onClick={handleUsePrompt}
-          disabled={isEnhancing}
           className="btn-primary flex-1"
         >
           Use Prompt
-        </button>
-        <button
-          onClick={onEnhance}
-          disabled={isEnhancing || !generatedPrompt.trim()}
-          className="btn-secondary flex-1"
-        >
-          {isEnhancing ? "Enhancing..." : "Enhance with AI"}
         </button>
       </div>
 

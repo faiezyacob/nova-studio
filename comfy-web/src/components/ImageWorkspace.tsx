@@ -7,6 +7,7 @@ import ImageUpscaleDialog from "./ImageUpscaleDialog";
 import SceneBlueprintViewer from "./SceneBlueprintViewer";
 import PromptComposer from "./PromptComposer";
 import { db } from "@/utils/db";
+import { type PromptState, createEmptyState } from "@/types/prompt-composer";
 
 const AVAILABLE_LORAS = [
   "RealisticSnapshot-Zimage-Turbov5.safetensors",
@@ -170,6 +171,8 @@ export default function ImageWorkspace({
   const [isRepairing, setIsRepairing] = useState(false);
   const [progress, setProgress] = useState<{ value: number; max: number } | null>(null);
   const [promptMode, setPromptMode] = useState<"free" | "composer">("free");
+  const [composerState, setComposerState] = useState<PromptState>(createEmptyState);
+  const [composerMutationPercent, setComposerMutationPercent] = useState(25);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const itemsPerPage = 12;
 
@@ -1275,8 +1278,10 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                     setPrompt(composedPrompt);
                     setPromptMode("free");
                   }}
-                  onEnhance={enhancePrompt}
-                  isEnhancing={isEnhancing}
+                  composerState={composerState}
+                  onComposerStateChange={setComposerState}
+                  mutationPercent={composerMutationPercent}
+                  onMutationPercentChange={setComposerMutationPercent}
                 />
               )}
             </div>

@@ -1,7 +1,7 @@
 export type PromptCategoryKey =
   | "subject"
   | "species"
-  | "gender"
+  | "ethnicity"
   | "age"
   | "hair"
   | "eyes"
@@ -79,7 +79,7 @@ export interface CategoryConfig {
 export const CATEGORY_CONFIGS: CategoryConfig[] = [
   { key: "subject", label: "Subject", multi: false, order: 0, description: "Main focus of the image" },
   { key: "species", label: "Species", multi: false, order: 1, description: "Character species or type" },
-  { key: "gender", label: "Gender", multi: false, order: 2, description: "Character gender" },
+  { key: "ethnicity", label: "Ethnicity", multi: false, order: 2, description: "Character ethnicity" },
   { key: "age", label: "Age", multi: false, order: 3, description: "Character age group" },
   { key: "hair", label: "Hair", multi: true, order: 4, description: "Hair style and color" },
   { key: "eyes", label: "Eyes", multi: true, order: 5, description: "Eye color and style" },

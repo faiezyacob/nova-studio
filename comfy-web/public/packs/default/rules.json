@@ -1,109 +1,414 @@
 [
   {
-    "when": { "category": "location", "values": ["Desert"] },
+    "when": {
+      "category": "location",
+      "values": [
+        "Desert"
+      ]
+    },
     "then": {
-      "weather": ["Sunny", "Sandstorm", "Heat haze", "Clear sky", "Dust storm"],
-      "season": ["Summer"]
+      "weather": [
+        "Sunny",
+        "Sandstorm",
+        "Heat haze",
+        "Clear sky",
+        "Dust storm"
+      ],
+      "season": [
+        "Summer"
+      ]
     },
     "otherwise": {
-      "weather": ["Sandstorm", "Heat haze", "Dust storm"]
+      "weather": [
+        "Sandstorm",
+        "Heat haze",
+        "Dust storm"
+      ]
     }
   },
   {
-    "when": { "category": "location", "values": ["Underwater"] },
+    "when": {
+      "category": "location",
+      "values": [
+        "Underwater"
+      ]
+    },
     "then": {
-      "weather": ["Calm"],
-      "lighting": ["Underwater caustics", "Bioluminescence"]
+      "weather": [
+        "Calm"
+      ],
+      "lighting": [
+        "Underwater caustics",
+        "Bioluminescence"
+      ]
     },
     "otherwise": {
       "weather": [],
-      "lighting": ["Underwater caustics", "Bioluminescence"]
+      "lighting": [
+        "Underwater caustics",
+        "Bioluminescence"
+      ]
     }
   },
   {
-    "when": { "category": "time", "values": ["Night", "Midnight", "Late evening", "Twilight"] },
+    "when": {
+      "category": "time",
+      "values": [
+        "Night",
+        "Midnight",
+        "Late evening",
+        "Twilight"
+      ]
+    },
     "then": {
-      "lighting": ["Moonlight", "Lantern light", "Neon glow", "Candlelight", "Firelight", "Starry light", "Cold blue light"]
+      "lighting": [
+        "Moonlight",
+        "Lantern light",
+        "Neon glow",
+        "Candlelight",
+        "Firelight",
+        "Starry light",
+        "Cold blue light"
+      ]
     },
     "otherwise": {
-      "lighting": ["Moonlight"]
+      "lighting": [
+        "Moonlight"
+      ]
     }
   },
   {
-    "when": { "category": "time", "values": ["Golden hour", "Sunset", "Dawn"] },
+    "when": {
+      "category": "time",
+      "values": [
+        "Golden hour",
+        "Sunset",
+        "Dawn"
+      ]
+    },
     "then": {
-      "lighting": ["Golden hour light", "Warm amber light", "Rim lighting", "Backlit"]
+      "lighting": [
+        "Golden hour light",
+        "Warm amber light",
+        "Rim lighting",
+        "Backlit"
+      ]
     },
     "otherwise": {
-      "lighting": ["Golden hour light"]
+      "lighting": [
+        "Golden hour light"
+      ]
     }
   },
   {
-    "when": { "category": "time", "values": ["Midday", "Morning", "Afternoon"] },
+    "when": {
+      "category": "time",
+      "values": [
+        "Midday",
+        "Morning",
+        "Afternoon"
+      ]
+    },
     "then": {
-      "weather": ["Clear sky", "Sunny", "Cloudy", "Overcast", "Calm"]
+      "weather": [
+        "Clear sky",
+        "Sunny",
+        "Cloudy",
+        "Overcast",
+        "Calm"
+      ]
     },
     "otherwise": {
       "weather": []
     }
   },
   {
-    "when": { "category": "location", "values": ["Space station", "Spacecraft interior", "Alien planet surface"] },
+    "when": {
+      "category": "location",
+      "values": [
+        "Space station",
+        "Spacecraft interior",
+        "Alien planet surface"
+      ]
+    },
     "then": {
-      "weather": ["Calm"],
-      "lighting": ["Neon glow", "Cold blue light", "Screen glow"]
+      "weather": [
+        "Calm"
+      ],
+      "lighting": [
+        "Neon glow",
+        "Cold blue light",
+        "Screen glow"
+      ]
     },
     "otherwise": {
       "weather": [],
-      "lighting": ["Neon glow", "Cold blue light"]
+      "lighting": [
+        "Neon glow",
+        "Cold blue light"
+      ]
     }
   },
   {
-    "when": { "category": "location", "values": ["Neon alley", "City street", "City rooftop", "Nightclub"] },
+    "when": {
+      "category": "location",
+      "values": [
+        "Neon alley",
+        "City street",
+        "City rooftop",
+        "Nightclub"
+      ]
+    },
     "then": {
-      "lighting": ["Neon glow", "Mixed color temperature", "Screen glow", "Spotlight"]
+      "lighting": [
+        "Neon glow",
+        "Mixed color temperature",
+        "Screen glow",
+        "Spotlight"
+      ]
     },
     "otherwise": {
-      "lighting": ["Neon glow"]
+      "lighting": [
+        "Neon glow"
+      ]
     }
   },
   {
-    "when": { "category": "season", "values": ["Winter", "Deep winter"] },
+    "when": {
+      "category": "season",
+      "values": [
+        "Winter",
+        "Deep winter"
+      ]
+    },
     "then": {
-      "weather": ["Snow", "Heavy snowfall", "Blizzard", "Hail", "Clear sky", "Fog"]
+      "weather": [
+        "Snow",
+        "Heavy snowfall",
+        "Blizzard",
+        "Hail",
+        "Clear sky",
+        "Fog"
+      ]
     },
     "otherwise": {
-      "weather": ["Snow", "Heavy snowfall", "Blizzard", "Hail"]
+      "weather": [
+        "Snow",
+        "Heavy snowfall",
+        "Blizzard",
+        "Hail"
+      ]
     }
   },
   {
-    "when": { "category": "location", "values": ["Forest", "Bamboo forest", "Scattered trees", "Meadow"] },
+    "when": {
+      "category": "location",
+      "values": [
+        "Forest",
+        "Bamboo forest",
+        "Scattered trees",
+        "Meadow"
+      ]
+    },
     "then": {
-      "environment": ["Dense vegetation", "Scattered trees", "Dappled light through leaves", "Moss-covered surfaces", "Vines climbing walls"],
-      "weather": ["Clear sky", "Cloudy", "Drizzle", "Fog", "Mist", "Gentle breeze"]
+      "environment": [
+        "Dense vegetation",
+        "Scattered trees",
+        "Dappled light through leaves",
+        "Moss-covered surfaces",
+        "Vines climbing walls"
+      ],
+      "weather": [
+        "Clear sky",
+        "Cloudy",
+        "Drizzle",
+        "Fog",
+        "Mist",
+        "Gentle breeze"
+      ]
     },
     "otherwise": {
-      "environment": ["Dense vegetation", "Scattered trees"]
+      "environment": [
+        "Dense vegetation",
+        "Scattered trees"
+      ]
     }
   },
   {
-    "when": { "category": "location", "values": ["Castle", "Cathedral", "Ancient ruins", "Ruined temple"] },
+    "when": {
+      "category": "location",
+      "values": [
+        "Castle",
+        "Cathedral",
+        "Ancient ruins",
+        "Ruined temple"
+      ]
+    },
     "then": {
-      "environment": ["Ancient architecture", "Shattered stone", "Overgrown ruins", "Dust motes in light"],
-      "lighting": ["Volumetric light rays", "Candlelight", "Firelight"]
+      "environment": [
+        "Ancient architecture",
+        "Shattered stone",
+        "Overgrown ruins",
+        "Dust motes in light"
+      ],
+      "lighting": [
+        "Volumetric light rays",
+        "Candlelight",
+        "Firelight"
+      ]
     },
     "otherwise": {
-      "environment": ["Ancient architecture"]
+      "environment": [
+        "Ancient architecture"
+      ]
     }
   },
   {
-    "when": { "category": "mood", "values": ["Dark", "Ominous", "Eerie", "Foreboding", "Terrifying"] },
+    "when": {
+      "category": "mood",
+      "values": [
+        "Dark",
+        "Ominous",
+        "Eerie",
+        "Foreboding",
+        "Terrifying"
+      ]
+    },
     "then": {
-      "weather": ["Thunderstorm", "Fog", "Mist", "Heavy rain"],
-      "time": ["Night", "Midnight", "Twilight", "Dusk"]
+      "weather": [
+        "Thunderstorm",
+        "Fog",
+        "Mist",
+        "Heavy rain"
+      ],
+      "time": [
+        "Night",
+        "Midnight",
+        "Twilight",
+        "Dusk"
+      ]
     },
     "otherwise": {
-      "weather": ["Thunderstorm", "Fog", "Mist"]
+      "weather": [
+        "Thunderstorm",
+        "Fog",
+        "Mist"
+      ]
+    }
+  },
+  {
+    "when": {
+      "category": "location",
+      "values": [
+        "Dragon's lair",
+        "Volcanic forge"
+      ]
+    },
+    "then": {
+      "weather": [
+        "Floating embers",
+        "Dragon fire rain",
+        "Clear starlit sky"
+      ],
+      "lighting": [
+        "Dragon fire",
+        "Enchanted torchlight"
+      ]
+    },
+    "otherwise": {
+      "weather": [],
+      "lighting": [
+        "Dragon fire"
+      ]
+    }
+  },
+  {
+    "when": {
+      "category": "location",
+      "values": [
+        "Enchanted forest",
+        "Sacred grove",
+        "Elven treehouse city"
+      ]
+    },
+    "then": {
+      "weather": [
+        "Ethereal mist",
+        "Magical aurora",
+        "Snow in enchanted forest"
+      ],
+      "lighting": [
+        "Moonlight through canopy",
+        "Bioluminescent glow",
+        "Magical fireflies"
+      ],
+      "environment": [
+        "Glowing mushrooms",
+        "Enchanted vines",
+        "Bioluminescent flora",
+        "Thick moss"
+      ]
+    },
+    "otherwise": {
+      "lighting": [
+        "Bioluminescent glow"
+      ]
+    }
+  },
+  {
+    "when": {
+      "category": "location",
+      "values": [
+        "Dark throne room",
+        "Haunted castle",
+        "Shadow realm",
+        "Ruined abbey"
+      ]
+    },
+    "then": {
+      "weather": [
+        "Blood moon",
+        "Arcane lightning",
+        "Eternal twilight"
+      ],
+      "lighting": [
+        "Dark shadow lighting",
+        "Candlelit hall"
+      ],
+      "mood": [
+        "Dark and foreboding",
+        "Haunting"
+      ]
+    },
+    "otherwise": {
+      "mood": [
+        "Dark and foreboding"
+      ]
+    }
+  },
+  {
+    "when": {
+      "category": "location",
+      "values": [
+        "Celestial palace",
+        "Floating castle",
+        "Floating island"
+      ]
+    },
+    "then": {
+      "weather": [
+        "Clear starlit sky",
+        "Magical aurora"
+      ],
+      "lighting": [
+        "Celestial glow",
+        "Ethereal radiance"
+      ]
+    },
+    "otherwise": {
+      "lighting": [
+        "Celestial glow"
+      ]
     }
   }
 ]

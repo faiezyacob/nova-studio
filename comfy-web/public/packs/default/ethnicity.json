@@ -1,90 +1,83 @@
 [
   {
-    "name": "Dawn",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Morning",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Midday",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Afternoon",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Golden hour",
+    "name": "Caucasian",
     "weight": 8,
     "tags": [
       "default"
     ]
   },
   {
-    "name": "Sunset",
+    "name": "Black",
+    "weight": 8,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "East Asian",
+    "weight": 8,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "South Asian",
     "weight": 7,
     "tags": [
       "default"
     ]
   },
   {
-    "name": "Dusk",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Twilight",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Night",
+    "name": "Southeast Asian",
     "weight": 7,
     "tags": [
       "default"
     ]
   },
   {
-    "name": "Midnight",
+    "name": "Middle Eastern",
+    "weight": 6,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Latin American",
+    "weight": 7,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Indigenous",
     "weight": 5,
     "tags": [
       "default"
     ]
   },
   {
-    "name": "Blue hour",
+    "name": "Mixed",
+    "weight": 6,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Pacific Islander",
     "weight": 4,
     "tags": [
       "default"
     ]
   },
   {
-    "name": "Pre-dawn",
-    "weight": 3,
+    "name": "Central Asian",
+    "weight": 4,
     "tags": [
       "default"
     ]
   },
   {
-    "name": "Late evening",
+    "name": "North African",
     "weight": 4,
     "tags": [
       "default"

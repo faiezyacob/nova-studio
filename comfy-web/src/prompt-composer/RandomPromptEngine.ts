@@ -143,7 +143,7 @@ export function generatePrompt(state: PromptState): string {
   const parts: string[] = [];
 
   const orderedKeys: PromptCategoryKey[] = [
-    "subject", "species", "gender", "age", "hair", "eyes",
+    "subject", "species", "ethnicity", "age", "hair", "eyes",
     "expression", "pose", "clothing", "accessories",
     "location", "environment", "weather", "season", "time",
     "lighting", "camera", "lens", "composition",

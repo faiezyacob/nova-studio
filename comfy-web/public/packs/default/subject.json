@@ -1,49 +1,810 @@
 [
-  { "name": "Woman", "weight": 10, "tags": ["human", "portrait"] },
-  { "name": "Man", "weight": 10, "tags": ["human", "portrait"] },
-  { "name": "Girl", "weight": 8, "tags": ["human", "portrait"] },
-  { "name": "Boy", "weight": 8, "tags": ["human", "portrait"] },
-  { "name": "Elderly woman", "weight": 5, "tags": ["human", "portrait"] },
-  { "name": "Elderly man", "weight": 5, "tags": ["human", "portrait"] },
-  { "name": "Warrior", "weight": 7, "tags": ["fantasy", "action"] },
-  { "name": "Mage", "weight": 6, "tags": ["fantasy"] },
-  { "name": "Robot", "weight": 6, "tags": ["sci-fi"] },
-  { "name": "Elf", "weight": 5, "tags": ["fantasy"] },
-  { "name": "Cyborg", "weight": 5, "tags": ["sci-fi"] },
-  { "name": "Angel", "weight": 4, "tags": ["fantasy"] },
-  { "name": "Demon", "weight": 4, "tags": ["fantasy", "dark"] },
-  { "name": "Dragon", "weight": 4, "tags": ["fantasy"] },
-  { "name": "Cat", "weight": 6, "tags": ["animal"] },
-  { "name": "Dog", "weight": 6, "tags": ["animal"] },
-  { "name": "Wolf", "weight": 5, "tags": ["animal", "fantasy"] },
-  { "name": "Bird", "weight": 5, "tags": ["animal"] },
-  { "name": "Horse", "weight": 5, "tags": ["animal"] },
-  { "name": "Fox", "weight": 4, "tags": ["animal"] },
-  { "name": "Deer", "weight": 4, "tags": ["animal"] },
-  { "name": "Mermaid", "weight": 4, "tags": ["fantasy"] },
-  { "name": "Fairy", "weight": 4, "tags": ["fantasy"] },
-  { "name": "Skeleton", "weight": 3, "tags": ["dark", "fantasy"] },
-  { "name": "Ghost", "weight": 3, "tags": ["dark", "fantasy"] },
-  { "name": "Vampire", "weight": 4, "tags": ["dark", "fantasy"] },
-  { "name": "Witch", "weight": 5, "tags": ["fantasy"] },
-  { "name": "Pirate", "weight": 4, "tags": ["adventure"] },
-  { "name": "Samurai", "weight": 5, "tags": ["fantasy", "action"] },
-  { "name": "Ninja", "weight": 4, "tags": ["fantasy", "action"] },
-  { "name": "Knight", "weight": 5, "tags": ["fantasy", "medieval"] },
-  { "name": "Alien", "weight": 4, "tags": ["sci-fi"] },
-  { "name": "Creature", "weight": 3, "tags": ["fantasy", "monster"] },
-  { "name": "Monster", "weight": 3, "tags": ["fantasy", "monster"] },
-  { "name": "Tree spirit", "weight": 3, "tags": ["fantasy", "nature"] },
-  { "name": "Cyberpunk hacker", "weight": 5, "tags": ["sci-fi", "cyberpunk"] },
-  { "name": "Space explorer", "weight": 5, "tags": ["sci-fi"] },
-  { "name": "Detective", "weight": 4, "tags": ["modern"] },
-  { "name": "Musician", "weight": 4, "tags": ["modern"] },
-  { "name": "Dancer", "weight": 4, "tags": ["modern", "art"] },
-  { "name": "Sculpture", "weight": 3, "tags": ["art"] },
-  { "name": "Abstract form", "weight": 3, "tags": ["art", "abstract"] },
-  { "name": "Landscape", "weight": 5, "tags": ["nature", "scenery"] },
-  { "name": "Still life", "weight": 4, "tags": ["art"] },
-  { "name": "Architecture", "weight": 5, "tags": ["structure"] },
-  { "name": "Vehicle", "weight": 4, "tags": ["mechanical"] },
-  { "name": "Ancient ruins", "weight": 4, "tags": ["fantasy", "medieval"] }
+  {
+    "name": "Woman",
+    "weight": 10,
+    "tags": [
+      "human",
+      "portrait"
+    ]
+  },
+  {
+    "name": "Man",
+    "weight": 10,
+    "tags": [
+      "human",
+      "portrait"
+    ]
+  },
+  {
+    "name": "Girl",
+    "weight": 8,
+    "tags": [
+      "human",
+      "portrait"
+    ]
+  },
+  {
+    "name": "Boy",
+    "weight": 8,
+    "tags": [
+      "human",
+      "portrait"
+    ]
+  },
+  {
+    "name": "Elderly woman",
+    "weight": 5,
+    "tags": [
+      "human",
+      "portrait"
+    ]
+  },
+  {
+    "name": "Elderly man",
+    "weight": 5,
+    "tags": [
+      "human",
+      "portrait"
+    ]
+  },
+  {
+    "name": "Warrior",
+    "weight": 7,
+    "tags": [
+      "fantasy",
+      "action"
+    ]
+  },
+  {
+    "name": "Mage",
+    "weight": 6,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Robot",
+    "weight": 6,
+    "tags": [
+      "sci-fi"
+    ]
+  },
+  {
+    "name": "Elf",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Cyborg",
+    "weight": 5,
+    "tags": [
+      "sci-fi"
+    ]
+  },
+  {
+    "name": "Angel",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Demon",
+    "weight": 4,
+    "tags": [
+      "fantasy",
+      "dark"
+    ]
+  },
+  {
+    "name": "Dragon",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Cat",
+    "weight": 6,
+    "tags": [
+      "animal"
+    ]
+  },
+  {
+    "name": "Dog",
+    "weight": 6,
+    "tags": [
+      "animal"
+    ]
+  },
+  {
+    "name": "Wolf",
+    "weight": 5,
+    "tags": [
+      "animal",
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Bird",
+    "weight": 5,
+    "tags": [
+      "animal"
+    ]
+  },
+  {
+    "name": "Horse",
+    "weight": 5,
+    "tags": [
+      "animal"
+    ]
+  },
+  {
+    "name": "Fox",
+    "weight": 4,
+    "tags": [
+      "animal"
+    ]
+  },
+  {
+    "name": "Deer",
+    "weight": 4,
+    "tags": [
+      "animal"
+    ]
+  },
+  {
+    "name": "Mermaid",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Fairy",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Skeleton",
+    "weight": 3,
+    "tags": [
+      "dark",
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Ghost",
+    "weight": 3,
+    "tags": [
+      "dark",
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Vampire",
+    "weight": 4,
+    "tags": [
+      "dark",
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Witch",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Pirate",
+    "weight": 4,
+    "tags": [
+      "adventure"
+    ]
+  },
+  {
+    "name": "Samurai",
+    "weight": 5,
+    "tags": [
+      "fantasy",
+      "action"
+    ]
+  },
+  {
+    "name": "Ninja",
+    "weight": 4,
+    "tags": [
+      "fantasy",
+      "action"
+    ]
+  },
+  {
+    "name": "Knight",
+    "weight": 5,
+    "tags": [
+      "fantasy",
+      "medieval"
+    ]
+  },
+  {
+    "name": "Alien",
+    "weight": 4,
+    "tags": [
+      "sci-fi"
+    ]
+  },
+  {
+    "name": "Creature",
+    "weight": 3,
+    "tags": [
+      "fantasy",
+      "monster"
+    ]
+  },
+  {
+    "name": "Monster",
+    "weight": 3,
+    "tags": [
+      "fantasy",
+      "monster"
+    ]
+  },
+  {
+    "name": "Tree spirit",
+    "weight": 3,
+    "tags": [
+      "fantasy",
+      "nature"
+    ]
+  },
+  {
+    "name": "Cyberpunk hacker",
+    "weight": 5,
+    "tags": [
+      "sci-fi",
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Space explorer",
+    "weight": 5,
+    "tags": [
+      "sci-fi"
+    ]
+  },
+  {
+    "name": "Detective",
+    "weight": 4,
+    "tags": [
+      "modern"
+    ]
+  },
+  {
+    "name": "Musician",
+    "weight": 4,
+    "tags": [
+      "modern"
+    ]
+  },
+  {
+    "name": "Dancer",
+    "weight": 4,
+    "tags": [
+      "modern",
+      "art"
+    ]
+  },
+  {
+    "name": "Sculpture",
+    "weight": 3,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "Abstract form",
+    "weight": 3,
+    "tags": [
+      "art",
+      "abstract"
+    ]
+  },
+  {
+    "name": "Landscape",
+    "weight": 5,
+    "tags": [
+      "nature",
+      "scenery"
+    ]
+  },
+  {
+    "name": "Still life",
+    "weight": 4,
+    "tags": [
+      "art"
+    ]
+  },
+  {
+    "name": "Architecture",
+    "weight": 5,
+    "tags": [
+      "structure"
+    ]
+  },
+  {
+    "name": "Vehicle",
+    "weight": 4,
+    "tags": [
+      "mechanical"
+    ]
+  },
+  {
+    "name": "Ancient ruins",
+    "weight": 4,
+    "tags": [
+      "fantasy",
+      "medieval"
+    ]
+  },
+  {
+    "name": "Dragon rider",
+    "weight": 8,
+    "tags": [
+      "fantasy",
+      "action"
+    ]
+  },
+  {
+    "name": "Elf archer",
+    "weight": 7,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Dwarven blacksmith",
+    "weight": 6,
+    "tags": [
+      "fantasy",
+      "medieval"
+    ]
+  },
+  {
+    "name": "Sorceress",
+    "weight": 7,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Paladin",
+    "weight": 6,
+    "tags": [
+      "fantasy",
+      "medieval"
+    ]
+  },
+  {
+    "name": "Dark lord",
+    "weight": 5,
+    "tags": [
+      "fantasy",
+      "dark"
+    ]
+  },
+  {
+    "name": "Forest nymph",
+    "weight": 6,
+    "tags": [
+      "fantasy",
+      "nature"
+    ]
+  },
+  {
+    "name": "Crystal golem",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Shadow assassin",
+    "weight": 6,
+    "tags": [
+      "fantasy",
+      "dark"
+    ]
+  },
+  {
+    "name": "Ancient dragon",
+    "weight": 7,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Unicorn",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Phoenix",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Griffin rider",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Lich king",
+    "weight": 4,
+    "tags": [
+      "fantasy",
+      "dark"
+    ]
+  },
+  {
+    "name": "Enchanted knight",
+    "weight": 6,
+    "tags": [
+      "fantasy",
+      "medieval"
+    ]
+  },
+  {
+    "name": "Fairy queen",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Warlock",
+    "weight": 6,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Giant",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Centaur",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Basilisk",
+    "weight": 3,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Changeling",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Witch of the woods",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Elemental spirit",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Vampire lord",
+    "weight": 5,
+    "tags": [
+      "fantasy",
+      "dark"
+    ]
+  },
+  {
+    "name": "Mermaid queen",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Storm giant",
+    "weight": 3,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Celestial guardian",
+    "weight": 4,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Forest treant",
+    "weight": 4,
+    "tags": [
+      "fantasy",
+      "nature"
+    ]
+  },
+  {
+    "name": "Spectral wraith",
+    "weight": 3,
+    "tags": [
+      "fantasy",
+      "dark"
+    ]
+  },
+  {
+    "name": "Rune warrior",
+    "weight": 5,
+    "tags": [
+      "fantasy",
+      "medieval"
+    ]
+  },
+  {
+    "name": "Cyberpunk mercenary",
+    "weight": 8,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Netrunner hacker",
+    "weight": 8,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Ripperdoc surgeon",
+    "weight": 6,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Corpo executive",
+    "weight": 6,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Street samurai",
+    "weight": 7,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Android companion",
+    "weight": 6,
+    "tags": [
+      "cyberpunk",
+      "sci-fi"
+    ]
+  },
+  {
+    "name": "Synth rocker",
+    "weight": 5,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Black market dealer",
+    "weight": 5,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Neon idol",
+    "weight": 6,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Cyborg enforcer",
+    "weight": 6,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Drone pilot",
+    "weight": 5,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Underground fixer",
+    "weight": 5,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "AI construct",
+    "weight": 4,
+    "tags": [
+      "cyberpunk",
+      "sci-fi"
+    ]
+  },
+  {
+    "name": "Biohacker",
+    "weight": 5,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Rogue android",
+    "weight": 5,
+    "tags": [
+      "cyberpunk",
+      "sci-fi"
+    ]
+  },
+  {
+    "name": "Megacorp soldier",
+    "weight": 5,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Street vendor",
+    "weight": 4,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Data courier",
+    "weight": 5,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Neural architect",
+    "weight": 4,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Combat medic",
+    "weight": 5,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Magical girl",
+    "weight": 7,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Samurai warrior",
+    "weight": 6,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "School student",
+    "weight": 6,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Demon lord",
+    "weight": 6,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Idol singer",
+    "weight": 5,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Mecha pilot",
+    "weight": 5,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Martial artist",
+    "weight": 5,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Fantasy knight",
+    "weight": 5,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Space pirate",
+    "weight": 4,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Cat girl",
+    "weight": 6,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Fox spirit",
+    "weight": 5,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Yuki-onna",
+    "weight": 4,
+    "tags": [
+      "anime"
+    ]
+  },
+  {
+    "name": "Shrine maiden",
+    "weight": 5,
+    "tags": [
+      "anime"
+    ]
+  }
 ]

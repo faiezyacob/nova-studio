@@ -1,22 +1,277 @@
 [
-  { "name": "Volumetric fog", "weight": 5, "tags": ["default"] },
-  { "name": "Particle effects", "weight": 4, "tags": ["default"] },
-  { "name": "Lens flare", "weight": 3, "tags": ["default"] },
-  { "name": "Motion blur", "weight": 3, "tags": ["default"] },
-  { "name": "Film grain", "weight": 4, "tags": ["cinematic"] },
-  { "name": "Chromatic aberration", "weight": 3, "tags": ["default"] },
-  { "name": "Subsurface scattering", "weight": 4, "tags": ["default"] },
-  { "name": "Ambient occlusion", "weight": 4, "tags": ["3d"] },
-  { "name": "Global illumination", "weight": 4, "tags": ["3d"] },
-  { "name": "Caustics", "weight": 3, "tags": ["default"] },
-  { "name": "Bokeh", "weight": 5, "tags": ["default"] },
-  { "name": "Depth of field", "weight": 5, "tags": ["default"] },
-  { "name": "Tilt-shift effect", "weight": 3, "tags": ["default"] },
-  { "name": "Anamorphic lens", "weight": 3, "tags": ["cinematic"] },
-  { "name": "Halation", "weight": 3, "tags": ["cinematic"] },
-  { "name": "Bloom effect", "weight": 3, "tags": ["default"] },
-  { "name": "Light leaks", "weight": 3, "tags": ["retro"] },
-  { "name": "Vignette", "weight": 3, "tags": ["default"] },
-  { "name": "Film emulation", "weight": 3, "tags": ["retro"] },
-  { "name": "Dust particles", "weight": 3, "tags": ["default"] }
+  {
+    "name": "Volumetric fog",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Particle effects",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Lens flare",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Motion blur",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Film grain",
+    "weight": 4,
+    "tags": [
+      "cinematic"
+    ]
+  },
+  {
+    "name": "Chromatic aberration",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Subsurface scattering",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Ambient occlusion",
+    "weight": 4,
+    "tags": [
+      "3d"
+    ]
+  },
+  {
+    "name": "Global illumination",
+    "weight": 4,
+    "tags": [
+      "3d"
+    ]
+  },
+  {
+    "name": "Caustics",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Bokeh",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Depth of field",
+    "weight": 5,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Tilt-shift effect",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Anamorphic lens",
+    "weight": 3,
+    "tags": [
+      "cinematic"
+    ]
+  },
+  {
+    "name": "Halation",
+    "weight": 3,
+    "tags": [
+      "cinematic"
+    ]
+  },
+  {
+    "name": "Bloom effect",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Light leaks",
+    "weight": 3,
+    "tags": [
+      "retro"
+    ]
+  },
+  {
+    "name": "Vignette",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Film emulation",
+    "weight": 3,
+    "tags": [
+      "retro"
+    ]
+  },
+  {
+    "name": "Dust particles",
+    "weight": 3,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Magical aura",
+    "weight": 7,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Glowing runes",
+    "weight": 6,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Particle spell effects",
+    "weight": 6,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Dramatic depth of field",
+    "weight": 6,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Fog and mist",
+    "weight": 6,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Volumetric light",
+    "weight": 6,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Fire and ember particles",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Intricate armor details",
+    "weight": 6,
+    "tags": [
+      "fantasy",
+      "medieval"
+    ]
+  },
+  {
+    "name": "Flowing fabric movement",
+    "weight": 5,
+    "tags": [
+      "fantasy"
+    ]
+  },
+  {
+    "name": "Weathered stone texture",
+    "weight": 5,
+    "tags": [
+      "fantasy",
+      "medieval"
+    ]
+  },
+  {
+    "name": "Lens flare from neon",
+    "weight": 7,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Rain droplets on lens",
+    "weight": 6,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Holographic overlays",
+    "weight": 6,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Reflections in wet surfaces",
+    "weight": 7,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Motion blur from flying vehicles",
+    "weight": 5,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "HUD elements",
+    "weight": 5,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Scan lines",
+    "weight": 4,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Neon reflections on chrome",
+    "weight": 6,
+    "tags": [
+      "cyberpunk"
+    ]
+  },
+  {
+    "name": "Volumetric light through rain",
+    "weight": 6,
+    "tags": [
+      "cyberpunk"
+    ]
+  }
 ]

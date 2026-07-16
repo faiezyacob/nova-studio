@@ -1,10 +1,58 @@
 [
-  { "name": "Spring", "weight": 8, "tags": ["default"] },
-  { "name": "Summer", "weight": 8, "tags": ["default"] },
-  { "name": "Autumn", "weight": 7, "tags": ["default"] },
-  { "name": "Winter", "weight": 7, "tags": ["default"] },
-  { "name": "Early spring", "weight": 4, "tags": ["default"] },
-  { "name": "Late summer", "weight": 4, "tags": ["default"] },
-  { "name": "Early autumn", "weight": 4, "tags": ["default"] },
-  { "name": "Deep winter", "weight": 4, "tags": ["default"] }
+  {
+    "name": "Spring",
+    "weight": 8,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Summer",
+    "weight": 8,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Autumn",
+    "weight": 7,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Winter",
+    "weight": 7,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Early spring",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Late summer",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Early autumn",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Deep winter",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  }
 ]
