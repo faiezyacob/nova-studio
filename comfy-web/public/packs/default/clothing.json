@@ -359,6 +359,162 @@
     ]
   },
   {
+    "name": "Oversized t-shirt only",
+    "weight": 6,
+    "tags": [
+      "seductive",
+      "creator"
+    ]
+  },
+  {
+    "name": "Sports bra and matching shorts",
+    "weight": 6,
+    "tags": [
+      "seductive",
+      "creator"
+    ]
+  },
+  {
+    "name": "Lace bralette",
+    "weight": 5,
+    "tags": [
+      "seductive",
+      "creator"
+    ]
+  },
+  {
+    "name": "Silk slip dress",
+    "weight": 5,
+    "tags": [
+      "seductive",
+      "creator",
+      "elegant"
+    ]
+  },
+  {
+    "name": "Off-shoulder sweater",
+    "weight": 5,
+    "tags": [
+      "seductive",
+      "creator"
+    ]
+  },
+  {
+    "name": "Satin cami set",
+    "weight": 5,
+    "tags": [
+      "seductive",
+      "creator"
+    ]
+  },
+  {
+    "name": "Cropped hoodie",
+    "weight": 5,
+    "tags": [
+      "seductive",
+      "creator",
+      "modern"
+    ]
+  },
+  {
+    "name": "Bodycon mini dress",
+    "weight": 6,
+    "tags": [
+      "seductive",
+      "creator"
+    ]
+  },
+  {
+    "name": "Fishnet bodysuit",
+    "weight": 5,
+    "tags": [
+      "seductive",
+      "creator"
+    ]
+  },
+  {
+    "name": "Velvet bodysuit",
+    "weight": 5,
+    "tags": [
+      "seductive",
+      "creator"
+    ]
+  },
+  {
+    "name": "Babydoll lingerie",
+    "weight": 5,
+    "tags": [
+      "seductive",
+      "creator"
+    ]
+  },
+  {
+    "name": "Cut-out one-piece",
+    "weight": 5,
+    "tags": [
+      "seductive",
+      "creator"
+    ]
+  },
+  {
+    "name": "High-waist thong bikini",
+    "weight": 5,
+    "tags": [
+      "seductive",
+      "creator",
+      "beach"
+    ]
+  },
+  {
+    "name": "Lace-trim robe",
+    "weight": 5,
+    "tags": [
+      "seductive",
+      "creator"
+    ]
+  },
+  {
+    "name": "Push-up bra set",
+    "weight": 5,
+    "tags": [
+      "seductive",
+      "creator"
+    ]
+  },
+  {
+    "name": "Matching lounge set",
+    "weight": 5,
+    "tags": [
+      "seductive",
+      "creator"
+    ]
+  },
+  {
+    "name": "Ribbed crop top and leggings",
+    "weight": 5,
+    "tags": [
+      "seductive",
+      "creator",
+      "modern"
+    ]
+  },
+  {
+    "name": "Satin pajama set",
+    "weight": 4,
+    "tags": [
+      "seductive",
+      "creator"
+    ]
+  },
+  {
+    "name": "Bandeau and hot pants",
+    "weight": 5,
+    "tags": [
+      "seductive",
+      "creator"
+    ]
+  },
+  {
     "name": "Plate armor",
     "weight": 8,
     "tags": [
