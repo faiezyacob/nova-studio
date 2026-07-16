@@ -1,6 +1,6 @@
-import { TaskQueue, acquireGenerationLock, releaseGenerationLock, isGenerationLocked } from './task-queue';
-import { resetContinuity, setContinuity, getContinuity, addContinuityNote, advanceSegment, setLastFrame } from './continuity-manager';
-import { setModelToUnload, fullCleanup } from './resource-manager';
+import { TaskQueue } from './task-queue';
+import { createInitialContinuity, setContinuityOn, setLastFrameOn, advanceSegmentOn, addContinuityNoteOn, type ContinuityState } from './continuity-manager';
+import { fullCleanup } from './resource-manager';
 import { generateScenePlan, askClarification, type ScenePlan } from './scene-planner';
 import { generateImage, generateVideoSegment, extractLastFrameFromVideo, mergeVideoSegments } from './workflow-executor';
 import type { Lora } from '@/types';
@@ -39,6 +39,10 @@ export class SceneAgent {
   private _imageConfirmResolve: ((value: 'confirm' | 'regenerate' | 'abort') => void) | null = null;
   private _currentImagePrompt: string = '';
 
+  private _generationLock = false;
+  private _continuity: ContinuityState = createInitialContinuity();
+  private _modelToUnload: string | null = null;
+
   get status(): AgentStatus {
     return this._status;
   }
@@ -56,7 +60,17 @@ export class SceneAgent {
   }
 
   get isLocked(): boolean {
-    return isGenerationLocked();
+    return this._generationLock;
+  }
+
+  private acquireLock(): boolean {
+    if (this._generationLock) return false;
+    this._generationLock = true;
+    return true;
+  }
+
+  private releaseLock(): void {
+    this._generationLock = false;
   }
 
   subscribe(listener: AgentListener): () => void {
@@ -99,15 +113,15 @@ export class SceneAgent {
       lora?: Lora | null;
     },
   ): Promise<void> {
-    if (!acquireGenerationLock()) {
+    if (!this.acquireLock()) {
       this.emit({ type: 'error', data: 'Generation already in progress' });
       return;
     }
 
     this._model = model;
-    setModelToUnload(model);
+    this._modelToUnload = model;
     this.queue.reset();
-    resetContinuity();
+    this._continuity = createInitialContinuity();
 
     const imageWidth = options?.imageWidth || DEFAULT_WIDTH;
     const imageHeight = options?.imageHeight || DEFAULT_HEIGHT;
@@ -122,7 +136,7 @@ export class SceneAgent {
 
       const plan = await generateScenePlan(userDescription, durationSeconds, model, options?.imageStyle, options?.styleDescription);
       this._scenePlan = plan;
-      setContinuity({
+      this._continuity = setContinuityOn(this._continuity, {
         totalSegments: plan.scene.segments,
         sceneDescription: plan.scene.continuity.subject,
         continuityNotes: plan.continuity_notes,
@@ -153,7 +167,7 @@ export class SceneAgent {
       const segmentPrompts = [...plan.video_prompts];
 
       await this.queue.runTask(async () => {
-        await fullCleanup();
+        await fullCleanup(this._modelToUnload);
       });
 
       imageFilename = await this.queue.runTask(async (task) => {
@@ -212,11 +226,11 @@ export class SceneAgent {
         if (this.queue.isAborted) break;
 
         await this.queue.runTask(async () => {
-          await fullCleanup();
+          await fullCleanup(this._modelToUnload);
         });
 
         const videoPrompt = segmentPrompts[segIdx];
-        const continuity = getContinuity();
+        const continuity = this._continuity;
         const enhancedPrompt = continuity.continuityNotes.length > 0
           ? `${videoPrompt}\n\nContinuity: ${continuity.continuityNotes.join('; ')}`
           : videoPrompt;
@@ -260,8 +274,8 @@ export class SceneAgent {
           await this.queue.runTask(async (task) => {
             if (videoResult.frame_path) {
               const frameUrl = `/generated/${videoResult.frame_path}`;
-              setLastFrame(frameUrl, videoResult.frame_path);
-              addContinuityNote(`Segment ${segIdx + 1} completed. Continuity maintained.`);
+              this._continuity = setLastFrameOn(this._continuity, frameUrl, videoResult.frame_path);
+              this._continuity = addContinuityNoteOn(this._continuity, `Segment ${segIdx + 1} completed. Continuity maintained.`);
             } else {
               const frame = await extractLastFrameFromVideo(videoResult.video_path);
               if (frame) {
@@ -269,13 +283,14 @@ export class SceneAgent {
                   filename: frame.filename,
                   subfolder: '',
                 });
-                addContinuityNote(`Segment ${segIdx + 1} completed. Continuity maintained.`);
+                this._continuity = setLastFrameOn(this._continuity, frame.dataUrl, frame.filename);
+                this._continuity = addContinuityNoteOn(this._continuity, `Segment ${segIdx + 1} completed. Continuity maintained.`);
               }
             }
-            advanceSegment();
+            this._continuity = advanceSegmentOn(this._continuity);
           });
         } else {
-          advanceSegment();
+          this._continuity = advanceSegmentOn(this._continuity);
         }
       }
 
@@ -303,8 +318,8 @@ export class SceneAgent {
       this.setStatus('failed');
       this.emit({ type: 'error', data: msg });
     } finally {
-      releaseGenerationLock();
-      setModelToUnload(null);
+      this.releaseLock();
+      this._modelToUnload = null;
     }
   }
 
@@ -330,8 +345,8 @@ export class SceneAgent {
       this._imageConfirmResolve('abort');
       this._imageConfirmResolve = null;
     }
-    releaseGenerationLock();
-    setModelToUnload(null);
+    this.releaseLock();
+    this._modelToUnload = null;
   }
 }
 

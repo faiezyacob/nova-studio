@@ -8,19 +8,13 @@ const MEMORY_STABLE_POLL_MS = 1000;
 const MAX_POLL_ATTEMPTS = 10;
 const VRAM_FREE_THRESHOLD = 0.3;
 
-let _modelToUnload: string | null = null;
-
-export function setModelToUnload(modelId: string | null) {
-  _modelToUnload = modelId;
-}
-
-export async function cleanupMemory(): Promise<void> {
+export async function cleanupMemory(modelToUnload: string | null = null): Promise<void> {
   try {
-    if (_modelToUnload) {
+    if (modelToUnload) {
       await fetch(LMSTUDIO_UNLOAD_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: _modelToUnload }),
+        body: JSON.stringify({ model: modelToUnload }),
       });
     }
   } catch {
@@ -58,7 +52,7 @@ export async function waitForMemoryStable(): Promise<void> {
   }
 }
 
-export async function fullCleanup(): Promise<void> {
-  await cleanupMemory();
+export async function fullCleanup(modelToUnload: string | null = null): Promise<void> {
+  await cleanupMemory(modelToUnload);
   await waitForMemoryStable();
 }

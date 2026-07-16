@@ -1,0 +1,22 @@
+[
+  { "name": "Volumetric fog", "weight": 5, "tags": ["default"] },
+  { "name": "Particle effects", "weight": 4, "tags": ["default"] },
+  { "name": "Lens flare", "weight": 3, "tags": ["default"] },
+  { "name": "Motion blur", "weight": 3, "tags": ["default"] },
+  { "name": "Film grain", "weight": 4, "tags": ["cinematic"] },
+  { "name": "Chromatic aberration", "weight": 3, "tags": ["default"] },
+  { "name": "Subsurface scattering", "weight": 4, "tags": ["default"] },
+  { "name": "Ambient occlusion", "weight": 4, "tags": ["3d"] },
+  { "name": "Global illumination", "weight": 4, "tags": ["3d"] },
+  { "name": "Caustics", "weight": 3, "tags": ["default"] },
+  { "name": "Bokeh", "weight": 5, "tags": ["default"] },
+  { "name": "Depth of field", "weight": 5, "tags": ["default"] },
+  { "name": "Tilt-shift effect", "weight": 3, "tags": ["default"] },
+  { "name": "Anamorphic lens", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Halation", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Bloom effect", "weight": 3, "tags": ["default"] },
+  { "name": "Light leaks", "weight": 3, "tags": ["retro"] },
+  { "name": "Vignette", "weight": 3, "tags": ["default"] },
+  { "name": "Film emulation", "weight": 3, "tags": ["retro"] },
+  { "name": "Dust particles", "weight": 3, "tags": ["default"] }
+]

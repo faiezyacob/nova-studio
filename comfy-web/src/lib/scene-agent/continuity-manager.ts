@@ -8,18 +8,8 @@ export interface ContinuityState {
   sceneDescription: string;
 }
 
-let _state: ContinuityState = {
-  lastFrameDataUrl: null,
-  lastFrameFilename: null,
-  lastPrompt: null,
-  currentSegmentIndex: 0,
-  totalSegments: 0,
-  continuityNotes: [],
-  sceneDescription: '',
-};
-
-export function resetContinuity(): void {
-  _state = {
+export function createInitialContinuity(): ContinuityState {
+  return {
     lastFrameDataUrl: null,
     lastFrameFilename: null,
     lastPrompt: null,
@@ -30,23 +20,18 @@ export function resetContinuity(): void {
   };
 }
 
-export function getContinuity(): ContinuityState {
-  return _state;
+export function setContinuityOn(state: ContinuityState, partial: Partial<ContinuityState>): ContinuityState {
+  return { ...state, ...partial };
 }
 
-export function setContinuity(partial: Partial<ContinuityState>): void {
-  _state = { ..._state, ...partial };
+export function setLastFrameOn(state: ContinuityState, dataUrl: string, filename: string): ContinuityState {
+  return { ...state, lastFrameDataUrl: dataUrl, lastFrameFilename: filename };
 }
 
-export function setLastFrame(dataUrl: string, filename: string): void {
-  _state.lastFrameDataUrl = dataUrl;
-  _state.lastFrameFilename = filename;
+export function advanceSegmentOn(state: ContinuityState): ContinuityState {
+  return { ...state, currentSegmentIndex: state.currentSegmentIndex + 1 };
 }
 
-export function advanceSegment(): void {
-  _state.currentSegmentIndex++;
-}
-
-export function addContinuityNote(note: string): void {
-  _state.continuityNotes.push(note);
+export function addContinuityNoteOn(state: ContinuityState, note: string): ContinuityState {
+  return { ...state, continuityNotes: [...state.continuityNotes, note] };
 }

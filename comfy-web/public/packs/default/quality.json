@@ -1,0 +1,22 @@
+[
+  { "name": "Masterpiece", "weight": 8, "tags": ["default"] },
+  { "name": "Best quality", "weight": 8, "tags": ["default"] },
+  { "name": "Ultra detailed", "weight": 7, "tags": ["default"] },
+  { "name": "Highly detailed", "weight": 7, "tags": ["default"] },
+  { "name": "Intricate details", "weight": 6, "tags": ["default"] },
+  { "name": "Sharp focus", "weight": 7, "tags": ["default"] },
+  { "name": "8K resolution", "weight": 5, "tags": ["default"] },
+  { "name": "4K resolution", "weight": 6, "tags": ["default"] },
+  { "name": "Professional", "weight": 6, "tags": ["default"] },
+  { "name": "Award winning", "weight": 4, "tags": ["default"] },
+  { "name": "Photorealistic rendering", "weight": 6, "tags": ["default"] },
+  { "name": "Hyperrealistic", "weight": 5, "tags": ["default"] },
+  { "name": "Detailed skin texture", "weight": 5, "tags": ["default"] },
+  { "name": "Ray tracing", "weight": 4, "tags": ["3d"] },
+  { "name": "Unreal Engine 5", "weight": 4, "tags": ["3d"] },
+  { "name": "Octane render", "weight": 4, "tags": ["3d"] },
+  { "name": "Artstation trending", "weight": 4, "tags": ["default"] },
+  { "name": "Trending on Artstation", "weight": 3, "tags": ["default"] },
+  { "name": "Digital art masterpiece", "weight": 5, "tags": ["default"] },
+  { "name": "Studio quality", "weight": 5, "tags": ["default"] }
+]

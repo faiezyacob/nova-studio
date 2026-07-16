@@ -71,6 +71,7 @@ export function emitComplete(id: string, data: CompleteData): void {
       try { handler(data); } catch { /* ignore */ }
     }
   }
+  removeAllListeners(id);
 }
 
 export function emitError(id: string, data: ErrorData): void {

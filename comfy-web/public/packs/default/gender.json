@@ -1,0 +1,4 @@
+[
+  { "name": "Female", "weight": 10, "tags": ["default"] },
+  { "name": "Male", "weight": 10, "tags": ["default"] }
+]

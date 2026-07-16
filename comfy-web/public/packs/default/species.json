@@ -1,0 +1,22 @@
+[
+  { "name": "Human", "weight": 10, "tags": ["default"] },
+  { "name": "Elven", "weight": 6, "tags": ["fantasy"] },
+  { "name": "Dwarven", "weight": 4, "tags": ["fantasy"] },
+  { "name": "Orc", "weight": 4, "tags": ["fantasy"] },
+  { "name": "Feline", "weight": 5, "tags": ["fantasy", "animal"] },
+  { "name": "Canine", "weight": 5, "tags": ["fantasy", "animal"] },
+  { "name": "Avian", "weight": 4, "tags": ["fantasy", "animal"] },
+  { "name": "Reptilian", "weight": 4, "tags": ["fantasy"] },
+  { "name": "Insectoid", "weight": 3, "tags": ["sci-fi"] },
+  { "name": "Aquatic", "weight": 4, "tags": ["fantasy"] },
+  { "name": "Mechanical", "weight": 5, "tags": ["sci-fi"] },
+  { "name": "Ethereal", "weight": 3, "tags": ["fantasy"] },
+  { "name": "Undead", "weight": 3, "tags": ["dark"] },
+  { "name": "Demonkin", "weight": 3, "tags": ["dark", "fantasy"] },
+  { "name": "Celestial", "weight": 3, "tags": ["fantasy"] },
+  { "name": "Fae", "weight": 4, "tags": ["fantasy"] },
+  { "name": "Goblin", "weight": 3, "tags": ["fantasy"] },
+  { "name": "Dragonkin", "weight": 4, "tags": ["fantasy"] },
+  { "name": "Artificial", "weight": 5, "tags": ["sci-fi"] },
+  { "name": "Plant-based", "weight": 3, "tags": ["fantasy", "nature"] }
+]

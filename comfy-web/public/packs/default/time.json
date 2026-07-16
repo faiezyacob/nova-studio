@@ -1,0 +1,15 @@
+[
+  { "name": "Dawn", "weight": 6, "tags": ["default"] },
+  { "name": "Morning", "weight": 7, "tags": ["default"] },
+  { "name": "Midday", "weight": 7, "tags": ["default"] },
+  { "name": "Afternoon", "weight": 7, "tags": ["default"] },
+  { "name": "Golden hour", "weight": 8, "tags": ["default"] },
+  { "name": "Sunset", "weight": 7, "tags": ["default"] },
+  { "name": "Dusk", "weight": 6, "tags": ["default"] },
+  { "name": "Twilight", "weight": 6, "tags": ["default"] },
+  { "name": "Night", "weight": 7, "tags": ["default"] },
+  { "name": "Midnight", "weight": 5, "tags": ["default"] },
+  { "name": "Blue hour", "weight": 4, "tags": ["default"] },
+  { "name": "Pre-dawn", "weight": 3, "tags": ["default"] },
+  { "name": "Late evening", "weight": 4, "tags": ["default"] }
+]

@@ -1,0 +1,10 @@
+[
+  { "name": "Child", "weight": 5, "tags": ["default"] },
+  { "name": "Teenager", "weight": 7, "tags": ["default"] },
+  { "name": "Young adult", "weight": 10, "tags": ["default"] },
+  { "name": "Adult", "weight": 10, "tags": ["default"] },
+  { "name": "Middle-aged", "weight": 6, "tags": ["default"] },
+  { "name": "Elderly", "weight": 5, "tags": ["default"] },
+  { "name": "Ageless", "weight": 3, "tags": ["fantasy"] },
+  { "name": "Ancient", "weight": 2, "tags": ["fantasy"] }
+]

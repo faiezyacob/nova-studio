@@ -1,0 +1,22 @@
+[
+  { "name": "Centered subject", "weight": 7, "tags": ["default"] },
+  { "name": "Rule of thirds", "weight": 8, "tags": ["default"] },
+  { "name": "Leading lines", "weight": 6, "tags": ["default"] },
+  { "name": "Symmetrical", "weight": 6, "tags": ["default"] },
+  { "name": "Asymmetrical balance", "weight": 5, "tags": ["default"] },
+  { "name": "Negative space", "weight": 5, "tags": ["default"] },
+  { "name": "Framing within frame", "weight": 5, "tags": ["default"] },
+  { "name": "Foreground interest", "weight": 5, "tags": ["default"] },
+  { "name": "Layered depth", "weight": 5, "tags": ["default"] },
+  { "name": "Diagonal composition", "weight": 4, "tags": ["default"] },
+  { "name": "Golden ratio", "weight": 4, "tags": ["default"] },
+  { "name": "Minimalist", "weight": 5, "tags": ["default"] },
+  { "name": "Dense and detailed", "weight": 5, "tags": ["default"] },
+  { "name": "Panoramic", "weight": 4, "tags": ["default"] },
+  { "name": "Portrait orientation", "weight": 6, "tags": ["portrait"] },
+  { "name": "Landscape orientation", "weight": 6, "tags": ["default"] },
+  { "name": "Close crop", "weight": 4, "tags": ["portrait"] },
+  { "name": "Wide establishing shot", "weight": 5, "tags": ["default"] },
+  { "name": "Subject off-center left", "weight": 4, "tags": ["default"] },
+  { "name": "Subject off-center right", "weight": 4, "tags": ["default"] }
+]

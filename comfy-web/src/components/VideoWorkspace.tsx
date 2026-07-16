@@ -106,16 +106,21 @@ export default function VideoWorkspace({
   const itemsPerPage = 12;
 
   const WORKFLOW_OPTIONS = [
+    { value: 'wan-2.2-t2v', label: 'Wan 2.2 T2V' },
+    { value: 'ltx-2.3-t2v', label: 'LTX 2.3 T2V' },
     { value: 'wan-2.2-i2v', label: 'Wan 2.2 I2V' },
-    { value: 'ltx-2.3-i2v', label: 'LTX 2.3 I2V (12GB)' },
+    { value: 'ltx-2.3-i2v', label: 'LTX 2.3 I2V' },
   ];
 
   const WORKFLOW_FPS: Record<string, number> = {
     'wan-2.2-i2v': 16,
     'ltx-2.3-i2v': 24,
+    'wan-2.2-t2v': 16,
+    'ltx-2.3-t2v': 24,
   };
 
   const { prompt, negative_prompt, uploadedImage, uploadedImageName, videoSize, matchImageSize, durationFrames, activeWorkflow } = workspaceState;
+  const isT2V = activeWorkflow.includes('t2v');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -144,7 +149,7 @@ export default function VideoWorkspace({
   }, [availableModels, selectedModel]);
 
   useEffect(() => {
-    const maxFrames = activeWorkflow === 'ltx-2.3-i2v' ? 241 : 129;
+    const maxFrames = activeWorkflow === 'ltx-2.3-i2v' || activeWorkflow === 'ltx-2.3-t2v' ? 241 : 129;
     if (durationFrames > maxFrames) {
       updateWorkspaceState({ durationFrames: maxFrames });
     }
@@ -233,8 +238,8 @@ export default function VideoWorkspace({
   };
 
   const enhancePrompt = async () => {
-    if (!prompt.trim() || !selectedModel || !uploadedImage) {
-      toast.error('Please provide a prompt, select a model, and upload an image');
+    if (!prompt.trim() || !selectedModel) {
+      toast.error('Please provide a prompt and select a model');
       return;
     }
 
@@ -243,13 +248,13 @@ export default function VideoWorkspace({
     setError('');
 
     try {
-      const thumbnailBase64 = await createImageThumbnail(uploadedImage, 768);
+      const thumbnailBase64 = uploadedImage ? await createImageThumbnail(uploadedImage, 768) : null;
 
       const currentFps = WORKFLOW_FPS[activeWorkflow] || 16;
       const durationSeconds = (durationFrames / currentFps).toFixed(1);
 
       const resolutionContext = (() => {
-        if (activeWorkflow === 'ltx-2.3-i2v') {
+        if (activeWorkflow.includes('ltx')) {
           const h = targetDimensions.height;
           if (h >= 720) return '720p (1280×720)';
           if (h >= 540) return '540p (960×540)';
@@ -258,9 +263,40 @@ export default function VideoWorkspace({
         return '';
       })();
 
-      const isLTX = activeWorkflow === 'ltx-2.3-i2v';
+      const isLTX = activeWorkflow.includes('ltx');
+      const isT2VMode = isT2V;
 
-      const ltxSystemPrompt = `You are an expert prompt engineer for LTX 2.3 Image-to-Video (I2V) generation, specialized in creating highly seductive, sensual, and cinematic results.
+      const ltxSystemPrompt = isT2VMode
+        ? `You are an expert prompt engineer for LTX 2.3 Text-to-Video (T2V) generation.
+
+You will receive:
+- A raw user prompt
+- Target duration in seconds
+- Output resolution
+
+Your goal: Create a rich, detailed motion prompt that feels premium and visually captivating.
+
+Write **one continuous, highly descriptive paragraph** describing the full scene, subject, and motion. Include:
+- Detailed subject description (appearance, clothing, expression)
+- Camera framing and movement
+- Motion progression from start to end
+- Lighting and atmosphere
+
+Make it cinematic and vivid. Ensure the described action fits the target duration.
+
+Return ONLY this exact structure:
+
+<prompt>
+[VISUAL]:
+One flowing, detailed paragraph describing the scene and motion.
+
+[SOUNDS]:
+One paragraph describing ambient sounds and atmosphere.
+
+[NEGATIVE]:
+comma,separated,terms
+</prompt>`
+        : `You are an expert prompt engineer for LTX 2.3 Image-to-Video (I2V) generation, specialized in creating highly seductive, sensual, and cinematic results.
 
 You will receive:
 - An input image (exact first frame)
@@ -324,7 +360,24 @@ One paragraph describing voice, body sounds, and ambient.
 comma,separated,terms
 </prompt>`;
 
-      const wanSystemPrompt = `You are an expert prompt engineer for Wan 2.2 Image-to-Video (I2V) generation. 
+      const wanSystemPrompt = isT2VMode
+        ? `You are an expert prompt engineer for Wan 2.2 Text-to-Video (T2V) generation.
+You will receive a raw user prompt and a target duration.
+
+Your job: Write a highly descriptive, cinematic motion prompt that brings the described scene to life.
+
+CRITICAL RULES FOR WAN 2.2 T2V:
+1. NO TIME PHRASES: Never include phrases like "over X seconds". Describe the visual sequence in real-time.
+2. COMPLETE ACTION: Force the completion of the action by explicitly describing the final resting or completed state.
+3. STRUCTURE: Use 2 to 3 concise sentences.
+   - Sentence 1: The subject, setting, and the initiation of the movement.
+   - Sentence 2: The progression and explicit completion/end-state of the action.
+   - Sentence 3: Optional natural camera behavior only if appropriate.
+4. TEMPORAL STABILITY: Use dynamic but grounded verbs. Avoid sudden, explosive, or physically impossible transitions.
+5. DETAIL: Describe the scene thoroughly — subject appearance, lighting, environment, and mood.
+
+Return ONLY the final optimized prompt inside <prompt></prompt> tags.`
+        : `You are an expert prompt engineer for Wan 2.2 Image-to-Video (I2V) generation. 
 You will receive an image, a raw user prompt, and a target duration.
 
 Your job: Write a highly descriptive, cinematic motion prompt that naturally progresses the exact scene in the image and ensures the requested action reaches a clear, definitive completion.
@@ -341,14 +394,26 @@ CRITICAL RULES FOR WAN 2.2:
 
 Return ONLY the final optimized prompt inside <prompt></prompt> tags.`;
 
-      const ltxUserPrompt = `User's raw prompt: "${prompt}"
+      const ltxUserPrompt = isT2VMode
+        ? `User's raw prompt: "${prompt}"
+Target duration: ${durationSeconds} seconds
+Output resolution: ${resolutionContext}
+
+Create a vivid, detailed motion prompt describing the scene and how it should animate over the target duration.`
+        : `User's raw prompt: "${prompt}"
 Target duration: ${durationSeconds} seconds
 Output resolution: ${resolutionContext}
 
 Analyze the image carefully (pose, expression, clothing, lighting).
 Create a highly seductive version of the requested motion.
 If dialogue is requested, integrate the exact spoken words with natural timing.`;
-      const wanUserPrompt = `User's raw prompt: "${prompt}"
+
+      const wanUserPrompt = isT2VMode
+        ? `User's raw prompt: "${prompt}"
+Target Video Duration: ${durationSeconds} seconds.
+
+Write a prompt that describes exactly enough action to realistically fill this timeframe, ending with the action fully completed. Describe the scene from scratch based on the prompt.`
+        : `User's raw prompt: "${prompt}"
 Target Video Duration: ${durationSeconds} seconds.
 
 Based on the image, write a prompt that describes exactly enough action to realistically fill this timeframe, ending with the action fully completed.`;
@@ -365,16 +430,18 @@ Based on the image, write a prompt that describes exactly enough action to reali
             },
             {
               role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: isLTX ? ltxUserPrompt : wanUserPrompt,
-                },
-                {
-                  type: 'image_url',
-                  image_url: { url: thumbnailBase64 },
-                },
-              ],
+              content: thumbnailBase64
+                ? [
+                    {
+                      type: 'text',
+                      text: isLTX ? ltxUserPrompt : wanUserPrompt,
+                    },
+                    {
+                      type: 'image_url',
+                      image_url: { url: thumbnailBase64 },
+                    },
+                  ]
+                : isLTX ? ltxUserPrompt : wanUserPrompt,
             },
           ],
           temperature: 0.3,
@@ -446,7 +513,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
   };
 
   const generateVideo = async () => {
-    if (!uploadedImage || !prompt.trim()) return;
+    if ((!isT2V && !uploadedImage) || !prompt.trim()) return;
 
     setIsGenerating(true);
     setError('');
@@ -504,9 +571,6 @@ Based on the image, write a prompt that describes exactly enough action to reali
 
       toast.loading('Generating video...', { id: 'video-gen' });
 
-      const imageResponse = await fetch(uploadedImage);
-      const imageBlob = await imageResponse.blob();
-      const imageFile = new File([imageBlob], uploadedImageName || 'image.png', { type: 'image/png' });
       const { width: finalWidth, height: finalHeight } = targetDimensions;
 
       try {
@@ -526,11 +590,48 @@ Based on the image, write a prompt that describes exactly enough action to reali
         console.warn('[VIDEO] Failed to create SSE connection:', e);
       }
 
-      const isLtxWorkflow = activeWorkflow === 'ltx-2.3-i2v';
-
       let result: { video_path?: string; subfolder?: string; prompt_id?: string } = {};
 
-      if (isLtxWorkflow) {
+      if (isT2V && activeWorkflow === 'ltx-2.3-t2v') {
+        const currentFps = WORKFLOW_FPS[activeWorkflow] || 24;
+        const response = await fetch('/api/comfy/ltx-t2v', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Generation-Id': generationId },
+          body: JSON.stringify({
+            prompt,
+            negative_prompt: negative_prompt || '',
+            width: finalWidth,
+            height: finalHeight,
+            frames: durationFrames,
+            fps: currentFps,
+          }),
+        });
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to generate T2V video');
+        }
+        result = await response.json();
+      } else if (isT2V && activeWorkflow === 'wan-2.2-t2v') {
+        const response = await fetch('/api/comfy/wan-t2v', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Generation-Id': generationId },
+          body: JSON.stringify({
+            prompt,
+            negative_prompt: negative_prompt || '',
+            width: finalWidth,
+            height: finalHeight,
+            frames: durationFrames,
+          }),
+        });
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to generate T2V video');
+        }
+        result = await response.json();
+      } else if (activeWorkflow === 'ltx-2.3-i2v') {
+        const imageResponse = await fetch(uploadedImage!);
+        const imageBlob = await imageResponse.blob();
+        const imageFile = new File([imageBlob], uploadedImageName || 'image.png', { type: 'image/png' });
         const ltxFormData = new FormData();
         const currentFps = WORKFLOW_FPS[activeWorkflow] || 24;
         ltxFormData.append('image', imageFile);
@@ -551,6 +652,9 @@ Based on the image, write a prompt that describes exactly enough action to reali
         }
         result = await ltxResponse.json();
       } else {
+        const imageResponse = await fetch(uploadedImage!);
+        const imageBlob = await imageResponse.blob();
+        const imageFile = new File([imageBlob], uploadedImageName || 'image.png', { type: 'image/png' });
         const formData = new FormData();
         formData.append('image', imageFile);
         formData.append('prompt', prompt);
@@ -587,7 +691,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
         console.warn('Failed to cache video locally', e);
       }
 
-      const thumbnailBase64 = await createImageThumbnail(uploadedImage, 400);
+      const thumbnailBase64 = uploadedImage ? await createImageThumbnail(uploadedImage, 400) : undefined;
 
       const newVideo: VideoGalleryItem = {
         id: result.prompt_id || `video_${Date.now()}`,
@@ -761,7 +865,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
             <div className="flex items-center gap-3">
               <div>
                 <h1 className="text-base font-semibold text-text-primary">Video Generator</h1>
-                <p className="text-xs text-text-muted">Image to video</p>
+                <p className="text-xs text-text-muted">{isT2V ? 'Text to video' : 'Image to video'}</p>
               </div>
             </div>
           </div>
@@ -802,7 +906,9 @@ Based on the image, write a prompt that describes exactly enough action to reali
 
           {/* Image Upload Section */}
           <div className="rounded-2xl border border-border-subtle bg-surface-3 p-5 shadow-[var(--shadow-card)]">
-            <p className="mb-3 text-[10px] uppercase tracking-widest text-text-subtle">Upload Image</p>
+            <p className="mb-3 text-[10px] uppercase tracking-widest text-text-subtle">
+              {isT2V ? 'Reference Image (Optional)' : 'Upload Image'}
+            </p>
 
             {!uploadedImage ? (
               <div
@@ -812,8 +918,17 @@ Based on the image, write a prompt that describes exactly enough action to reali
                 <svg className="mb-3 h-10 w-10 text-text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <p className="text-sm text-text-secondary">Click to upload an image</p>
-                <p className="mt-1 text-xs text-text-subtle">PNG, JPG up to 10MB</p>
+                {isT2V ? (
+                  <>
+                    <p className="text-sm text-text-secondary">Click to upload a reference image (optional)</p>
+                    <p className="mt-1 text-xs text-text-subtle">T2V generates from text — no image needed</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-text-secondary">Click to upload an image</p>
+                    <p className="mt-1 text-xs text-text-subtle">PNG, JPG up to 10MB</p>
+                  </>
+                )}
               </div>
             ) : (
               <div className="relative flex items-center gap-4">
@@ -902,7 +1017,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                   <input
                     type="range"
                     min="17"
-                    max={activeWorkflow === 'ltx-2.3-i2v' ? 241 : 129}
+                    max={activeWorkflow === 'ltx-2.3-i2v' || activeWorkflow === 'ltx-2.3-t2v' ? 241 : 129}
                     step="16"
                     value={durationFrames}
                     onChange={(e) => updateWorkspaceState({ durationFrames: parseInt(e.target.value) })}
@@ -925,7 +1040,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                   </span>
                 </div>
                 <p className="text-[11px] text-text-subtle leading-none">
-                  ~{(durationFrames / (WORKFLOW_FPS[activeWorkflow] || 16)).toFixed(1)}s at {WORKFLOW_FPS[activeWorkflow] || 16}fps ({activeWorkflow === 'ltx-2.3-i2v' ? '241 frames is 10s' : '81 frames is optimal'})
+                  ~{(durationFrames / (WORKFLOW_FPS[activeWorkflow] || 16)).toFixed(1)}s at {WORKFLOW_FPS[activeWorkflow] || 16}fps ({activeWorkflow.includes('ltx') ? '241 frames is 10s' : '81 frames is optimal'})
                 </p>
               </div>
             </div>
@@ -1028,11 +1143,11 @@ Based on the image, write a prompt that describes exactly enough action to reali
                 </div>
               )}
               <div className="flex items-center justify-between">
-                <p className="text-xs text-text-subtle">Describe how the image should animate</p>
+                <p className="text-xs text-text-subtle">{isT2V ? 'Describe the scene to generate' : 'Describe how the image should animate'}</p>
 
                 <button
                   onClick={generateVideo}
-                  disabled={isGenerating || isEnhancing || !uploadedImage || !prompt.trim()}
+                  disabled={isGenerating || isEnhancing || (!isT2V && !uploadedImage) || !prompt.trim()}
                   className="cursor-pointer flex items-center gap-1.5 rounded-lg bg-gold px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition duration-150 ease-out hover:translate-y-[-1px] hover:bg-gold-hover active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isGenerating ? (

@@ -1,0 +1,22 @@
+[
+  { "name": "Eye level", "weight": 8, "tags": ["default"] },
+  { "name": "Low angle", "weight": 7, "tags": ["default"] },
+  { "name": "High angle", "weight": 7, "tags": ["default"] },
+  { "name": "Dutch angle", "weight": 4, "tags": ["default"] },
+  { "name": "Birds eye view", "weight": 5, "tags": ["default"] },
+  { "name": "Worms eye view", "weight": 4, "tags": ["default"] },
+  { "name": "Over the shoulder", "weight": 5, "tags": ["default"] },
+  { "name": "Close-up", "weight": 7, "tags": ["portrait"] },
+  { "name": "Extreme close-up", "weight": 5, "tags": ["portrait"] },
+  { "name": "Full body shot", "weight": 7, "tags": ["default"] },
+  { "name": "Three-quarter view", "weight": 6, "tags": ["default"] },
+  { "name": "Profile view", "weight": 5, "tags": ["portrait"] },
+  { "name": "Wide angle", "weight": 5, "tags": ["default"] },
+  { "name": "Tilted camera", "weight": 4, "tags": ["default"] },
+  { "name": "Aerial view", "weight": 4, "tags": ["default"] },
+  { "name": "Through a window", "weight": 4, "tags": ["default"] },
+  { "name": "Mirror reflection", "weight": 3, "tags": ["default"] },
+  { "name": "Through binoculars", "weight": 3, "tags": ["default"] },
+  { "name": "Peephole view", "weight": 3, "tags": ["default"] },
+  { "name": "Tracking shot feel", "weight": 3, "tags": ["cinematic"] }
+]

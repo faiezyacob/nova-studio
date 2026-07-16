@@ -26,22 +26,6 @@ export interface Task {
 
 export type TaskListener = (task: Task) => void;
 
-let _generationLock = false;
-
-export function isGenerationLocked(): boolean {
-  return _generationLock;
-}
-
-export function acquireGenerationLock(): boolean {
-  if (_generationLock) return false;
-  _generationLock = true;
-  return true;
-}
-
-export function releaseGenerationLock(): void {
-  _generationLock = false;
-}
-
 export class TaskQueue {
   private tasks: Task[] = [];
   private currentIndex = -1;

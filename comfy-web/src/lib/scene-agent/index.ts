@@ -1,12 +1,12 @@
 export { sceneAgent, SceneAgent } from './scene-agent';
 export type { AgentStatus, AgentEvent, AgentEventType, AgentListener } from './scene-agent';
 
-export { TaskQueue, acquireGenerationLock, releaseGenerationLock, isGenerationLocked } from './task-queue';
+export { TaskQueue } from './task-queue';
 export type { Task, TaskType, TaskStatus, TaskListener } from './task-queue';
 
-export { fullCleanup, cleanupMemory, waitForMemoryStable, setModelToUnload } from './resource-manager';
+export { fullCleanup, cleanupMemory, waitForMemoryStable } from './resource-manager';
 
-export { resetContinuity, getContinuity, setContinuity, setLastFrame, advanceSegment, addContinuityNote } from './continuity-manager';
+export { createInitialContinuity, setContinuityOn, setLastFrameOn, advanceSegmentOn, addContinuityNoteOn } from './continuity-manager';
 export type { ContinuityState } from './continuity-manager';
 
 export { generateScenePlan, askClarification } from './scene-planner';

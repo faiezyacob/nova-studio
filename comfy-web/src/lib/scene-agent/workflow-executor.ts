@@ -1,5 +1,4 @@
 import { TaskQueue } from './task-queue';
-import { setLastFrame, advanceSegment, getContinuity } from './continuity-manager';
 import { fullCleanup } from './resource-manager';
 import type { Lora } from '@/types';
 
@@ -193,7 +192,6 @@ export async function extractLastFrameFromVideo(videoPath: string): Promise<{ da
       reader.readAsDataURL(blob);
     });
 
-    setLastFrame(dataUrl, frameFilename);
     return { dataUrl, filename: frameFilename };
   } catch (err) {
     console.error('Extract frame error:', err);

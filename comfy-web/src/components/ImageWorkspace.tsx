@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { GalleryItem, HistoryEntry, Lora } from "@/types";
 import ImageUpscaleDialog from "./ImageUpscaleDialog";
 import SceneBlueprintViewer from "./SceneBlueprintViewer";
+import PromptComposer from "./PromptComposer";
 import { db } from "@/utils/db";
 
 const AVAILABLE_LORAS = [
@@ -163,10 +164,12 @@ export default function ImageWorkspace({
   const [imageWorkflow, setImageWorkflow] = useState<string>("z-image-turbo");
   const [sageAttention, setSageAttention] = useState(true);
   const [promptEnhancement, setPromptEnhancement] = useState(false);
+  const [applyStyleOnEnhance, setApplyStyleOnEnhance] = useState(true);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const [isRepairing, setIsRepairing] = useState(false);
   const [progress, setProgress] = useState<{ value: number; max: number } | null>(null);
+  const [promptMode, setPromptMode] = useState<"free" | "composer">("free");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const itemsPerPage = 12;
 
@@ -263,13 +266,14 @@ export default function ImageWorkspace({
     let eventSource: EventSource | null = null;
 
     try {
-      if (currentModel) {
+      const modelToUnload = selectedModel || currentModel;
+      if (modelToUnload) {
         try {
           toast.loading("Unloading LM Studio...", { id: "generation" });
           const unloadRes = await fetch("/api/lmstudio/unload", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ model: currentModel }),
+            body: JSON.stringify({ model: modelToUnload }),
           });
           if (unloadRes.ok) {
             await new Promise(r => setTimeout(r, 1000));
@@ -437,7 +441,7 @@ RULES:
 SELECTED STYLE
 ────────────────────────
 
-${STYLE_DESCRIPTIONS[imageStyle] || ""}
+${applyStyleOnEnhance ? (STYLE_DESCRIPTIONS[imageStyle] || "") : ""}
 
 IMPORTANT:
 
@@ -666,8 +670,7 @@ STRICT RULES:
 - For z-image-turbo: use vivid concrete descriptive language
 - DO NOT mention smartphone, camera, or any device related terms
 - Maintain original pose / action (i.e selfie, etc) if included
-STYLE ENFORCEMENT:
-${STYLE_DESCRIPTIONS[imageStyle] || ""}
+${applyStyleOnEnhance ? `STYLE ENFORCEMENT:\n${STYLE_DESCRIPTIONS[imageStyle] || ""}` : ""}
 If you output anything outside <prompt></prompt>, the answer is invalid.
 `;
 
@@ -941,6 +944,26 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                 </button>
               </div>
 
+              {/* Style on Enhance toggle */}
+              {promptEnhancement && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase tracking-widest text-text-subtle">Apply Style</span>
+                  <button
+                    onClick={() => setApplyStyleOnEnhance(!applyStyleOnEnhance)}
+                    disabled={isGenerating}
+                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition disabled:opacity-50 ${
+                      applyStyleOnEnhance
+                        ? "border-gold/50 bg-hover text-gold-dim"
+                        : "border-border-strong bg-surface-2 text-text-subtle"
+                    }`}
+                    title="Apply selected style during prompt enhancement"
+                  >
+                    <span className={`h-2 w-2 rounded-full ${applyStyleOnEnhance ? "bg-gold" : "bg-text-subtle"}`} />
+                    {applyStyleOnEnhance ? "On" : "Off"}
+                  </button>
+                </div>
+              )}
+
               {/* Image Engine */}
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] uppercase tracking-widest text-text-subtle">Engine</span>
@@ -1162,61 +1185,100 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
             {/* Divider */}
             <div className="mb-3 h-px bg-border-subtle" />
 
+            {/* Row 3: Prompt Mode Toggle */}
+            <div className="mb-2 flex items-center gap-2">
+              <div className="flex items-center gap-1 rounded-lg border border-border-subtle bg-surface-2 p-0.5">
+                <button
+                  onClick={() => setPromptMode("free")}
+                  className={`rounded-md px-3 py-1.5 text-[11px] font-medium transition ${
+                    promptMode === "free"
+                      ? "bg-gold text-[#1f1f1d]"
+                      : "text-text-muted hover:text-text-primary"
+                  }`}
+                >
+                  Free Prompt
+                </button>
+                <button
+                  onClick={() => setPromptMode("composer")}
+                  className={`rounded-md px-3 py-1.5 text-[11px] font-medium transition ${
+                    promptMode === "composer"
+                      ? "bg-gold text-[#1f1f1d]"
+                      : "text-text-muted hover:text-text-primary"
+                  }`}
+                >
+                  Composer
+                </button>
+              </div>
+            </div>
+
             {/* Row 3: Prompt */}
             <div className="relative">
-              <textarea
-                ref={inputRef}
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={handlePromptKeyDown}
-                placeholder="Describe the scene, mood, lens, and details…"
-                rows={4}
-                disabled={isGenerating}
-                className="w-full resize-none rounded-xl border border-border-strong bg-surface-2 px-3 py-3 text-sm text-text-primary outline-none transition placeholder:text-text-subtle focus:border-gold-focus disabled:opacity-60"
-              />
+              {promptMode === "free" ? (
+                <>
+                  <textarea
+                    ref={inputRef}
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    onKeyDown={handlePromptKeyDown}
+                    placeholder="Describe the scene, mood, lens, and details…"
+                    rows={4}
+                    disabled={isGenerating}
+                    className="w-full resize-none rounded-xl border border-border-strong bg-surface-2 px-3 py-3 text-sm text-text-primary outline-none transition placeholder:text-text-subtle focus:border-gold-focus disabled:opacity-60"
+                  />
 
-              <div className="mt-2 flex flex-col gap-3">
-                {isGenerating && (
-                  <div className="rounded-lg border border-border-strong bg-surface-2 p-3">
-                    <div className="mb-1.5 flex items-center justify-between text-xs text-text-secondary">
-                      <span>{progress ? `Generating... ${progress.value}/${progress.max}` : 'Starting generation...'}</span>
-                      {progress && <span>{Math.round((progress.value / progress.max) * 100)}%</span>}
-                    </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-active">
-                      <div
-                        className={`h-full rounded-full bg-gold ${progress ? 'transition-all duration-500 ease-out' : 'animate-pulse'}`}
-                        style={progress ? { width: `${Math.min(100, (progress.value / progress.max) * 100)}%` } : { width: '30%' }}
-                      />
+                  <div className="mt-2 flex flex-col gap-3">
+                    {isGenerating && (
+                      <div className="rounded-lg border border-border-strong bg-surface-2 p-3">
+                        <div className="mb-1.5 flex items-center justify-between text-xs text-text-secondary">
+                          <span>{progress ? `Generating... ${progress.value}/${progress.max}` : 'Starting generation...'}</span>
+                          {progress && <span>{Math.round((progress.value / progress.max) * 100)}%</span>}
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-active">
+                          <div
+                            className={`h-full rounded-full bg-gold ${progress ? 'transition-all duration-500 ease-out' : 'animate-pulse'}`}
+                            style={progress ? { width: `${Math.min(100, (progress.value / progress.max) * 100)}%` } : { width: '30%' }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-text-subtle">Shift + Enter for new line</span>
+
+                      <button
+                        onClick={generateImage}
+                        disabled={isGenerating || !prompt.trim()}
+                        className="cursor-pointer flex items-center gap-1.5 rounded-lg bg-gold px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-gold-hover disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        {isGenerating ? (
+                          <>
+                            <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                            </svg>
+                            Generating…
+                          </>
+                        ) : (
+                          <>
+                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
+                            </svg>
+                            Generate
+                          </>
+                        )}
+                      </button>
                     </div>
                   </div>
-                )}
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-text-subtle">Shift + Enter for new line</span>
-
-                  <button
-                    onClick={generateImage}
-                    disabled={isGenerating || !prompt.trim()}
-                    className="cursor-pointer flex items-center gap-1.5 rounded-lg bg-gold px-4 py-2 text-xs font-semibold text-[#1f1f1d] transition hover:bg-gold-hover disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                        </svg>
-                        Generating…
-                      </>
-                    ) : (
-                      <>
-                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
-                        </svg>
-                        Generate
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
+                </>
+              ) : (
+                <PromptComposer
+                  onUsePrompt={(composedPrompt) => {
+                    setPrompt(composedPrompt);
+                    setPromptMode("free");
+                  }}
+                  onEnhance={enhancePrompt}
+                  isEnhancing={isEnhancing}
+                />
+              )}
             </div>
           </div>
 

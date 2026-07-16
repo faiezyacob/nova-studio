@@ -1,0 +1,109 @@
+[
+  {
+    "when": { "category": "location", "values": ["Desert"] },
+    "then": {
+      "weather": ["Sunny", "Sandstorm", "Heat haze", "Clear sky", "Dust storm"],
+      "season": ["Summer"]
+    },
+    "otherwise": {
+      "weather": ["Sandstorm", "Heat haze", "Dust storm"]
+    }
+  },
+  {
+    "when": { "category": "location", "values": ["Underwater"] },
+    "then": {
+      "weather": ["Calm"],
+      "lighting": ["Underwater caustics", "Bioluminescence"]
+    },
+    "otherwise": {
+      "weather": [],
+      "lighting": ["Underwater caustics", "Bioluminescence"]
+    }
+  },
+  {
+    "when": { "category": "time", "values": ["Night", "Midnight", "Late evening", "Twilight"] },
+    "then": {
+      "lighting": ["Moonlight", "Lantern light", "Neon glow", "Candlelight", "Firelight", "Starry light", "Cold blue light"]
+    },
+    "otherwise": {
+      "lighting": ["Moonlight"]
+    }
+  },
+  {
+    "when": { "category": "time", "values": ["Golden hour", "Sunset", "Dawn"] },
+    "then": {
+      "lighting": ["Golden hour light", "Warm amber light", "Rim lighting", "Backlit"]
+    },
+    "otherwise": {
+      "lighting": ["Golden hour light"]
+    }
+  },
+  {
+    "when": { "category": "time", "values": ["Midday", "Morning", "Afternoon"] },
+    "then": {
+      "weather": ["Clear sky", "Sunny", "Cloudy", "Overcast", "Calm"]
+    },
+    "otherwise": {
+      "weather": []
+    }
+  },
+  {
+    "when": { "category": "location", "values": ["Space station", "Spacecraft interior", "Alien planet surface"] },
+    "then": {
+      "weather": ["Calm"],
+      "lighting": ["Neon glow", "Cold blue light", "Screen glow"]
+    },
+    "otherwise": {
+      "weather": [],
+      "lighting": ["Neon glow", "Cold blue light"]
+    }
+  },
+  {
+    "when": { "category": "location", "values": ["Neon alley", "City street", "City rooftop", "Nightclub"] },
+    "then": {
+      "lighting": ["Neon glow", "Mixed color temperature", "Screen glow", "Spotlight"]
+    },
+    "otherwise": {
+      "lighting": ["Neon glow"]
+    }
+  },
+  {
+    "when": { "category": "season", "values": ["Winter", "Deep winter"] },
+    "then": {
+      "weather": ["Snow", "Heavy snowfall", "Blizzard", "Hail", "Clear sky", "Fog"]
+    },
+    "otherwise": {
+      "weather": ["Snow", "Heavy snowfall", "Blizzard", "Hail"]
+    }
+  },
+  {
+    "when": { "category": "location", "values": ["Forest", "Bamboo forest", "Scattered trees", "Meadow"] },
+    "then": {
+      "environment": ["Dense vegetation", "Scattered trees", "Dappled light through leaves", "Moss-covered surfaces", "Vines climbing walls"],
+      "weather": ["Clear sky", "Cloudy", "Drizzle", "Fog", "Mist", "Gentle breeze"]
+    },
+    "otherwise": {
+      "environment": ["Dense vegetation", "Scattered trees"]
+    }
+  },
+  {
+    "when": { "category": "location", "values": ["Castle", "Cathedral", "Ancient ruins", "Ruined temple"] },
+    "then": {
+      "environment": ["Ancient architecture", "Shattered stone", "Overgrown ruins", "Dust motes in light"],
+      "lighting": ["Volumetric light rays", "Candlelight", "Firelight"]
+    },
+    "otherwise": {
+      "environment": ["Ancient architecture"]
+    }
+  },
+  {
+    "when": { "category": "mood", "values": ["Dark", "Ominous", "Eerie", "Foreboding", "Terrifying"] },
+    "then": {
+      "weather": ["Thunderstorm", "Fog", "Mist", "Heavy rain"],
+      "time": ["Night", "Midnight", "Twilight", "Dusk"]
+    },
+    "otherwise": {
+      "weather": ["Thunderstorm", "Fog", "Mist"]
+    }
+  }
+]
