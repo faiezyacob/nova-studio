@@ -245,5 +245,34 @@
     "tags": [
       "fantasy"
     ]
-  }
+  },
+  { "name": "Sleet", "weight": 3, "tags": ["winter"] },
+  { "name": "Freezing rain", "weight": 3, "tags": ["winter"] },
+  { "name": "Ice storm", "weight": 2, "tags": ["winter"] },
+  { "name": "Hoarfrost", "weight": 3, "tags": ["winter"] },
+  { "name": "Frost", "weight": 4, "tags": ["winter"] },
+  { "name": "Dew drops", "weight": 3, "tags": ["nature"] },
+  { "name": "Morning mist", "weight": 4, "tags": ["default"] },
+  { "name": "Ground fog", "weight": 4, "tags": ["default"] },
+  { "name": "Sea fog", "weight": 3, "tags": ["nature"] },
+  { "name": "Sun shower", "weight": 3, "tags": ["default"] },
+  { "name": "Heat lightning", "weight": 3, "tags": ["weather"] },
+  { "name": "Virga", "weight": 2, "tags": ["weather"] },
+  { "name": "Diamond dust", "weight": 3, "tags": ["winter"] },
+  { "name": "Pollen in air", "weight": 3, "tags": ["nature"] },
+  { "name": "Fireflies", "weight": 4, "tags": ["nature"] },
+  { "name": "Cherry blossom petals in wind", "weight": 4, "tags": ["asian"] },
+  { "name": "Leaves falling", "weight": 4, "tags": ["nature"] },
+  { "name": "Autumn wind", "weight": 3, "tags": ["nature"] },
+  { "name": "Gentle snowfall", "weight": 5, "tags": ["winter"] },
+  { "name": "Sudden downpour", "weight": 3, "tags": ["weather"] },
+  { "name": "Tornado", "weight": 2, "tags": ["weather"] },
+  { "name": "Hurricane", "weight": 2, "tags": ["weather"] },
+  { "name": "Monsoon rain", "weight": 3, "tags": ["weather"] },
+  { "name": "Humid and muggy", "weight": 3, "tags": ["default"] },
+  { "name": "Brisk cold air", "weight": 4, "tags": ["default"] },
+  { "name": "Stifling heat", "weight": 3, "tags": ["default"] },
+  { "name": "Swirling leaves", "weight": 3, "tags": ["nature"] },
+  { "name": "Volcanic ash cloud", "weight": 3, "tags": ["dark", "fantasy"] },
+  { "name": "Magical petal storm", "weight": 4, "tags": ["fantasy"] }
 ]

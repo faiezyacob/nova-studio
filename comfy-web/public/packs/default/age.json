@@ -1,58 +1,25 @@
 [
-  {
-    "name": "Child",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Teenager",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Young adult",
-    "weight": 10,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Adult",
-    "weight": 10,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Middle-aged",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Elderly",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Ageless",
-    "weight": 3,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Ancient",
-    "weight": 2,
-    "tags": [
-      "fantasy"
-    ]
-  }
+  { "name": "Child", "weight": 5, "tags": ["default"] },
+  { "name": "Teenager", "weight": 7, "tags": ["default"] },
+  { "name": "Young adult", "weight": 10, "tags": ["default"] },
+  { "name": "Adult", "weight": 10, "tags": ["default"] },
+  { "name": "Middle-aged", "weight": 6, "tags": ["default"] },
+  { "name": "Elderly", "weight": 5, "tags": ["default"] },
+  { "name": "Ageless", "weight": 3, "tags": ["fantasy"] },
+  { "name": "Ancient", "weight": 2, "tags": ["fantasy"] },
+  { "name": "Preteen", "weight": 4, "tags": ["default"] },
+  { "name": "College-age", "weight": 6, "tags": ["default"] },
+  { "name": "Early 20s", "weight": 7, "tags": ["default"] },
+  { "name": "Late 20s", "weight": 7, "tags": ["default"] },
+  { "name": "Early 30s", "weight": 6, "tags": ["default"] },
+  { "name": "Late 30s", "weight": 5, "tags": ["default"] },
+  { "name": "Early 40s", "weight": 5, "tags": ["default"] },
+  { "name": "Late 40s", "weight": 4, "tags": ["default"] },
+  { "name": "50s", "weight": 4, "tags": ["default"] },
+  { "name": "60s", "weight": 3, "tags": ["default"] },
+  { "name": "70s", "weight": 3, "tags": ["default"] },
+  { "name": "80s", "weight": 2, "tags": ["default"] },
+  { "name": "Timeless", "weight": 3, "tags": ["fantasy"] },
+  { "name": "Youthful", "weight": 5, "tags": ["default"] },
+  { "name": "Mature", "weight": 5, "tags": ["default"] }
 ]

@@ -1,0 +1,22 @@
+[
+  { "name": "Porcelain", "weight": 5, "tags": ["default"] },
+  { "name": "Fair", "weight": 7, "tags": ["default"] },
+  { "name": "Light", "weight": 7, "tags": ["default"] },
+  { "name": "Medium", "weight": 7, "tags": ["default"] },
+  { "name": "Olive", "weight": 6, "tags": ["default"] },
+  { "name": "Tan", "weight": 6, "tags": ["default"] },
+  { "name": "Brown", "weight": 7, "tags": ["default"] },
+  { "name": "Dark", "weight": 7, "tags": ["default"] },
+  { "name": "Deep brown", "weight": 6, "tags": ["default"] },
+  { "name": "Ivory", "weight": 4, "tags": ["default"] },
+  { "name": "Alabaster", "weight": 4, "tags": ["default"] },
+  { "name": "Bronze", "weight": 5, "tags": ["default"] },
+  { "name": "Sun-kissed", "weight": 5, "tags": ["default"] },
+  { "name": "Freckled", "weight": 4, "tags": ["default"] },
+  { "name": "Pale", "weight": 5, "tags": ["default"] },
+  { "name": "Sallow", "weight": 3, "tags": ["dark"] },
+  { "name": "Luminous skin", "weight": 4, "tags": ["fantasy"] },
+  { "name": "Opalescent skin", "weight": 3, "tags": ["fantasy"] },
+  { "name": "Ruddy complexion", "weight": 3, "tags": ["default"] },
+  { "name": "Weathered skin", "weight": 3, "tags": ["default"] }
+]

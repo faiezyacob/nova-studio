@@ -2,6 +2,7 @@ import {
   PromptCategoryKey,
   PromptState,
   ThemePackData,
+  CATEGORY_CONFIGS,
   CATEGORY_ORDER,
   RelationshipRule,
 } from "@/types/prompt-composer";
@@ -143,9 +144,10 @@ export function generatePrompt(state: PromptState): string {
   const parts: string[] = [];
 
   const orderedKeys: PromptCategoryKey[] = [
-    "subject", "species", "ethnicity", "age", "hair", "eyes",
+    "subject", "ethnicity", "age", "bodyType", "skin",
+    "hair", "hairColor", "hairStyle", "facialHair", "eyes",
     "expression", "pose", "clothing", "accessories",
-    "location", "environment", "weather", "season", "time",
+    "location", "environment", "weather", "time",
     "lighting", "camera", "lens", "composition",
     "mood", "style", "quality", "details",
   ];
@@ -153,7 +155,9 @@ export function generatePrompt(state: PromptState): string {
   for (const key of orderedKeys) {
     const cat = state[key];
     if (!cat.enabled || cat.value.length === 0) continue;
-    parts.push(cat.value.join(", "));
+    const config = CATEGORY_CONFIGS.find((c) => c.key === key);
+    const label = config?.label ?? key;
+    parts.push(`${label}: ${cat.value.join(", ")}`);
   }
 
   return parts.join(", ");

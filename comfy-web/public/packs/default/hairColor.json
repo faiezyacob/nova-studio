@@ -1,0 +1,22 @@
+[
+  { "name": "Black", "weight": 8, "tags": ["default"] },
+  { "name": "Brown", "weight": 7, "tags": ["default"] },
+  { "name": "Blonde", "weight": 7, "tags": ["default"] },
+  { "name": "Red", "weight": 6, "tags": ["default"] },
+  { "name": "Auburn", "weight": 5, "tags": ["default"] },
+  { "name": "Platinum blonde", "weight": 4, "tags": ["default"] },
+  { "name": "Silver", "weight": 5, "tags": ["fantasy"] },
+  { "name": "White", "weight": 5, "tags": ["fantasy"] },
+  { "name": "Blue", "weight": 4, "tags": ["anime", "fantasy"] },
+  { "name": "Pink", "weight": 4, "tags": ["anime", "fantasy"] },
+  { "name": "Green", "weight": 3, "tags": ["anime", "fantasy"] },
+  { "name": "Purple", "weight": 4, "tags": ["anime", "fantasy"] },
+  { "name": "Orange", "weight": 3, "tags": ["default"] },
+  { "name": "Gray", "weight": 4, "tags": ["default"] },
+  { "name": "Strawberry blonde", "weight": 3, "tags": ["default"] },
+  { "name": "Copper", "weight": 3, "tags": ["default"] },
+  { "name": "Burgundy", "weight": 3, "tags": ["default"] },
+  { "name": "Rainbow", "weight": 2, "tags": ["fantasy"] },
+  { "name": "Ombre", "weight": 3, "tags": ["default"] },
+  { "name": "Highlights", "weight": 4, "tags": ["default"] }
+]

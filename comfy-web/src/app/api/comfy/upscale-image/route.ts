@@ -1,13 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ComfyApi, PromptBuilder, CallWrapper } from "@saintno/comfyui-sdk";
 import path from 'path';
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync } from 'fs';
 import { copyFile, unlink } from 'fs/promises';
 import { emitProgress, emitComplete, emitError } from '@/lib/progress-events';
 
 const COMFYUI_URL = process.env.COMFYUI_URL || "http://127.0.0.1:8188";
 const COMFY_OUTPUT_DIR = path.join(process.cwd(), '..', 'ComfyUI', 'output');
 const LOCAL_GENERATED_DIR = path.join(process.cwd(), 'public', 'generated');
+
+async function uploadImageToComfyUI(filePath: string): Promise<string> {
+  const buffer = readFileSync(filePath);
+  const ext = path.extname(filePath).slice(1) || 'png';
+  const mimeType = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
+
+  const uploadForm = new FormData();
+  const blob = new Blob([buffer], { type: mimeType });
+  uploadForm.append('image', blob, path.basename(filePath));
+  uploadForm.append('overwrite', 'true');
+
+  const uploadResponse = await fetch(`${COMFYUI_URL}/upload/image`, {
+    method: 'POST',
+    body: uploadForm,
+  });
+
+  if (!uploadResponse.ok) {
+    const errText = await uploadResponse.text();
+    throw new Error(`Failed to upload image to ComfyUI: ${errText}`);
+  }
+
+  const uploadResult = await uploadResponse.json();
+  return uploadResult.name;
+}
 
 const api = new ComfyApi(COMFYUI_URL, undefined, { wsTimeout: 300000 });
 
@@ -24,18 +48,19 @@ interface UpscaleOptions {
 async function upscaleImage(options: UpscaleOptions): Promise<{ prompt_id: string; image_path: string; subfolder: string }> {
   const { filename, subfolder, upscale_model, width, height, scale = 2, generationId } = options;
 
-  // Construct absolute path for LoadImage from public/generated
-  const imagePath = path.join(LOCAL_GENERATED_DIR, filename);
-
   const prefix = `upscale_${Math.floor(Date.now() / 1000)}`;
 
   const nodes: Record<string, any> = {};
 
-  // Node 1: Load Image
+  // Upload image to ComfyUI input directory so LoadImage can find it
+  const imagePath = path.join(LOCAL_GENERATED_DIR, filename);
+  const comfyFilename = await uploadImageToComfyUI(imagePath);
+
+  // Node 1: Load Image (uses ComfyUI-relative filename, not absolute path)
   nodes["1"] = {
     class_type: "LoadImage",
     inputs: {
-      image: imagePath,
+      image: comfyFilename,
     }
   };
 

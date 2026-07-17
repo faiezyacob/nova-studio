@@ -1,86 +1,45 @@
 [
-  {
-    "name": "Caucasian",
-    "weight": 8,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Black",
-    "weight": 8,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "East Asian",
-    "weight": 8,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "South Asian",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Southeast Asian",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Middle Eastern",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Latin American",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Indigenous",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Mixed",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Pacific Islander",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Central Asian",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "North African",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  }
+  { "name": "Caucasian", "weight": 8, "tags": ["default"] },
+  { "name": "Black", "weight": 8, "tags": ["default"] },
+  { "name": "East Asian", "weight": 8, "tags": ["default"] },
+  { "name": "South Asian", "weight": 7, "tags": ["default"] },
+  { "name": "Southeast Asian", "weight": 7, "tags": ["default"] },
+  { "name": "Middle Eastern", "weight": 6, "tags": ["default"] },
+  { "name": "Latin American", "weight": 7, "tags": ["default"] },
+  { "name": "Indigenous", "weight": 5, "tags": ["default"] },
+  { "name": "Mixed", "weight": 6, "tags": ["default"] },
+  { "name": "Pacific Islander", "weight": 4, "tags": ["default"] },
+  { "name": "Central Asian", "weight": 4, "tags": ["default"] },
+  { "name": "North African", "weight": 4, "tags": ["default"] },
+  { "name": "Polynesian", "weight": 3, "tags": ["default"] },
+  { "name": "Nordic", "weight": 4, "tags": ["default"] },
+  { "name": "Mediterranean", "weight": 5, "tags": ["default"] },
+  { "name": "Slavic", "weight": 4, "tags": ["default"] },
+  { "name": "Tibetan", "weight": 3, "tags": ["default"] },
+  { "name": "Māori", "weight": 3, "tags": ["default"] },
+  { "name": "Ainu", "weight": 2, "tags": ["default"] },
+  { "name": "Native Hawaiian", "weight": 3, "tags": ["default"] },
+  { "name": "West African", "weight": 4, "tags": ["default"] },
+  { "name": "East African", "weight": 4, "tags": ["default"] },
+  { "name": "Southern African", "weight": 3, "tags": ["default"] },
+  { "name": "Central African", "weight": 3, "tags": ["default"] },
+  { "name": "Caribbean", "weight": 4, "tags": ["default"] },
+  { "name": "Filipino", "weight": 4, "tags": ["default"] },
+  { "name": "Korean", "weight": 5, "tags": ["default"] },
+  { "name": "Japanese", "weight": 5, "tags": ["default"] },
+  { "name": "Chinese", "weight": 5, "tags": ["default"] },
+  { "name": "Thai", "weight": 4, "tags": ["default"] },
+  { "name": "Vietnamese", "weight": 4, "tags": ["default"] },
+  { "name": "Indian", "weight": 5, "tags": ["default"] },
+  { "name": "Pakistani", "weight": 3, "tags": ["default"] },
+  { "name": "Bangladeshi", "weight": 3, "tags": ["default"] },
+  { "name": "Sri Lankan", "weight": 3, "tags": ["default"] },
+  { "name": "Nepalese", "weight": 3, "tags": ["default"] },
+  { "name": "Turkish", "weight": 4, "tags": ["default"] },
+  { "name": "Persian", "weight": 4, "tags": ["default"] },
+  { "name": "Arab", "weight": 4, "tags": ["default"] },
+  { "name": "Berber", "weight": 3, "tags": ["default"] },
+  { "name": "Ethiopian", "weight": 3, "tags": ["default"] },
+  { "name": "Somali", "weight": 3, "tags": ["default"] },
+  { "name": "Amazigh", "weight": 2, "tags": ["default"] }
 ]

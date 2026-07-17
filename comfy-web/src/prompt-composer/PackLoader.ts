@@ -17,9 +17,10 @@ export async function loadPack(): Promise<ThemePackData> {
   const categories: Partial<Record<PromptCategoryKey, PromptValue[]>> = {};
 
   const categoryKeys: PromptCategoryKey[] = [
-    "subject", "species", "ethnicity", "age", "hair", "eyes",
+    "subject", "ethnicity", "age", "bodyType", "skin",
+    "hair", "hairColor", "hairStyle", "facialHair", "eyes",
     "expression", "pose", "clothing", "accessories",
-    "location", "environment", "weather", "season", "time",
+    "location", "environment", "weather", "time",
     "lighting", "camera", "lens", "composition",
     "mood", "style", "quality", "details",
   ];

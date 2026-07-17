@@ -63,13 +63,6 @@
     ]
   },
   {
-    "name": "Neon glow",
-    "weight": 6,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
     "name": "Studio lighting",
     "weight": 6,
     "tags": [
@@ -206,8 +199,7 @@
     "name": "Screen glow",
     "weight": 3,
     "tags": [
-      "modern",
-      "cyberpunk"
+      "modern"
     ]
   },
   {
@@ -298,74 +290,39 @@
       "fantasy"
     ]
   },
-  {
-    "name": "Holographic light",
-    "weight": 7,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Mixed neon colors",
-    "weight": 8,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Rain-reflected neon",
-    "weight": 7,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Laser grid",
-    "weight": 5,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "UV blacklight",
-    "weight": 5,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Flickering fluorescent",
-    "weight": 5,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Cold LED strips",
-    "weight": 6,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Ambient city glow",
-    "weight": 6,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Red alert lighting",
-    "weight": 4,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Volumetric fog with neon",
-    "weight": 6,
-    "tags": [
-      "cyberpunk"
-    ]
-  }
+  { "name": "God rays", "weight": 5, "tags": ["default"] },
+  { "name": "Refraction light", "weight": 3, "tags": ["default"] },
+  { "name": "Prismatic light", "weight": 3, "tags": ["default"] },
+  { "name": "Neon signs", "weight": 5, "tags": ["sci-fi", "urban"] },
+  { "name": "LED strip lighting", "weight": 3, "tags": ["modern"] },
+  { "name": "Ring light", "weight": 4, "tags": ["modern"] },
+  { "name": "Rembrandt lighting", "weight": 4, "tags": ["portrait"] },
+  { "name": "Butterfly lighting", "weight": 3, "tags": ["portrait"] },
+  { "name": "Split lighting", "weight": 4, "tags": ["cinematic"] },
+  { "name": "Loop lighting", "weight": 3, "tags": ["portrait"] },
+  { "name": "Broad lighting", "weight": 3, "tags": ["portrait"] },
+  { "name": "Short lighting", "weight": 3, "tags": ["portrait"] },
+  { "name": "Chiaroscuro lighting", "weight": 4, "tags": ["art"] },
+  { "name": "Candlelight flicker", "weight": 4, "tags": ["default"] },
+  { "name": "Dramatic shadows", "weight": 5, "tags": ["cinematic"] },
+  { "name": "Soft wrap-around light", "weight": 4, "tags": ["default"] },
+  { "name": "Hard directional light", "weight": 4, "tags": ["default"] },
+  { "name": "Ambient fill light", "weight": 3, "tags": ["default"] },
+  { "name": "Negative fill light", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Practical lighting", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Pool of light", "weight": 3, "tags": ["default"] },
+  { "name": "Bioluminescent particles", "weight": 4, "tags": ["fantasy", "nature"] },
+  { "name": "Magical shimmer", "weight": 5, "tags": ["fantasy"] },
+  { "name": "Arcane glow", "weight": 5, "tags": ["fantasy"] },
+  { "name": "Spectral light", "weight": 3, "tags": ["fantasy", "dark"] },
+  { "name": "Underwater light shafts", "weight": 3, "tags": ["fantasy"] },
+  { "name": "Dawn rays through clouds", "weight": 4, "tags": ["nature"] },
+  { "name": "Moonlight shafts", "weight": 4, "tags": ["default"] },
+  { "name": "Firelight warmth", "weight": 5, "tags": ["default"] },
+  { "name": "Lantern glow", "weight": 4, "tags": ["default"] },
+  { "name": "Holographic light", "weight": 3, "tags": ["sci-fi"] },
+  { "name": "Plasma glow", "weight": 3, "tags": ["sci-fi"] },
+  { "name": "Cold fluorescent", "weight": 3, "tags": ["modern"] },
+  { "name": "Warm tungsten", "weight": 4, "tags": ["default"] },
+  { "name": "Mixed artificial light", "weight": 3, "tags": ["urban"] }
 ]

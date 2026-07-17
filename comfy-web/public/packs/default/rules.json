@@ -13,9 +13,6 @@
         "Heat haze",
         "Clear sky",
         "Dust storm"
-      ],
-      "season": [
-        "Summer"
       ]
     },
     "otherwise": {
@@ -173,33 +170,7 @@
       ]
     }
   },
-  {
-    "when": {
-      "category": "season",
-      "values": [
-        "Winter",
-        "Deep winter"
-      ]
-    },
-    "then": {
-      "weather": [
-        "Snow",
-        "Heavy snowfall",
-        "Blizzard",
-        "Hail",
-        "Clear sky",
-        "Fog"
-      ]
-    },
-    "otherwise": {
-      "weather": [
-        "Snow",
-        "Heavy snowfall",
-        "Blizzard",
-        "Hail"
-      ]
-    }
-  },
+
   {
     "when": {
       "category": "location",
@@ -408,6 +379,357 @@
     "otherwise": {
       "lighting": [
         "Celestial glow"
+      ]
+    }
+  },
+  {
+    "when": {
+      "category": "weather",
+      "values": [
+        "Snow",
+        "Heavy snowfall",
+        "Blizzard",
+        "Gentle snowfall"
+      ]
+    },
+    "then": {
+      "environment": [
+        "Snow-covered ground",
+        "Frosted surfaces",
+        "Icicles hanging"
+      ],
+      "lighting": [
+        "Cold blue light",
+        "Soft diffused light"
+      ]
+    },
+    "otherwise": {
+      "environment": [
+        "Snow-covered ground"
+      ]
+    }
+  },
+  {
+    "when": {
+      "category": "location",
+      "values": [
+        "Neon alley",
+        "Cyberpunk cityscape"
+      ]
+    },
+    "then": {
+      "style": [
+        "Cyberpunk",
+        "Neon noir"
+      ],
+      "lighting": [
+        "Neon signs",
+        "Mixed color temperature"
+      ]
+    },
+    "otherwise": {
+      "style": [
+        "Cyberpunk"
+      ]
+    }
+  },
+  {
+    "when": {
+      "category": "style",
+      "values": [
+        "Cyberpunk",
+        "Neon noir"
+      ]
+    },
+    "then": {
+      "location": [
+        "Neon alley",
+        "Cyberpunk cityscape",
+        "City street"
+      ],
+      "lighting": [
+        "Neon signs",
+        "Neon glow",
+        "Cold blue light"
+      ]
+    },
+    "otherwise": {
+      "location": [
+        "Neon alley"
+      ]
+    }
+  },
+  {
+    "when": {
+      "category": "weather",
+      "values": [
+        "Fog",
+        "Mist",
+        "Ground fog",
+        "Morning mist"
+      ]
+    },
+    "then": {
+      "mood": [
+        "Mysterious",
+        "Eerie",
+        "Haunting"
+      ],
+      "lighting": [
+        "Soft diffused light",
+        "Silhouette lighting"
+      ]
+    },
+    "otherwise": {
+      "mood": [
+        "Mysterious"
+      ]
+    }
+  },
+  {
+    "when": {
+      "category": "time",
+      "values": [
+        "Dawn",
+        "Sunrise",
+        "First light"
+      ]
+    },
+    "then": {
+      "mood": [
+        "Hopeful",
+        "Serene",
+        "Tranquil"
+      ],
+      "weather": [
+        "Clear sky",
+        "Morning mist",
+        "Gentle breeze"
+      ]
+    },
+    "otherwise": {
+      "mood": [
+        "Hopeful"
+      ]
+    }
+  },
+  {
+    "when": {
+      "category": "location",
+      "values": [
+        "Graveyard",
+        "Haunted house",
+        "Haunted castle",
+        "Ruined abbey"
+      ]
+    },
+    "then": {
+      "mood": [
+        "Dark",
+        "Eerie",
+        "Terrifying",
+        "Ominous"
+      ],
+      "weather": [
+        "Fog",
+        "Thunderstorm",
+        "Ashfall"
+      ],
+      "lighting": [
+        "Moonlight",
+        "Candlelight",
+        "Dark shadow lighting"
+      ]
+    },
+    "otherwise": {
+      "mood": [
+        "Eerie"
+      ]
+    }
+  },
+  {
+    "when": {
+      "category": "style",
+      "values": [
+        "High fantasy painting",
+        "Epic concept art",
+        "Dark fantasy"
+      ]
+    },
+    "then": {
+      "quality": [
+        "Masterpiece",
+        "Highly detailed",
+        "Digital art masterpiece"
+      ],
+      "details": [
+        "Intricate armor details",
+        "Flowing fabric movement",
+        "Volumetric light"
+      ]
+    },
+    "otherwise": {
+      "quality": [
+        "Masterpiece"
+      ]
+    }
+  },
+  {
+    "when": {
+      "category": "style",
+      "values": [
+        "Photorealistic",
+        "Studio photography",
+        "Realism"
+      ]
+    },
+    "then": {
+      "quality": [
+        "Professional photograph",
+        "Sharp focus",
+        "Detailed skin texture"
+      ],
+      "lens": [
+        "85mm portrait lens",
+        "50mm prime",
+        "Shallow depth of field"
+      ]
+    },
+    "otherwise": {
+      "quality": [
+        "Professional photograph"
+      ]
+    }
+  },
+  {
+    "when": {
+      "category": "style",
+      "values": [
+        "Cinematic",
+        "Film noir",
+        "Matte painting"
+      ]
+    },
+    "then": {
+      "details": [
+        "Film grain",
+        "Anamorphic lens",
+        "Dramatic shadows"
+      ],
+      "lens": [
+        "Anamorphic",
+        "35mm wide angle"
+      ]
+    },
+    "otherwise": {
+      "details": [
+        "Film grain"
+      ]
+    }
+  },
+  {
+    "when": {
+      "category": "location",
+      "values": [
+        "Tavern",
+        "Throne room",
+        "Dwarven mine"
+      ]
+    },
+    "then": {
+      "lighting": [
+        "Candlelight",
+        "Firelight",
+        "Lantern light"
+      ],
+      "environment": [
+        "Torchlit walls",
+        "Stone walls",
+        "Ancient architecture"
+      ]
+    },
+    "otherwise": {
+      "lighting": [
+        "Candlelight"
+      ]
+    }
+  },
+  {
+    "when": {
+      "category": "location",
+      "values": [
+        "Hot spring",
+        "Japanese garden",
+        "Bamboo grove"
+      ]
+    },
+    "then": {
+      "style": [
+        "Anime cel shading",
+        "Makoto Shinkai style",
+        "Watercolor anime"
+      ],
+      "weather": [
+        "Mist",
+        "Gentle breeze"
+      ]
+    },
+    "otherwise": {
+      "weather": [
+        "Mist"
+      ]
+    }
+  },
+  {
+    "when": {
+      "category": "location",
+      "values": [
+        "Underwater",
+        "Crystal cave"
+      ]
+    },
+    "then": {
+      "lighting": [
+        "Underwater caustics",
+        "Bioluminescent glow",
+        "Crystal-refracted light"
+      ],
+      "details": [
+        "Caustics",
+        "Water droplets"
+      ]
+    },
+    "otherwise": {
+      "lighting": [
+        "Bioluminescent glow"
+      ]
+    }
+  },
+  {
+    "when": {
+      "category": "location",
+      "values": [
+        "Volcanic forge",
+        "Lava fields"
+      ]
+    },
+    "then": {
+      "weather": [
+        "Floating embers",
+        "Ashfall"
+      ],
+      "lighting": [
+        "Dragon fire",
+        "Firelight"
+      ],
+      "mood": [
+        "Intense",
+        "Powerful"
+      ]
+    },
+    "otherwise": {
+      "lighting": [
+        "Firelight"
       ]
     }
   }

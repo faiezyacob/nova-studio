@@ -211,67 +211,45 @@
       "medieval"
     ]
   },
-  {
-    "name": "Lens flare from neon",
-    "weight": 7,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Rain droplets on lens",
-    "weight": 6,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Holographic overlays",
-    "weight": 6,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Reflections in wet surfaces",
-    "weight": 7,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Motion blur from flying vehicles",
-    "weight": 5,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "HUD elements",
-    "weight": 5,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Scan lines",
-    "weight": 4,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Neon reflections on chrome",
-    "weight": 6,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Volumetric light through rain",
-    "weight": 6,
-    "tags": [
-      "cyberpunk"
-    ]
-  }
+  { "name": "Film halation effect", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Light leak overlay", "weight": 3, "tags": ["retro"] },
+  { "name": "Radial blur", "weight": 3, "tags": ["default"] },
+  { "name": "Motion trails", "weight": 3, "tags": ["action"] },
+  { "name": "Speed lines", "weight": 4, "tags": ["anime"] },
+  { "name": "Afterimage effect", "weight": 3, "tags": ["anime"] },
+  { "name": "Double exposure blend", "weight": 3, "tags": ["art"] },
+  { "name": "Long exposure streaks", "weight": 3, "tags": ["default"] },
+  { "name": "Light painting trails", "weight": 3, "tags": ["default"] },
+  { "name": "Star trails", "weight": 3, "tags": ["nature"] },
+  { "name": "Sparkle particles", "weight": 4, "tags": ["fantasy", "anime"] },
+  { "name": "Snowflakes", "weight": 4, "tags": ["winter"] },
+  { "name": "Petals falling", "weight": 4, "tags": ["asian", "fantasy"] },
+  { "name": "Rising smoke wisps", "weight": 3, "tags": ["default"] },
+  { "name": "Steam and mist", "weight": 3, "tags": ["default"] },
+  { "name": "Dust motes in light", "weight": 4, "tags": ["default"] },
+  { "name": "Rune sigils in air", "weight": 5, "tags": ["fantasy"] },
+  { "name": "Magic circles", "weight": 5, "tags": ["fantasy"] },
+  { "name": "Floating debris", "weight": 3, "tags": ["fantasy"] },
+  { "name": "Energy aura", "weight": 5, "tags": ["anime", "fantasy"] },
+  { "name": "Power lightning arcs", "weight": 4, "tags": ["anime", "fantasy"] },
+  { "name": "Holographic elements", "weight": 3, "tags": ["sci-fi"] },
+  { "name": "Digital scanlines", "weight": 3, "tags": ["sci-fi"] },
+  { "name": "Glitch artifacts", "weight": 3, "tags": ["sci-fi"] },
+  { "name": "Nano-particle cloud", "weight": 3, "tags": ["sci-fi"] },
+  { "name": "Ornate frame border", "weight": 3, "tags": ["fantasy"] },
+  { "name": "Vignette darkening", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Desaturated background", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Selective color", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Rim light halo", "weight": 4, "tags": ["default"] },
+  { "name": "Lens distortion", "weight": 2, "tags": ["default"] },
+  { "name": "Frost patterns", "weight": 3, "tags": ["winter"] },
+  { "name": "Icicle details", "weight": 3, "tags": ["winter"] },
+  { "name": "Water droplets", "weight": 3, "tags": ["default"] },
+  { "name": "Sweat glistening", "weight": 3, "tags": ["default"] },
+  { "name": "Torn and tattered edges", "weight": 3, "tags": ["dark"] },
+  { "name": "Moss and lichen growth", "weight": 3, "tags": ["nature", "fantasy"] },
+  { "name": "Ornate filigree", "weight": 4, "tags": ["fantasy"] },
+  { "name": "Intricate wood carving", "weight": 3, "tags": ["fantasy", "medieval"] },
+  { "name": "Gilded details", "weight": 4, "tags": ["fantasy", "elegant"] },
+  { "name": "Flowing calligraphy", "weight": 3, "tags": ["asian"] }
 ]

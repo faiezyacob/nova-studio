@@ -155,14 +155,7 @@
       "art"
     ]
   },
-  {
-    "name": "Cyberpunk",
-    "weight": 6,
-    "tags": [
-      "sci-fi",
-      "cyberpunk"
-    ]
-  },
+
   {
     "name": "Steampunk",
     "weight": 5,
@@ -328,69 +321,7 @@
       "dark"
     ]
   },
-  {
-    "name": "Cyberpunk concept art",
-    "weight": 8,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Neon noir",
-    "weight": 7,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Blade Runner style",
-    "weight": 7,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Ghost in the Shell style",
-    "weight": 6,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Akira style",
-    "weight": 6,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Synthwave art",
-    "weight": 5,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Retro-futurism",
-    "weight": 5,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Tech noir photography",
-    "weight": 5,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Glitch art",
-    "weight": 4,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
+
   {
     "name": "Anime cel shading",
     "weight": 8,
@@ -453,5 +384,47 @@
     "tags": [
       "anime"
     ]
-  }
+  },
+  { "name": "Cyberpunk", "weight": 6, "tags": ["sci-fi"] },
+  { "name": "Dieselpunk", "weight": 3, "tags": ["sci-fi"] },
+  { "name": "Afrofuturism", "weight": 3, "tags": ["sci-fi"] },
+  { "name": "Vaporwave", "weight": 3, "tags": ["retro"] },
+  { "name": "Synthwave", "weight": 3, "tags": ["retro"] },
+  { "name": "Biopunk", "weight": 3, "tags": ["sci-fi"] },
+  { "name": "Cassette futurism", "weight": 3, "tags": ["retro"] },
+  { "name": "Rococo", "weight": 3, "tags": ["art"] },
+  { "name": "Neoclassical", "weight": 3, "tags": ["art"] },
+  { "name": "Romanticism", "weight": 3, "tags": ["art"] },
+  { "name": "Realism", "weight": 5, "tags": ["default"] },
+  { "name": "Fauvism", "weight": 2, "tags": ["art"] },
+  { "name": "Pointillism", "weight": 2, "tags": ["art"] },
+  { "name": "Cubism", "weight": 3, "tags": ["art"] },
+  { "name": "Abstract expressionism", "weight": 3, "tags": ["art"] },
+  { "name": "Op art", "weight": 2, "tags": ["art"] },
+  { "name": "Lo-fi aesthetic", "weight": 3, "tags": ["retro"] },
+  { "name": "Flat shading", "weight": 4, "tags": ["default"] },
+  { "name": "Cel shading", "weight": 5, "tags": ["default"] },
+  { "name": "Matte painting", "weight": 5, "tags": ["cinematic"] },
+  { "name": "Volumetric rendering", "weight": 4, "tags": ["3d"] },
+  { "name": "Clay render", "weight": 3, "tags": ["3d"] },
+  { "name": "Wireframe art", "weight": 2, "tags": ["3d"] },
+  { "name": "Papercraft style", "weight": 2, "tags": ["art"] },
+  { "name": "Paper cutout", "weight": 2, "tags": ["art"] },
+  { "name": "Collage art", "weight": 3, "tags": ["art"] },
+  { "name": "Mixed media", "weight": 3, "tags": ["art"] },
+  { "name": "Daguerreotype", "weight": 2, "tags": ["retro"] },
+  { "name": "Cyanotype", "weight": 2, "tags": ["art"] },
+  { "name": "Linocut", "weight": 2, "tags": ["art"] },
+  { "name": "Screen print", "weight": 3, "tags": ["art"] },
+  { "name": "Woodblock print", "weight": 3, "tags": ["art", "asian"] },
+  { "name": "Stained glass style", "weight": 3, "tags": ["art"] },
+  { "name": "Tattoo art style", "weight": 3, "tags": ["art"] },
+  { "name": "Street art graffiti", "weight": 4, "tags": ["urban"] },
+  { "name": "Neon noir", "weight": 4, "tags": ["cinematic", "sci-fi"] },
+  { "name": "Hyperpop aesthetic", "weight": 3, "tags": ["modern"] },
+  { "name": "Ethereal painterly", "weight": 4, "tags": ["fantasy"] },
+  { "name": "Photobashing", "weight": 4, "tags": ["cinematic"] },
+  { "name": "Glitch art", "weight": 2, "tags": ["sci-fi"] },
+  { "name": "Negative space art", "weight": 3, "tags": ["art"] },
+  { "name": "Kinetic typography art", "weight": 2, "tags": ["modern"] }
 ]

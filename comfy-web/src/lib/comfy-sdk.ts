@@ -31,6 +31,12 @@ interface Lora {
   trigger_word?: string;
 }
 
+const LORA_TRIGGER_WORDS: Record<string, string> = {
+  "Krea2_Cinematic_Artstyle.safetensors": "An angular, 3d art style, with brush stroke color texture",
+  "retroanime.safetensors": "Purple retro anime style",
+  "m87_lora_v1.safetensors": "--preview",
+};
+
 export async function generateWithSDK(
   prompt: string,
   width: number,
@@ -67,6 +73,10 @@ export async function generateWithSDK(
   let clipNodeId = "32";
 
   const validLoras = loras.filter(l => l.name);
+  const triggerWords = validLoras
+    .map(l => l.trigger_word ?? LORA_TRIGGER_WORDS[l.name] ?? '')
+    .filter(Boolean)
+    .join(', ');
   for (let i = 0; i < validLoras.length; i++) {
     const nodeId = String(100 + i);
     nodes[nodeId] = {
@@ -111,7 +121,17 @@ export async function generateWithSDK(
     class_type: "CLIPTextEncode",
     inputs: {
       clip: [clipNodeId, validLoras.length > 0 ? 1 : 0],
-      text: fullPrompt,
+      text: triggerWords ? (() => {
+        nodes["50"] = {
+          class_type: "StringConcatenate",
+          inputs: {
+            string_a: fullPrompt,
+            string_b: triggerWords,
+            delimiter: ", ",
+          },
+        };
+        return ["50", 0];
+      })() : fullPrompt,
     },
   };
   nodes["13"] = {
@@ -419,7 +439,10 @@ export async function generateWithKrea2TurboSDK(
   const generationSeed = seed ?? Math.floor(Math.random() * 10000000000000);
   const validLoras = loras.filter(l => l.name);
   const enableLora = validLoras.length > 0;
-  const loraTriggerWords = validLoras.map(l => l.trigger_word ?? '').filter(Boolean).join(', ');
+  const loraTriggerWords = validLoras
+    .map(l => l.trigger_word ?? LORA_TRIGGER_WORDS[l.name] ?? '')
+    .filter(Boolean)
+    .join(', ');
 
   const nodes: Record<string, object> = {};
 

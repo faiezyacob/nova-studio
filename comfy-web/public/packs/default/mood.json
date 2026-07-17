@@ -260,90 +260,7 @@
       "fantasy"
     ]
   },
-  {
-    "name": "Dystopian",
-    "weight": 8,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Gritty",
-    "weight": 7,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "High-tech low-life",
-    "weight": 7,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Rebellious",
-    "weight": 6,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Noir",
-    "weight": 6,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Overwhelming",
-    "weight": 5,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Alienating",
-    "weight": 5,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Electric",
-    "weight": 6,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Dangerous",
-    "weight": 6,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Seductive",
-    "weight": 5,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Oppressive",
-    "weight": 5,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
-  {
-    "name": "Hedonistic",
-    "weight": 4,
-    "tags": [
-      "cyberpunk"
-    ]
-  },
+
   {
     "name": "Energetic",
     "weight": 7,
@@ -378,5 +295,34 @@
     "tags": [
       "anime"
     ]
-  }
+  },
+  { "name": "Desolate", "weight": 4, "tags": ["dark"] },
+  { "name": "Suspenseful", "weight": 4, "tags": ["cinematic"] },
+  { "name": "Victorious", "weight": 4, "tags": ["default"] },
+  { "name": "Bittersweet", "weight": 3, "tags": ["default"] },
+  { "name": "Rebellious", "weight": 4, "tags": ["default"] },
+  { "name": "Psychedelic", "weight": 3, "tags": ["fantasy"] },
+  { "name": "Absurdist", "weight": 3, "tags": ["default"] },
+  { "name": "Tranquil", "weight": 5, "tags": ["default"] },
+  { "name": "Seductive", "weight": 5, "tags": ["seductive"] },
+  { "name": "Lustful", "weight": 4, "tags": ["seductive"] },
+  { "name": "Sensual", "weight": 5, "tags": ["seductive"] },
+  { "name": "Cozy", "weight": 5, "tags": ["default"] },
+  { "name": "Whimsical wonder", "weight": 4, "tags": ["fantasy"] },
+  { "name": "Festive", "weight": 4, "tags": ["default"] },
+  { "name": "Melancholic beauty", "weight": 4, "tags": ["default"] },
+  { "name": "Serene power", "weight": 4, "tags": ["fantasy"] },
+  { "name": "Quiet determination", "weight": 4, "tags": ["default"] },
+  { "name": "Fierce resolve", "weight": 4, "tags": ["action"] },
+  { "name": "Gentle grace", "weight": 4, "tags": ["default"] },
+  { "name": "Hidden menace", "weight": 3, "tags": ["dark"] },
+  { "name": "Ancient wisdom", "weight": 4, "tags": ["fantasy"] },
+  { "name": "Wild abandon", "weight": 3, "tags": ["default"] },
+  { "name": "Brooding intensity", "weight": 4, "tags": ["dark"] },
+  { "name": "Lighthearted", "weight": 5, "tags": ["default"] },
+  { "name": "Somber", "weight": 4, "tags": ["default"] },
+  { "name": "Reverent", "weight": 3, "tags": ["default"] },
+  { "name": "Defiant", "weight": 4, "tags": ["action"] },
+  { "name": "Contemplative", "weight": 4, "tags": ["default"] },
+  { "name": "Euphoric", "weight": 3, "tags": ["default"] }
 ]

@@ -30,7 +30,6 @@ public/
 │   └── default/
 │       ├── meta.json               # Pack metadata (name, description, version)
 │       ├── subject.json
-│       ├── species.json
 │       ├── gender.json
 │       ├── age.json
 │       ├── hair.json

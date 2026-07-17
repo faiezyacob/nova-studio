@@ -1,142 +1,34 @@
 [
-  {
-    "name": "Centered subject",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Rule of thirds",
-    "weight": 8,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Leading lines",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Symmetrical",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Asymmetrical balance",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Negative space",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Framing within frame",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Foreground interest",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Layered depth",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Diagonal composition",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Golden ratio",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Minimalist",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Dense and detailed",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Panoramic",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Portrait orientation",
-    "weight": 6,
-    "tags": [
-      "portrait"
-    ]
-  },
-  {
-    "name": "Landscape orientation",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Close crop",
-    "weight": 4,
-    "tags": [
-      "portrait"
-    ]
-  },
-  {
-    "name": "Wide establishing shot",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Subject off-center left",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Subject off-center right",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  }
+  { "name": "Centered subject", "weight": 7, "tags": ["default"] },
+  { "name": "Rule of thirds", "weight": 8, "tags": ["default"] },
+  { "name": "Leading lines", "weight": 6, "tags": ["default"] },
+  { "name": "Symmetrical", "weight": 6, "tags": ["default"] },
+  { "name": "Asymmetrical balance", "weight": 5, "tags": ["default"] },
+  { "name": "Negative space", "weight": 5, "tags": ["default"] },
+  { "name": "Framing within frame", "weight": 5, "tags": ["default"] },
+  { "name": "Foreground interest", "weight": 5, "tags": ["default"] },
+  { "name": "Layered depth", "weight": 5, "tags": ["default"] },
+  { "name": "Diagonal composition", "weight": 4, "tags": ["default"] },
+  { "name": "Golden ratio", "weight": 4, "tags": ["default"] },
+  { "name": "Minimalist", "weight": 5, "tags": ["default"] },
+  { "name": "Dense and detailed", "weight": 5, "tags": ["default"] },
+  { "name": "Panoramic", "weight": 4, "tags": ["default"] },
+  { "name": "Portrait orientation", "weight": 6, "tags": ["portrait"] },
+  { "name": "Landscape orientation", "weight": 6, "tags": ["default"] },
+  { "name": "Close crop", "weight": 4, "tags": ["portrait"] },
+  { "name": "Wide establishing shot", "weight": 5, "tags": ["default"] },
+  { "name": "Subject off-center left", "weight": 4, "tags": ["default"] },
+  { "name": "Subject off-center right", "weight": 4, "tags": ["default"] },
+  { "name": "Spiral composition", "weight": 3, "tags": ["default"] },
+  { "name": "Radial composition", "weight": 3, "tags": ["default"] },
+  { "name": "Dynamic symmetry", "weight": 3, "tags": ["default"] },
+  { "name": "Golden triangle", "weight": 3, "tags": ["default"] },
+  { "name": "S-curve", "weight": 3, "tags": ["default"] },
+  { "name": "Overlapping elements", "weight": 4, "tags": ["default"] },
+  { "name": "Frame within frame within frame", "weight": 2, "tags": ["default"] },
+  { "name": "Horizon line placement", "weight": 4, "tags": ["default"] },
+  { "name": "Vanishing point", "weight": 3, "tags": ["default"] },
+  { "name": "Forced perspective", "weight": 2, "tags": ["default"] },
+  { "name": "Bilateral symmetry", "weight": 4, "tags": ["default"] },
+  { "name": "Pyramid composition", "weight": 3, "tags": ["default"] }
 ]

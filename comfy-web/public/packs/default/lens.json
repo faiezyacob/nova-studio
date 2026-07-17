@@ -1,142 +1,34 @@
 [
-  {
-    "name": "50mm prime",
-    "weight": 8,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "85mm portrait lens",
-    "weight": 7,
-    "tags": [
-      "portrait"
-    ]
-  },
-  {
-    "name": "35mm wide angle",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "24mm ultra wide",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "135mm telephoto",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "200mm long telephoto",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "100mm macro",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "24-70mm zoom",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "70-200mm zoom",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Fisheye",
-    "weight": 3,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Tilt-shift",
-    "weight": 3,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Anamorphic",
-    "weight": 4,
-    "tags": [
-      "cinematic"
-    ]
-  },
-  {
-    "name": "Shallow depth of field",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Deep depth of field",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Bokeh background",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Sharp focus on subject",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Soft focus",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Motion blur",
-    "weight": 3,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Lens flare",
-    "weight": 3,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Chromatic aberration",
-    "weight": 2,
-    "tags": [
-      "default"
-    ]
-  }
+  { "name": "50mm prime", "weight": 8, "tags": ["default"] },
+  { "name": "85mm portrait lens", "weight": 7, "tags": ["portrait"] },
+  { "name": "35mm wide angle", "weight": 7, "tags": ["default"] },
+  { "name": "24mm ultra wide", "weight": 5, "tags": ["default"] },
+  { "name": "135mm telephoto", "weight": 5, "tags": ["default"] },
+  { "name": "200mm long telephoto", "weight": 4, "tags": ["default"] },
+  { "name": "100mm macro", "weight": 4, "tags": ["default"] },
+  { "name": "24-70mm zoom", "weight": 6, "tags": ["default"] },
+  { "name": "70-200mm zoom", "weight": 5, "tags": ["default"] },
+  { "name": "Fisheye", "weight": 3, "tags": ["default"] },
+  { "name": "Tilt-shift", "weight": 3, "tags": ["default"] },
+  { "name": "Anamorphic", "weight": 4, "tags": ["cinematic"] },
+  { "name": "Shallow depth of field", "weight": 7, "tags": ["default"] },
+  { "name": "Deep depth of field", "weight": 6, "tags": ["default"] },
+  { "name": "Bokeh background", "weight": 6, "tags": ["default"] },
+  { "name": "Sharp focus on subject", "weight": 7, "tags": ["default"] },
+  { "name": "Soft focus", "weight": 4, "tags": ["default"] },
+  { "name": "Motion blur", "weight": 3, "tags": ["default"] },
+  { "name": "Lens flare", "weight": 3, "tags": ["default"] },
+  { "name": "Chromatic aberration", "weight": 2, "tags": ["default"] },
+  { "name": "14mm ultra-wide", "weight": 3, "tags": ["default"] },
+  { "name": "200mm super-telephoto", "weight": 3, "tags": ["default"] },
+  { "name": "400mm super-telephoto", "weight": 2, "tags": ["default"] },
+  { "name": "Macro 2:1", "weight": 3, "tags": ["default"] },
+  { "name": "Lensbaby", "weight": 3, "tags": ["art"] },
+  { "name": "Petzval lens", "weight": 2, "tags": ["art", "retro"] },
+  { "name": "Vintage 50mm", "weight": 3, "tags": ["retro"] },
+  { "name": "Helios 44-2 swirly bokeh", "weight": 3, "tags": ["retro"] },
+  { "name": "100mm macro 2x magnification", "weight": 3, "tags": ["default"] },
+  { "name": "16mm rectilinear ultra-wide", "weight": 3, "tags": ["default"] },
+  { "name": "Cinematic zoom pull", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Split diopter", "weight": 2, "tags": ["cinematic"] }
 ]

@@ -1,0 +1,22 @@
+[
+  { "name": "Slim", "weight": 6, "tags": ["default"] },
+  { "name": "Athletic", "weight": 7, "tags": ["default"] },
+  { "name": "Muscular", "weight": 5, "tags": ["default"] },
+  { "name": "Curvy", "weight": 6, "tags": ["default"] },
+  { "name": "Petite", "weight": 5, "tags": ["default"] },
+  { "name": "Toned", "weight": 6, "tags": ["default"] },
+  { "name": "Lean", "weight": 5, "tags": ["default"] },
+  { "name": "Broad-shouldered", "weight": 5, "tags": ["default"] },
+  { "name": "Stocky", "weight": 4, "tags": ["default"] },
+  { "name": "Plus-size", "weight": 4, "tags": ["default"] },
+  { "name": "Delicate build", "weight": 4, "tags": ["default"] },
+  { "name": "Tall and slender", "weight": 5, "tags": ["default"] },
+  { "name": "Short and compact", "weight": 4, "tags": ["default"] },
+  { "name": "Voluptuous", "weight": 5, "tags": ["seductive"] },
+  { "name": "Waif-like", "weight": 3, "tags": ["fantasy"] },
+  { "name": "Imposing physique", "weight": 4, "tags": ["action"] },
+  { "name": "Barrel-chested", "weight": 3, "tags": ["default"] },
+  { "name": "Willowy", "weight": 3, "tags": ["fantasy"] },
+  { "name": "Ethereal frame", "weight": 3, "tags": ["fantasy"] },
+  { "name": "Battle-hardened body", "weight": 4, "tags": ["fantasy", "action"] }
+]

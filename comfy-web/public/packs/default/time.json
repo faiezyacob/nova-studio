@@ -1,93 +1,28 @@
 [
-  {
-    "name": "Dawn",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Morning",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Midday",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Afternoon",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Golden hour",
-    "weight": 8,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Sunset",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Dusk",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Twilight",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Night",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Midnight",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Blue hour",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Pre-dawn",
-    "weight": 3,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Late evening",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  }
+  { "name": "Dawn", "weight": 6, "tags": ["default"] },
+  { "name": "Morning", "weight": 7, "tags": ["default"] },
+  { "name": "Midday", "weight": 7, "tags": ["default"] },
+  { "name": "Afternoon", "weight": 7, "tags": ["default"] },
+  { "name": "Golden hour", "weight": 8, "tags": ["default"] },
+  { "name": "Sunset", "weight": 7, "tags": ["default"] },
+  { "name": "Dusk", "weight": 6, "tags": ["default"] },
+  { "name": "Twilight", "weight": 6, "tags": ["default"] },
+  { "name": "Night", "weight": 7, "tags": ["default"] },
+  { "name": "Midnight", "weight": 5, "tags": ["default"] },
+  { "name": "Blue hour", "weight": 4, "tags": ["default"] },
+  { "name": "Pre-dawn", "weight": 3, "tags": ["default"] },
+  { "name": "Late evening", "weight": 4, "tags": ["default"] },
+  { "name": "Noon", "weight": 5, "tags": ["default"] },
+  { "name": "Witching hour", "weight": 3, "tags": ["dark"] },
+  { "name": "Magic hour", "weight": 4, "tags": ["default"] },
+  { "name": "Civil twilight", "weight": 3, "tags": ["default"] },
+  { "name": "Nautical twilight", "weight": 2, "tags": ["default"] },
+  { "name": "Astronomical twilight", "weight": 2, "tags": ["default"] },
+  { "name": "Late night", "weight": 4, "tags": ["default"] },
+  { "name": "Early morning", "weight": 5, "tags": ["default"] },
+  { "name": "High noon", "weight": 4, "tags": ["default"] },
+  { "name": "First light", "weight": 3, "tags": ["default"] },
+  { "name": "Last light", "weight": 3, "tags": ["default"] },
+  { "name": "Waning afternoon", "weight": 4, "tags": ["default"] },
+  { "name": "Sunrise", "weight": 5, "tags": ["default"] }
 ]

@@ -12,8 +12,12 @@ import { type PromptState, createEmptyState } from "@/types/prompt-composer";
 
 const AVAILABLE_LORAS = [
   "RealisticSnapshot-Zimage-Turbov5.safetensors",
+  "retroanime.safetensors",
   "Krea2-realism-V2.safetensors",
   "Krea2_Cinematic_Artstyle.safetensors",
+  "m87_lora_v1.safetensors",
+  "krea2_alexandradaddario_v1_onetrainer.safetensors",
+  "krea2_sydneysweeney_v1.safetensors",
 ];
 
 const STYLE_DESCRIPTIONS: Record<string, string> = {
@@ -1057,12 +1061,24 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
               {imageWorkflow !== 'ideogram4' && (
                 <>
                   {/* LoRA List */}
-                  <div className="flex flex-col gap-1 min-w-[380px]">
+                  <div className="flex flex-col gap-1">
                     <span className="text-[10px] uppercase tracking-widest text-text-subtle">LoRAs</span>
                     <div className="space-y-2">
+                      {selectedLoras.length < AVAILABLE_LORAS.length && (
+                        <button
+                          onClick={() => setSelectedLoras([...selectedLoras, { name: "", strength_model: 1.0, strength_clip: 1.0 }])}
+                          disabled={isGenerating}
+                          className="flex items-center gap-1.5 rounded-lg border border-dashed border-border-strong px-3 py-1.5 text-xs text-text-muted transition hover:border-gold-focus hover:text-gold-dim disabled:opacity-50"
+                        >
+                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                          </svg>
+                          Add LoRA
+                        </button>
+                      )}
                       {selectedLoras.map((lora, index) => (
-                        <div key={index} className="flex items-center gap-2 shrink-0">
-                          <div className="relative flex-1 min-w-0">
+                        <div key={index} className="flex items-center gap-2">
+                          <div className="relative w-[180px] shrink-0">
                             <select
                               value={lora.name}
                               onChange={(e) => {
@@ -1107,7 +1123,7 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                               setSelectedLoras(updated);
                             }}
                             disabled={isGenerating}
-                            className="shrink-0 rounded-lg border border-border-strong p-1.5 text-text-subtle transition hover:border-error/50 hover:text-error disabled:opacity-50"
+                            className="ml-5 rounded-lg border border-border-strong p-1.5 text-text-subtle transition hover:border-error/50 hover:text-error disabled:opacity-50"
                             title="Remove LoRA"
                           >
                             <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1116,18 +1132,6 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                           </button>
                         </div>
                       ))}
-                      {selectedLoras.length < AVAILABLE_LORAS.length && (
-                        <button
-                          onClick={() => setSelectedLoras([...selectedLoras, { name: "", strength_model: 1.0, strength_clip: 1.0 }])}
-                          disabled={isGenerating}
-                          className="flex items-center gap-1.5 rounded-lg border border-dashed border-border-strong px-3 py-1.5 text-xs text-text-muted transition hover:border-gold-focus hover:text-gold-dim disabled:opacity-50"
-                        >
-                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                          </svg>
-                          Add LoRA
-                        </button>
-                      )}
                     </div>
                   </div>
                 </>

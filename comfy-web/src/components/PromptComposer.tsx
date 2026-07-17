@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import {
   PromptCategoryKey,
@@ -27,7 +27,7 @@ import {
 import PromptCategoryCard from "./PromptCategoryCard";
 import PromptSearchDialog from "./PromptSearchDialog";
 import MutationDialog from "./MutationDialog";
-import PromptPreview from "./PromptPreview";
+import PromptSummary from "./PromptSummary";
 import type { ComposerPreset } from "@/types/prompt-composer";
 
 interface PromptComposerProps {
@@ -238,8 +238,6 @@ export default function PromptComposer({
     toast.success("Preset deleted");
   };
 
-  const generatedPrompt = useMemo(() => generatePrompt(state), [state]);
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -317,8 +315,8 @@ export default function PromptComposer({
         ))}
       </div>
 
-      {/* Prompt preview */}
-      <PromptPreview prompt={generatedPrompt} onCopy={handleCopyPrompt} />
+      {/* Prompt summary */}
+      <PromptSummary composerState={state} onCopy={handleCopyPrompt} />
 
       {/* Preset management */}
       <div className="flex flex-wrap items-center gap-2">

@@ -138,5 +138,38 @@
     "tags": [
       "cinematic"
     ]
-  }
+  },
+  {
+    "name": "Selfie shot",
+    "weight": 7,
+    "tags": [
+      "default"
+    ]
+  },
+  { "name": "Medium shot", "weight": 6, "tags": ["default"] },
+  { "name": "Medium close-up", "weight": 6, "tags": ["portrait"] },
+  { "name": "Wide shot", "weight": 5, "tags": ["default"] },
+  { "name": "Establishing shot", "weight": 4, "tags": ["cinematic"] },
+  { "name": "Two shot", "weight": 4, "tags": ["cinematic"] },
+  { "name": "Insert shot", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Crane shot feel", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Dolly zoom feel", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Steadicam feel", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Rack focus feel", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Through doorway", "weight": 4, "tags": ["default"] },
+  { "name": "Overhead flat lay", "weight": 4, "tags": ["default"] },
+  { "name": "Low horizon line", "weight": 4, "tags": ["default"] },
+  { "name": "High horizon line", "weight": 3, "tags": ["default"] },
+  { "name": "Canted angle", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Point of view shot", "weight": 4, "tags": ["cinematic"] },
+  { "name": "Reverse angle", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Reaction shot", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Silhouette against bright background", "weight": 4, "tags": ["cinematic"] },
+  { "name": "Macro detail shot", "weight": 4, "tags": ["default"] },
+  { "name": "Framed by foreground elements", "weight": 4, "tags": ["default"] },
+  { "name": "Multiple exposure", "weight": 2, "tags": ["art"] },
+  { "name": "Underwater angle", "weight": 3, "tags": ["default"] },
+  { "name": "Security camera angle", "weight": 2, "tags": ["modern"] },
+  { "name": "Drone aerial angle", "weight": 4, "tags": ["modern"] },
+  { "name": "Satellite view", "weight": 3, "tags": ["sci-fi"] }
 ]
