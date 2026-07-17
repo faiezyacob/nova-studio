@@ -54,6 +54,16 @@ export async function loadRules(): Promise<RelationshipRule[]> {
   }
 }
 
+export async function loadCategoryData(
+  packPath: string
+): Promise<PromptValue[]> {
+  try {
+    return await fetchJSON<PromptValue[]>(packPath);
+  } catch {
+    return [];
+  }
+}
+
 async function fetchJSON<T>(url: string): Promise<T> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);

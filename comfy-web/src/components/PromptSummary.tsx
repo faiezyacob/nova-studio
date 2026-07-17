@@ -5,6 +5,7 @@ import {
   PromptCategoryKey,
   PromptState,
   CATEGORY_ORDER,
+  TemplateDefinition,
 } from "@/types/prompt-composer";
 
 interface SummaryGroup {
@@ -29,6 +30,57 @@ const SUMMARY_GROUPS: SummaryGroup[] = [
   { key: "details", label: "Details", categoryKeys: ["details"] },
 ];
 
+function buildTemplateGroups(template: TemplateDefinition): SummaryGroup[] {
+  const groups: SummaryGroup[] = [];
+
+  const appearanceKeys = ["bodyType", "skin", "hair", "hairColor", "hairStyle", "facialHair", "eyes"];
+  const environmentKeys = ["location", "environment", "weather", "time"];
+  const cameraKeys = ["camera", "lens", "composition"];
+
+  const appearanceCats = template.categories.filter(c => appearanceKeys.includes(c.key));
+  if (appearanceCats.length > 0) {
+    groups.push({
+      key: "appearance",
+      label: "Appearance",
+      categoryKeys: appearanceCats.map(c => c.key as PromptCategoryKey),
+    });
+  }
+
+  const environmentCats = template.categories.filter(c => environmentKeys.includes(c.key));
+  if (environmentCats.length > 0) {
+    groups.push({
+      key: "environment",
+      label: "Environment",
+      categoryKeys: environmentCats.map(c => c.key as PromptCategoryKey),
+    });
+  }
+
+  const cameraCats = template.categories.filter(c => cameraKeys.includes(c.key));
+  if (cameraCats.length > 0) {
+    groups.push({
+      key: "camera",
+      label: "Camera",
+      categoryKeys: cameraCats.map(c => c.key as PromptCategoryKey),
+    });
+  }
+
+  for (const cat of template.categories) {
+    if (
+      appearanceKeys.includes(cat.key) ||
+      environmentKeys.includes(cat.key) ||
+      cameraKeys.includes(cat.key)
+    ) continue;
+
+    groups.push({
+      key: cat.key,
+      label: cat.label,
+      categoryKeys: [cat.key as PromptCategoryKey],
+    });
+  }
+
+  return groups;
+}
+
 function formatLabel(raw: string): string {
   return raw
     .replace(/_/g, " ")
@@ -37,6 +89,7 @@ function formatLabel(raw: string): string {
 
 interface PromptSummaryProps {
   composerState: PromptState;
+  template?: TemplateDefinition;
   onCopy: () => void;
 }
 
@@ -46,16 +99,20 @@ interface SummarySection {
   values: string[];
 }
 
-export default function PromptSummary({ composerState, onCopy }: PromptSummaryProps) {
+export default function PromptSummary({ composerState, template, onCopy }: PromptSummaryProps) {
+  const activeGroups = useMemo(() => {
+    return template ? buildTemplateGroups(template) : SUMMARY_GROUPS;
+  }, [template]);
+
   const sections = useMemo<SummarySection[]>(() => {
     const result: SummarySection[] = [];
 
-    for (const group of SUMMARY_GROUPS) {
+    for (const group of activeGroups) {
       const values: string[] = [];
 
       for (const catKey of group.categoryKeys) {
         const catState = composerState[catKey];
-        if (catState.enabled && catState.value.length > 0) {
+        if (catState && catState.enabled && catState.value.length > 0) {
           for (const v of catState.value) {
             values.push(formatLabel(v));
           }
@@ -68,17 +125,18 @@ export default function PromptSummary({ composerState, onCopy }: PromptSummaryPr
     }
 
     return result;
-  }, [composerState]);
+  }, [composerState, activeGroups]);
 
   const totalChars = useMemo(() => {
+    const categoryKeys = activeGroups.flatMap(g => g.categoryKeys);
     const parts: string[] = [];
-    for (const key of CATEGORY_ORDER) {
+    for (const key of categoryKeys) {
       const cat = composerState[key];
-      if (!cat.enabled || cat.value.length === 0) continue;
+      if (!cat || !cat.enabled || cat.value.length === 0) continue;
       parts.push(cat.value.join(", "));
     }
     return parts.join(", ").length;
-  }, [composerState]);
+  }, [composerState, activeGroups]);
 
   return (
     <div className="rounded-xl border border-border-subtle bg-surface-2 p-3">

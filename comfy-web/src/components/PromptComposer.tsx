@@ -10,14 +10,21 @@ import {
   CATEGORY_CONFIGS,
   CATEGORY_ORDER,
   createEmptyState,
+  TemplateDefinition,
+  ResolvedTemplate,
 } from "@/types/prompt-composer";
 import { loadPack, loadRules } from "@/prompt-composer/PackLoader";
+import { loadTemplateList, loadTemplate } from "@/prompt-composer/TemplateLoader";
 import {
   randomizeAll,
   randomizeUnlocked,
   randomizeCategory,
   mutate as mutateState,
   generatePrompt,
+  templateRandomizeAll,
+  templateRandomizeCategory,
+  templateMutate,
+  templateGeneratePrompt,
 } from "@/prompt-composer/RandomPromptEngine";
 import {
   savePreset,
@@ -36,6 +43,10 @@ interface PromptComposerProps {
   onComposerStateChange: React.Dispatch<React.SetStateAction<PromptState>>;
   mutationPercent: number;
   onMutationPercentChange: (percent: number) => void;
+  selectedTemplateId: string | null;
+  onSelectedTemplateIdChange: (id: string | null) => void;
+  resolvedTemplate: ResolvedTemplate | null;
+  onResolvedTemplateChange: (template: ResolvedTemplate | null) => void;
 }
 
 export default function PromptComposer({
@@ -44,12 +55,19 @@ export default function PromptComposer({
   onComposerStateChange,
   mutationPercent,
   onMutationPercentChange,
+  selectedTemplateId,
+  onSelectedTemplateIdChange,
+  resolvedTemplate,
+  onResolvedTemplateChange,
 }: PromptComposerProps) {
   const state = composerState;
   const setState = onComposerStateChange;
   const [packData, setPackData] = useState<ThemePackData | null>(null);
   const [rules, setRules] = useState<RelationshipRule[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [templates, setTemplates] = useState<TemplateDefinition[]>([]);
+  const [loadingTemplate, setLoadingTemplate] = useState(false);
 
   const [searchCategory, setSearchCategory] = useState<PromptCategoryKey | null>(null);
   const [showMutationDialog, setShowMutationDialog] = useState(false);
@@ -60,6 +78,7 @@ export default function PromptComposer({
 
   useEffect(() => {
     initPack();
+    loadTemplates();
   }, []);
 
   useEffect(() => {
@@ -71,7 +90,6 @@ export default function PromptComposer({
     try {
       const pack = await loadPack();
       setPackData(pack);
-
       const packRules = await loadRules();
       setRules(packRules);
     } catch (err) {
@@ -82,16 +100,111 @@ export default function PromptComposer({
     }
   };
 
+  const loadTemplates = async () => {
+    const list = await loadTemplateList();
+    setTemplates(list);
+  };
+
   const loadPresets = async () => {
     const list = await listPresets();
     setPresets(list);
   };
 
+  const handleSelectTemplate = async (templateId: string | null) => {
+    if (templateId === selectedTemplateId) return;
+
+    if (templateId === null) {
+      onSelectedTemplateIdChange(null);
+      onResolvedTemplateChange(null);
+      return;
+    }
+
+    setLoadingTemplate(true);
+    try {
+      const resolved = await loadTemplate(templateId);
+      if (resolved) {
+        onSelectedTemplateIdChange(templateId);
+        onResolvedTemplateChange(resolved);
+
+        setState((prev) => {
+          const next = { ...prev };
+          for (const cat of resolved.definition.categories) {
+            if (!next[cat.key as PromptCategoryKey]) {
+              next[cat.key as PromptCategoryKey] = { value: [], locked: false, enabled: true };
+            }
+          }
+          return next;
+        });
+      }
+    } catch (err) {
+      console.error("Failed to load template:", err);
+      toast.error("Failed to load template");
+    } finally {
+      setLoadingTemplate(false);
+    }
+  };
+
+  const handleRandomTemplate = async () => {
+    if (templates.length === 0) return;
+    const randomIdx = Math.floor(Math.random() * templates.length);
+    const randomTemplate = templates[randomIdx];
+    await handleSelectTemplate(randomTemplate.id);
+
+    if (resolvedTemplate && packData) {
+      setTimeout(() => {
+        setState((prev) =>
+          templateRandomizeAll(prev, randomTemplate, resolvedTemplate, rules) as PromptState
+        );
+      }, 100);
+    }
+  };
+
+  const activeCategories = selectedTemplateId && resolvedTemplate
+    ? resolvedTemplate.definition.categories.map((c) => ({
+        key: c.key as PromptCategoryKey,
+        label: c.label,
+        multi: c.multi,
+        order: c.order,
+        description: c.description,
+      }))
+    : CATEGORY_CONFIGS;
+
+  const isTemplateMode = selectedTemplateId !== null && resolvedTemplate !== null;
+
   const getValuesForCategory = useCallback(
     (category: PromptCategoryKey) => {
       if (!packData) return [];
-      const baseValues = packData.categories[category] || [];
 
+      if (isTemplateMode && resolvedTemplate) {
+        const baseValues = resolvedTemplate.categories[category] || [];
+        if (rules.length === 0) return baseValues;
+
+        const allowed = new Set<string>();
+        const forbidden = new Set<string>();
+        let hasRelevantRule = false;
+
+        for (const rule of rules) {
+          const conditionValues = state[rule.when.category]?.value || [];
+          const matches = conditionValues.some((v) => rule.when.values.includes(v));
+          const target = matches ? rule.then : rule.otherwise;
+          const targetValues = target[category];
+
+          if (targetValues) {
+            hasRelevantRule = true;
+            if (matches) {
+              targetValues.forEach((v) => allowed.add(v));
+            } else {
+              targetValues.forEach((v) => forbidden.add(v));
+            }
+          }
+        }
+
+        if (!hasRelevantRule) return baseValues;
+        if (allowed.size > 0) return baseValues.filter((v) => allowed.has(v.name));
+        return baseValues.filter((v) => !forbidden.has(v.name));
+      }
+
+      const baseValues = packData.categories[category] || [];
       if (rules.length === 0) return baseValues;
 
       const allowed = new Set<string>();
@@ -100,10 +213,7 @@ export default function PromptComposer({
 
       for (const rule of rules) {
         const conditionValues = state[rule.when.category]?.value || [];
-        const matches = conditionValues.some((v) =>
-          rule.when.values.includes(v)
-        );
-
+        const matches = conditionValues.some((v) => rule.when.values.includes(v));
         const target = matches ? rule.then : rule.otherwise;
         const targetValues = target[category];
 
@@ -121,28 +231,57 @@ export default function PromptComposer({
       if (allowed.size > 0) return baseValues.filter((v) => allowed.has(v.name));
       return baseValues.filter((v) => !forbidden.has(v.name));
     },
-    [packData, rules, state]
+    [packData, rules, state, isTemplateMode, resolvedTemplate]
   );
 
   const handleRandomizeCategory = (category: PromptCategoryKey) => {
     if (!packData) return;
-    setState((prev) => randomizeCategory(prev, category, packData, rules));
+
+    if (isTemplateMode && resolvedTemplate) {
+      setState((prev) =>
+        templateRandomizeCategory(prev, category, resolvedTemplate.definition, resolvedTemplate, rules) as PromptState
+      );
+    } else {
+      setState((prev) => randomizeCategory(prev, category, packData, rules));
+    }
   };
 
   const handleRandomizeAll = () => {
     if (!packData) return;
-    setState((prev) => randomizeAll(prev, packData, rules));
+
+    if (isTemplateMode && resolvedTemplate) {
+      setState((prev) =>
+        templateRandomizeAll(prev, resolvedTemplate.definition, resolvedTemplate, rules) as PromptState
+      );
+    } else {
+      setState((prev) => randomizeAll(prev, packData, rules));
+    }
   };
 
   const handleRandomizeUnlocked = () => {
     if (!packData) return;
-    setState((prev) => randomizeUnlocked(prev, packData, rules));
+
+    if (isTemplateMode && resolvedTemplate) {
+      setState((prev) =>
+        templateRandomizeAll(prev, resolvedTemplate.definition, resolvedTemplate, rules) as PromptState
+      );
+    } else {
+      setState((prev) => randomizeUnlocked(prev, packData, rules));
+    }
   };
 
   const handleMutate = (percent: number) => {
     if (!packData) return;
     onMutationPercentChange(percent);
-    setState((prev) => mutateState(prev, percent, packData, rules));
+
+    if (isTemplateMode && resolvedTemplate) {
+      setState((prev) =>
+        templateMutate(prev, percent, resolvedTemplate.definition, resolvedTemplate, rules) as PromptState
+      );
+    } else {
+      setState((prev) => mutateState(prev, percent, packData, rules));
+    }
+
     setShowMutationDialog(false);
     toast.success(`Mutated at ${percent}%`);
   };
@@ -170,8 +309,8 @@ export default function PromptComposer({
   const handleLockAll = () => {
     setState((prev) => {
       const next = { ...prev };
-      for (const key of CATEGORY_ORDER) {
-        next[key] = { ...next[key], locked: true };
+      for (const cat of activeCategories) {
+        next[cat.key] = { ...next[cat.key], locked: true };
       }
       return next;
     });
@@ -180,15 +319,20 @@ export default function PromptComposer({
   const handleUnlockAll = () => {
     setState((prev) => {
       const next = { ...prev };
-      for (const key of CATEGORY_ORDER) {
-        next[key] = { ...next[key], locked: false };
+      for (const cat of activeCategories) {
+        next[cat.key] = { ...next[cat.key], locked: false };
       }
       return next;
     });
   };
 
   const handleReset = () => {
-    setState(createEmptyState());
+    if (isTemplateMode && resolvedTemplate) {
+      const newState = createEmptyState();
+      setState(newState);
+    } else {
+      setState(createEmptyState());
+    }
   };
 
   const handleSelectValues = (category: PromptCategoryKey, values: string[]) => {
@@ -203,13 +347,17 @@ export default function PromptComposer({
   };
 
   const handleCopyPrompt = () => {
-    const prompt = generatePrompt(state);
+    const prompt = isTemplateMode && resolvedTemplate
+      ? templateGeneratePrompt(state, resolvedTemplate.definition)
+      : generatePrompt(state);
     navigator.clipboard.writeText(prompt);
     toast.success("Prompt copied");
   };
 
   const handleUsePrompt = () => {
-    const prompt = generatePrompt(state);
+    const prompt = isTemplateMode && resolvedTemplate
+      ? templateGeneratePrompt(state, resolvedTemplate.definition)
+      : generatePrompt(state);
     if (!prompt.trim()) {
       toast.error("No prompt to use. Randomize or select values first.");
       return;
@@ -219,7 +367,7 @@ export default function PromptComposer({
 
   const handleSavePreset = async () => {
     if (!presetName.trim()) return;
-    await savePreset(presetName, state, "default", mutationPercent);
+    await savePreset(presetName, state, "default", mutationPercent, selectedTemplateId ?? undefined);
     setPresetName("");
     setShowPresetDialog(false);
     await loadPresets();
@@ -229,6 +377,12 @@ export default function PromptComposer({
   const handleLoadPreset = async (preset: ComposerPreset) => {
     setState(preset.state);
     onMutationPercentChange(preset.mutationPercent);
+    if (preset.templateId) {
+      await handleSelectTemplate(preset.templateId);
+    } else {
+      onSelectedTemplateIdChange(null);
+      onResolvedTemplateChange(null);
+    }
     toast.success(`Loaded "${preset.name}"`);
   };
 
@@ -254,6 +408,45 @@ export default function PromptComposer({
 
   return (
     <div className="space-y-3">
+      {/* Template selector */}
+      {templates.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            onClick={() => handleSelectTemplate(null)}
+            className={`rounded-lg border px-2.5 py-1.5 text-[11px] transition ${
+              !selectedTemplateId
+                ? "border-gold/40 bg-gold/[0.06] text-gold"
+                : "border-border-strong bg-surface-2 text-text-secondary hover:border-gold/40 hover:text-gold"
+            }`}
+          >
+            All
+          </button>
+          {templates.map((tpl) => (
+            <button
+              key={tpl.id}
+              onClick={() => handleSelectTemplate(tpl.id)}
+              disabled={loadingTemplate}
+              className={`rounded-lg border px-2.5 py-1.5 text-[11px] transition disabled:opacity-50 ${
+                selectedTemplateId === tpl.id
+                  ? "border-gold/40 bg-gold/[0.06] text-gold"
+                  : "border-border-strong bg-surface-2 text-text-secondary hover:border-gold/40 hover:text-gold"
+              }`}
+            >
+              {tpl.icon && <span className="mr-1">{tpl.icon}</span>}
+              {tpl.name}
+            </button>
+          ))}
+          <button
+            onClick={handleRandomTemplate}
+            disabled={loadingTemplate}
+            className="rounded-lg border border-border-strong bg-surface-2 px-2.5 py-1.5 text-[11px] text-text-secondary transition hover:border-purple-400/40 hover:text-purple-400 disabled:opacity-50"
+            title="Random template"
+          >
+            🎲
+          </button>
+        </div>
+      )}
+
       {/* Top toolbar */}
       <div className="flex flex-wrap items-center gap-1.5">
         <button
@@ -302,11 +495,11 @@ export default function PromptComposer({
 
       {/* Category cards grid */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        {CATEGORY_CONFIGS.map((config) => (
+        {activeCategories.map((config) => (
           <PromptCategoryCard
             key={config.key}
             config={config}
-            state={state[config.key]}
+            state={state[config.key] || { value: [], locked: false, enabled: true }}
             onOpenSearch={(cat) => setSearchCategory(cat)}
             onRandomize={handleRandomizeCategory}
             onToggleLock={handleToggleLock}
@@ -316,7 +509,11 @@ export default function PromptComposer({
       </div>
 
       {/* Prompt summary */}
-      <PromptSummary composerState={state} onCopy={handleCopyPrompt} />
+      <PromptSummary
+        composerState={state}
+        template={isTemplateMode ? resolvedTemplate?.definition : undefined}
+        onCopy={handleCopyPrompt}
+      />
 
       {/* Preset management */}
       <div className="flex flex-wrap items-center gap-2">
@@ -365,10 +562,10 @@ export default function PromptComposer({
           values={getValuesForCategory(searchCategory)}
           selected={state[searchCategory]?.value || []}
           multi={
-            CATEGORY_CONFIGS.find((c) => c.key === searchCategory)?.multi || false
+            activeCategories.find((c) => c.key === searchCategory)?.multi || false
           }
           categoryLabel={
-            CATEGORY_CONFIGS.find((c) => c.key === searchCategory)?.label || ""
+            activeCategories.find((c) => c.key === searchCategory)?.label || ""
           }
           onConfirm={(values) => handleSelectValues(searchCategory, values)}
           onClose={() => setSearchCategory(null)}

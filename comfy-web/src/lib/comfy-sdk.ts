@@ -35,6 +35,7 @@ const LORA_TRIGGER_WORDS: Record<string, string> = {
   "Krea2_Cinematic_Artstyle.safetensors": "An angular, 3d art style, with brush stroke color texture",
   "retroanime.safetensors": "Purple retro anime style",
   "m87_lora_v1.safetensors": "--preview",
+  "sunsetblur.safetensors": "ethereal motion blur style",
 };
 
 export async function generateWithSDK(

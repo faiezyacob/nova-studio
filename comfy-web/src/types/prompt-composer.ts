@@ -68,6 +68,7 @@ export interface ComposerPreset {
   state: PromptState;
   packName: string;
   mutationPercent: number;
+  templateId?: string;
   createdAt: number;
 }
 
@@ -114,6 +115,40 @@ export function createEmptyState(): PromptState {
   const state = {} as PromptState;
   for (const key of CATEGORY_ORDER) {
     state[key] = { value: [], locked: false, enabled: true };
+  }
+  return state;
+}
+
+export type TemplateCategoryKey = string;
+
+export interface TemplateCategoryDef {
+  key: TemplateCategoryKey;
+  label: string;
+  multi: boolean;
+  order: number;
+  description: string;
+  pack?: string;
+}
+
+export interface TemplateDefinition {
+  id: string;
+  name: string;
+  description?: string;
+  icon?: string;
+  categories: TemplateCategoryDef[];
+}
+
+export interface ResolvedTemplate {
+  definition: TemplateDefinition;
+  categories: Partial<Record<TemplateCategoryKey, PromptValue[]>>;
+}
+
+export type TemplateState = Record<TemplateCategoryKey, CategoryState>;
+
+export function createTemplateEmptyState(template: TemplateDefinition): TemplateState {
+  const state: TemplateState = {};
+  for (const cat of template.categories) {
+    state[cat.key] = { value: [], locked: false, enabled: true };
   }
   return state;
 }

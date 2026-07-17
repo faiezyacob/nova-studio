@@ -8,11 +8,12 @@ import ImageUpscaleDialog from "./ImageUpscaleDialog";
 import SceneBlueprintViewer from "./SceneBlueprintViewer";
 import PromptComposer from "./PromptComposer";
 import { db } from "@/utils/db";
-import { type PromptState, createEmptyState } from "@/types/prompt-composer";
+import { type PromptState, createEmptyState, type TemplateDefinition, type ResolvedTemplate } from "@/types/prompt-composer";
 
 const AVAILABLE_LORAS = [
   "RealisticSnapshot-Zimage-Turbov5.safetensors",
   "retroanime.safetensors",
+  "sunsetblur.safetensors",
   "Krea2-realism-V2.safetensors",
   "Krea2_Cinematic_Artstyle.safetensors",
   "m87_lora_v1.safetensors",
@@ -180,6 +181,8 @@ export default function ImageWorkspace({
   const [promptMode, setPromptMode] = useState<"free" | "composer">("free");
   const [composerState, setComposerState] = useState<PromptState>(createEmptyState);
   const [composerMutationPercent, setComposerMutationPercent] = useState(25);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [resolvedTemplate, setResolvedTemplate] = useState<ResolvedTemplate | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const itemsPerPage = 12;
 
@@ -1305,6 +1308,10 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
                   onComposerStateChange={setComposerState}
                   mutationPercent={composerMutationPercent}
                   onMutationPercentChange={setComposerMutationPercent}
+                  selectedTemplateId={selectedTemplateId}
+                  onSelectedTemplateIdChange={setSelectedTemplateId}
+                  resolvedTemplate={resolvedTemplate}
+                  onResolvedTemplateChange={setResolvedTemplate}
                 />
               )}
             </div>
