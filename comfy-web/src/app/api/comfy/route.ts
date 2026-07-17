@@ -27,11 +27,11 @@ export async function POST(request: NextRequest) {
     if (workflow === 'ideogram4') {
       result = await generateWithIdeogramSDK(prompt, finalWidth, finalHeight, seed, generationId);
     } else if (workflow === 'krea2-turbo') {
-      const lora = loras && loras.length > 0 ? loras[0] : null;
-      result = await generateWithKrea2TurboSDK(prompt, finalWidth, finalHeight, lora, seed, generationId, sageAttention !== false);
+      const loraList = loras || [];
+      result = await generateWithKrea2TurboSDK(prompt, finalWidth, finalHeight, loraList, seed, generationId, sageAttention !== false);
     } else {
-      const lora = loras && loras.length > 0 ? loras[0] : null;
-      result = await generateWithSDK(prompt, finalWidth, finalHeight, lora, seed, generationId, sageAttention !== false);
+      const loraList = loras || [];
+      result = await generateWithSDK(prompt, finalWidth, finalHeight, loraList, seed, generationId, sageAttention !== false);
     }
 
     return NextResponse.json({ 

@@ -40,7 +40,7 @@ export default function App() {
   const [imageWidth, setImageWidth] = useState(1024);
   const [imageHeight, setImageHeight] = useState(1024);
   const [lockAspectRatio, setLockAspectRatio] = useState(true);
-  const [selectedLora, setSelectedLora] = useState<Lora>({ name: "", strength_model: 1.0, strength_clip: 1.0 });
+  const [selectedLoras, setSelectedLoras] = useState<Lora[]>([]);
   const [galleryFilter, setGalleryFilter] = useState("all");
   const [galleryPage, setGalleryPage] = useState(1);
 
@@ -717,8 +717,8 @@ export default function App() {
               setImageHeight={setImageHeight}
               lockAspectRatio={lockAspectRatio}
               setLockAspectRatio={setLockAspectRatio}
-              selectedLora={selectedLora}
-              setSelectedLora={setSelectedLora}
+              selectedLoras={selectedLoras}
+              setSelectedLoras={setSelectedLoras}
               galleryFilter={galleryFilter}
               setGalleryFilter={setGalleryFilter}
               galleryPage={galleryPage}

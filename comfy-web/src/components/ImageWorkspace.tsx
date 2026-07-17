@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { toast } from "sonner";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { GalleryItem, HistoryEntry, Lora } from "@/types";
 import ImageUpscaleDialog from "./ImageUpscaleDialog";
 import SceneBlueprintViewer from "./SceneBlueprintViewer";
@@ -12,6 +13,7 @@ import { type PromptState, createEmptyState } from "@/types/prompt-composer";
 const AVAILABLE_LORAS = [
   "RealisticSnapshot-Zimage-Turbov5.safetensors",
   "Krea2-realism-V2.safetensors",
+  "Krea2_Cinematic_Artstyle.safetensors",
 ];
 
 const STYLE_DESCRIPTIONS: Record<string, string> = {
@@ -103,8 +105,8 @@ interface ImageWorkspaceProps {
   setImageHeight: (height: number) => void;
   lockAspectRatio: boolean;
   setLockAspectRatio: (lock: boolean) => void;
-  selectedLora: Lora;
-  setSelectedLora: (lora: Lora) => void;
+  selectedLoras: Lora[];
+  setSelectedLoras: (loras: Lora[]) => void;
   galleryFilter: string;
   setGalleryFilter: (filter: string) => void;
   galleryPage: number;
@@ -145,8 +147,8 @@ export default function ImageWorkspace({
   setImageHeight,
   lockAspectRatio,
   setLockAspectRatio,
-  selectedLora,
-  setSelectedLora,
+  selectedLoras,
+  setSelectedLoras,
   galleryFilter,
   setGalleryFilter,
   galleryPage,
@@ -170,6 +172,7 @@ export default function ImageWorkspace({
   const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const [isRepairing, setIsRepairing] = useState(false);
   const [progress, setProgress] = useState<{ value: number; max: number } | null>(null);
+  useDocumentTitle(isGenerating, progress, 'Image');
   const [promptMode, setPromptMode] = useState<"free" | "composer">("free");
   const [composerState, setComposerState] = useState<PromptState>(createEmptyState);
   const [composerMutationPercent, setComposerMutationPercent] = useState(25);
@@ -330,7 +333,7 @@ export default function ImageWorkspace({
           width: finalWidth,
           height: finalHeight,
           workflow: imageWorkflow,
-          loras: imageWorkflow === 'ideogram4' ? [] : (selectedLora.name ? [selectedLora] : []),
+          loras: imageWorkflow === 'ideogram4' ? [] : selectedLoras.filter(l => l.name),
           seed: imageSeed ? parseInt(imageSeed) : undefined,
           sageAttention
         }),
@@ -1053,62 +1056,78 @@ If you output anything outside <prompt></prompt>, the answer is invalid.
 
               {imageWorkflow !== 'ideogram4' && (
                 <>
-                  {/* LoRA Select */}
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] uppercase tracking-widest text-text-subtle">LoRA</span>
-                    <div className="relative">
-                      <select
-                        value={selectedLora.name}
-                        onChange={(e) => setSelectedLora({ ...selectedLora, name: e.target.value })}
-                        disabled={isGenerating}
-                        className="rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition focus:border-gold-focus appearance-none disabled:opacity-50"
-                      >
-                        <option value="">None</option>
-                        {AVAILABLE_LORAS.map((loraName) => (
-                          <option key={loraName} value={loraName}>
-                            {loraName.replace('.safetensors', '')}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronIcon />
-                    </div>
-                  </div>
-
-                  {/* Strength */}
-                  <div className="flex flex-col gap-1 min-w-[140px] max-w-[200px]">
-                    <span className="text-[10px] uppercase tracking-widest text-text-subtle">Strength</span>
-                    <div className="flex items-center gap-2 h-[34px]">
-                      <input
-                        type="range"
-                        min="0"
-                        max="2"
-                        step="0.1"
-                        value={selectedLora.strength_model}
-                        onChange={(e) =>
-                          setSelectedLora({ ...selectedLora, strength_model: parseFloat(e.target.value) })
-                        }
-                        disabled={isGenerating}
-                        className="
-                flex-1 h-1.5 appearance-none rounded-full outline-none
-                bg-border-strong disabled:opacity-50 cursor-pointer
-                [&::-webkit-slider-thumb]:appearance-none
-                [&::-webkit-slider-thumb]:h-3.5
-                [&::-webkit-slider-thumb]:w-3.5
-                [&::-webkit-slider-thumb]:rounded-full
-                [&::-webkit-slider-thumb]:bg-gold
-                [&::-webkit-slider-thumb]:cursor-pointer
-                [&::-webkit-slider-thumb]:transition
-                [&::-webkit-slider-thumb]:hover:bg-gold-hover
-                [&::-moz-range-thumb]:h-3.5
-                [&::-moz-range-thumb]:w-3.5
-                [&::-moz-range-thumb]:rounded-full
-                [&::-moz-range-thumb]:bg-gold
-                [&::-moz-range-thumb]:border-0
-              "
-                      />
-                      <span className="w-9 text-center rounded-md bg-surface-2 border border-border-strong py-0.5 text-[11px] tabular-nums text-gold">
-                        {selectedLora.strength_model.toFixed(2)}
-                      </span>
+                  {/* LoRA List */}
+                  <div className="flex flex-col gap-1 min-w-[380px]">
+                    <span className="text-[10px] uppercase tracking-widest text-text-subtle">LoRAs</span>
+                    <div className="space-y-2">
+                      {selectedLoras.map((lora, index) => (
+                        <div key={index} className="flex items-center gap-2 shrink-0">
+                          <div className="relative flex-1 min-w-0">
+                            <select
+                              value={lora.name}
+                              onChange={(e) => {
+                                const updated = [...selectedLoras];
+                                updated[index] = { ...lora, name: e.target.value };
+                                setSelectedLoras(updated);
+                              }}
+                              disabled={isGenerating}
+                              className="w-full rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition focus:border-gold-focus appearance-none disabled:opacity-50"
+                            >
+                              <option value="">None</option>
+                              {AVAILABLE_LORAS.map((loraName) => (
+                                <option key={loraName} value={loraName}>
+                                  {loraName.replace('.safetensors', '')}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronIcon />
+                          </div>
+                          <div className="flex items-center gap-2 w-[140px] shrink-0">
+                            <input
+                              type="range"
+                              min="0"
+                              max="2"
+                              step="0.1"
+                              value={lora.strength_model}
+                              onChange={(e) => {
+                                const updated = [...selectedLoras];
+                                updated[index] = { ...lora, strength_model: parseFloat(e.target.value) };
+                                setSelectedLoras(updated);
+                              }}
+                              disabled={isGenerating}
+                              className="flex-1 h-1.5 appearance-none rounded-full outline-none bg-border-strong disabled:opacity-50 cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gold [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition [&::-webkit-slider-thumb]:hover:bg-gold-hover [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gold [&::-moz-range-thumb]:border-0"
+                            />
+                            <span className="w-9 text-center rounded-md bg-surface-2 border border-border-strong py-0.5 text-[11px] tabular-nums text-gold">
+                              {lora.strength_model.toFixed(2)}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              const updated = selectedLoras.filter((_, i) => i !== index);
+                              setSelectedLoras(updated);
+                            }}
+                            disabled={isGenerating}
+                            className="shrink-0 rounded-lg border border-border-strong p-1.5 text-text-subtle transition hover:border-error/50 hover:text-error disabled:opacity-50"
+                            title="Remove LoRA"
+                          >
+                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                      {selectedLoras.length < AVAILABLE_LORAS.length && (
+                        <button
+                          onClick={() => setSelectedLoras([...selectedLoras, { name: "", strength_model: 1.0, strength_clip: 1.0 }])}
+                          disabled={isGenerating}
+                          className="flex items-center gap-1.5 rounded-lg border border-dashed border-border-strong px-3 py-1.5 text-xs text-text-muted transition hover:border-gold-focus hover:text-gold-dim disabled:opacity-50"
+                        >
+                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                          </svg>
+                          Add LoRA
+                        </button>
+                      )}
                     </div>
                   </div>
                 </>

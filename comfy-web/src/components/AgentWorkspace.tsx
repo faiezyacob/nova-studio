@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { sceneAgent, type AgentStatus, type AgentEvent } from '@/lib/scene-agent/scene-agent';
 import type { Task } from '@/lib/scene-agent/task-queue';
 import type { ScenePlan } from '@/lib/scene-agent/scene-planner';
@@ -415,6 +416,17 @@ export default function AgentWorkspace({
   }, [activeSession?.id]);
 
   const isGenerating = status === 'running' || status === 'planning' || status === 'clarifying';
+
+  const activeTask = useMemo(() => {
+    if (!activeSession?.tasks) return null;
+    return (activeSession.tasks as Task[]).find((t) => t.status === 'running') ?? null;
+  }, [activeSession?.tasks]);
+
+  const taskProgress = activeTask && activeTask.total > 0
+    ? { value: activeTask.progress, max: activeTask.total }
+    : null;
+
+  useDocumentTitle(isGenerating, taskProgress, STATUS_LABELS[status] || undefined);
 
   useEffect(() => {
     setIsRunning(isGenerating);

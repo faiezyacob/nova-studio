@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Toaster, toast } from 'sonner';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import VideoUpscaleDialog from './VideoUpscaleDialog';
 import VideoEditorDialog from './VideoEditorDialog';
 import { db } from "@/utils/db";
@@ -92,6 +93,7 @@ export default function VideoWorkspace({
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
   const [progress, setProgress] = useState<{ value: number; max: number; text?: string } | null>(null);
+  useDocumentTitle(isGenerating, progress, 'Video');
   const [showProgressBar, setShowProgressBar] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);

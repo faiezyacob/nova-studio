@@ -35,7 +35,7 @@ export async function generateWithSDK(
   prompt: string,
   width: number,
   height: number,
-  lora: Lora | null = null,
+  loras: Lora[] = [],
   seed?: number,
   generationId?: string,
   sageAttention: boolean = true
@@ -66,19 +66,21 @@ export async function generateWithSDK(
   let modelNodeId = "16";
   let clipNodeId = "32";
 
-  if (lora?.name) {
-    nodes["100"] = {
+  const validLoras = loras.filter(l => l.name);
+  for (let i = 0; i < validLoras.length; i++) {
+    const nodeId = String(100 + i);
+    nodes[nodeId] = {
       class_type: "LoraLoader",
       inputs: {
-        model: ["16", 0],
-        clip: ["32", 0],
-        lora_name: lora.name,
-        strength_model: lora.strength_model,
-        strength_clip: lora.strength_clip,
+        model: [modelNodeId, 0],
+        clip: [clipNodeId, i === 0 ? 0 : 1],
+        lora_name: validLoras[i].name,
+        strength_model: validLoras[i].strength_model,
+        strength_clip: validLoras[i].strength_clip,
       },
     };
-    modelNodeId = "100";
-    clipNodeId = "100";
+    modelNodeId = nodeId;
+    clipNodeId = nodeId;
   }
 
   nodes["17"] = {
@@ -108,7 +110,7 @@ export async function generateWithSDK(
   nodes["6"] = {
     class_type: "CLIPTextEncode",
     inputs: {
-      clip: [clipNodeId, lora ? 1 : 0],
+      clip: [clipNodeId, validLoras.length > 0 ? 1 : 0],
       text: fullPrompt,
     },
   };
@@ -406,18 +408,18 @@ export async function generateWithKrea2TurboSDK(
   prompt: string,
   width: number,
   height: number,
-  lora: Lora | null = null,
+  loras: Lora[] = [],
   seed?: number,
   generationId?: string,
-  sageAttention: boolean = true,
-  _kreaRebalance: boolean = false
+  sageAttention: boolean = true
 ): Promise<{ prompt_id: string; images: string[]; seed: number }> {
   await api.init(5, 2000).waitForReady();
 
   const prefix = `gen_${Math.floor(Date.now() / 1000)}`;
   const generationSeed = seed ?? Math.floor(Math.random() * 10000000000000);
-  const enableLora = !!lora?.name;
-  const loraTriggerWord = lora?.trigger_word ?? '';
+  const validLoras = loras.filter(l => l.name);
+  const enableLora = validLoras.length > 0;
+  const loraTriggerWords = validLoras.map(l => l.trigger_word ?? '').filter(Boolean).join(', ');
 
   const nodes: Record<string, object> = {};
 
@@ -444,13 +446,14 @@ export async function generateWithKrea2TurboSDK(
   };
 
   // LoRA (optional)
-  if (enableLora) {
-    nodes["15"] = {
+  for (let i = 0; i < validLoras.length; i++) {
+    const nodeId = String(15 + i);
+    nodes[nodeId] = {
       class_type: "LoraLoaderModelOnly",
       inputs: {
-        model: ["10", 0],
-        lora_name: lora!.name,
-        strength_model: lora!.strength_model,
+        model: [i === 0 ? "10" : String(14 + i), 0],
+        lora_name: validLoras[i].name,
+        strength_model: validLoras[i].strength_model,
       },
     };
   }
@@ -466,7 +469,7 @@ export async function generateWithKrea2TurboSDK(
     class_type: "ComfySwitchNode",
     inputs: {
       on_false: ["10", 0],
-      on_true: enableLora ? ["15", 0] : ["10", 0],
+      on_true: enableLora ? [String(14 + validLoras.length), 0] : ["10", 0],
       switch: ["23", 0],
     },
   };
@@ -497,7 +500,7 @@ export async function generateWithKrea2TurboSDK(
     class_type: "StringConcatenate",
     inputs: {
       string_a: ["19", 0],
-      string_b: loraTriggerWord,
+      string_b: loraTriggerWords,
       delimiter: ", ",
     },
   };
