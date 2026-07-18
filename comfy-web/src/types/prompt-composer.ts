@@ -6,7 +6,6 @@ export type PromptCategoryKey =
   | "skin"
   | "hair"
   | "hairColor"
-  | "facialHair"
   | "eyes"
   | "expression"
   | "pose"
@@ -86,23 +85,22 @@ export const CATEGORY_CONFIGS: CategoryConfig[] = [
   { key: "skin", label: "Skin", multi: false, order: 4, description: "Skin tone and complexion" },
   { key: "hair", label: "Hair", multi: true, order: 5, description: "Hair style and texture" },
   { key: "hairColor", label: "Hair Color", multi: false, order: 6, description: "Hair color" },
-  { key: "facialHair", label: "Facial Hair", multi: false, order: 7, description: "Facial hair style" },
-  { key: "eyes", label: "Eyes", multi: true, order: 8, description: "Eye color and style" },
-  { key: "expression", label: "Expression", multi: false, order: 9, description: "Facial expression" },
-  { key: "pose", label: "Pose", multi: false, order: 10, description: "Body pose or action" },
-  { key: "clothing", label: "Clothing", multi: true, order: 11, description: "Outfit and garments" },
-  { key: "accessories", label: "Accessories", multi: true, order: 12, description: "Jewelry, props, items" },
-  { key: "location", label: "Location", multi: false, order: 13, description: "Scene location" },
-  { key: "weather", label: "Weather", multi: false, order: 14, description: "Weather conditions" },
-  { key: "time", label: "Time", multi: false, order: 15, description: "Time of day" },
-  { key: "lighting", label: "Lighting", multi: true, order: 16, description: "Light sources and quality" },
-  { key: "camera", label: "Camera", multi: false, order: 17, description: "Camera angle and type" },
-  { key: "lens", label: "Lens", multi: false, order: 18, description: "Lens focal length and type" },
-  { key: "composition", label: "Composition", multi: false, order: 19, description: "Framing and layout" },
-  { key: "mood", label: "Mood", multi: true, order: 20, description: "Emotional atmosphere" },
-  { key: "style", label: "Art Style", multi: false, order: 21, description: "Artistic style" },
-  { key: "quality", label: "Quality", multi: false, order: 22, description: "Image quality tags" },
-  { key: "details", label: "Details", multi: true, order: 23, description: "Extra descriptive details" },
+  { key: "eyes", label: "Eyes", multi: true, order: 7, description: "Eye color and style" },
+  { key: "expression", label: "Expression", multi: false, order: 8, description: "Facial expression" },
+  { key: "pose", label: "Pose", multi: false, order: 9, description: "Body pose or action" },
+  { key: "clothing", label: "Clothing", multi: true, order: 10, description: "Outfit and garments" },
+  { key: "accessories", label: "Accessories", multi: true, order: 11, description: "Jewelry, props, items" },
+  { key: "location", label: "Location", multi: false, order: 12, description: "Scene location" },
+  { key: "weather", label: "Weather", multi: false, order: 13, description: "Weather conditions" },
+  { key: "time", label: "Time", multi: false, order: 14, description: "Time of day" },
+  { key: "lighting", label: "Lighting", multi: true, order: 15, description: "Light sources and quality" },
+  { key: "camera", label: "Camera", multi: false, order: 16, description: "Camera angle and type" },
+  { key: "lens", label: "Lens", multi: false, order: 17, description: "Lens focal length and type" },
+  { key: "composition", label: "Composition", multi: false, order: 18, description: "Framing and layout" },
+  { key: "mood", label: "Mood", multi: true, order: 19, description: "Emotional atmosphere" },
+  { key: "style", label: "Art Style", multi: false, order: 20, description: "Artistic style" },
+  { key: "quality", label: "Quality", multi: false, order: 21, description: "Image quality tags" },
+  { key: "details", label: "Details", multi: true, order: 22, description: "Extra descriptive details" },
 ];
 
 export const CATEGORY_ORDER: PromptCategoryKey[] = CATEGORY_CONFIGS.map(c => c.key);

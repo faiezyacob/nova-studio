@@ -15,7 +15,7 @@ interface SummaryGroup {
 
 const SUMMARY_GROUPS: SummaryGroup[] = [
   { key: "subject", label: "Subject", categoryKeys: ["subject", "ethnicity", "age"] },
-  { key: "appearance", label: "Appearance", categoryKeys: ["bodyType", "skin", "hair", "hairColor", "facialHair", "eyes"] },
+  { key: "appearance", label: "Appearance", categoryKeys: ["bodyType", "skin", "hair", "hairColor", "eyes"] },
   { key: "expression", label: "Expression", categoryKeys: ["expression"] },
   { key: "pose", label: "Pose", categoryKeys: ["pose"] },
   { key: "clothing", label: "Clothing", categoryKeys: ["clothing"] },

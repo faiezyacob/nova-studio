@@ -205,6 +205,16 @@ export default function PromptComposer({
     setSearchCategory(null);
   };
 
+  const handleRemoveValue = (category: PromptCategoryKey, value: string) => {
+    setState((prev) => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        value: prev[category].value.filter((v) => v !== value),
+      },
+    }));
+  };
+
   const handleCopyPrompt = () => {
     const prompt = generatePrompt(state);
     navigator.clipboard.writeText(prompt);
@@ -314,6 +324,7 @@ export default function PromptComposer({
             onRandomize={handleRandomizeCategory}
             onToggleLock={handleToggleLock}
             onToggleEnabled={handleToggleEnabled}
+            onRemoveValue={handleRemoveValue}
           />
         ))}
       </div>

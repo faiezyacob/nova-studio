@@ -41,6 +41,7 @@ export default function App() {
   const [imageHeight, setImageHeight] = useState(1024);
   const [lockAspectRatio, setLockAspectRatio] = useState(true);
   const [selectedLoras, setSelectedLoras] = useState<Lora[]>([]);
+  const [imageWorkflow, setImageWorkflow] = useState("z-image-turbo");
   const [galleryFilter, setGalleryFilter] = useState("all");
   const [galleryPage, setGalleryPage] = useState(1);
 
@@ -719,6 +720,8 @@ export default function App() {
               setLockAspectRatio={setLockAspectRatio}
               selectedLoras={selectedLoras}
               setSelectedLoras={setSelectedLoras}
+              imageWorkflow={imageWorkflow}
+              setImageWorkflow={setImageWorkflow}
               galleryFilter={galleryFilter}
               setGalleryFilter={setGalleryFilter}
               galleryPage={galleryPage}

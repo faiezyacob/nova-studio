@@ -112,6 +112,8 @@ interface ImageWorkspaceProps {
   setLockAspectRatio: (lock: boolean) => void;
   selectedLoras: Lora[];
   setSelectedLoras: (loras: Lora[]) => void;
+  imageWorkflow: string;
+  setImageWorkflow: (workflow: string) => void;
   galleryFilter: string;
   setGalleryFilter: (filter: string) => void;
   galleryPage: number;
@@ -154,6 +156,8 @@ export default function ImageWorkspace({
   setLockAspectRatio,
   selectedLoras,
   setSelectedLoras,
+  imageWorkflow,
+  setImageWorkflow,
   galleryFilter,
   setGalleryFilter,
   galleryPage,
@@ -169,7 +173,6 @@ export default function ImageWorkspace({
   const [selectedImageForUpscale, setSelectedImageForUpscale] = useState<GalleryItem | null>(null);
   const [showBlueprintPanel, setShowBlueprintPanel] = useState(false);
   const [imageSeed, setImageSeed] = useState<string>("");
-  const [imageWorkflow, setImageWorkflow] = useState<string>("z-image-turbo");
   const [sageAttention, setSageAttention] = useState(true);
   const [promptEnhancement, setPromptEnhancement] = useState(false);
   const [applyStyleOnEnhance, setApplyStyleOnEnhance] = useState(true);

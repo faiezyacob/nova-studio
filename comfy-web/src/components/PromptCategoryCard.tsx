@@ -9,6 +9,7 @@ interface PromptCategoryCardProps {
   onRandomize: (category: PromptCategoryKey) => void;
   onToggleLock: (category: PromptCategoryKey) => void;
   onToggleEnabled: (category: PromptCategoryKey) => void;
+  onRemoveValue: (category: PromptCategoryKey, value: string) => void;
 }
 
 export default function PromptCategoryCard({
@@ -18,6 +19,7 @@ export default function PromptCategoryCard({
   onRandomize,
   onToggleLock,
   onToggleEnabled,
+  onRemoveValue,
 }: PromptCategoryCardProps) {
   const displayValue = state.value.length > 0
     ? state.value.join(", ")
@@ -104,6 +106,7 @@ export default function PromptCategoryCard({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
+                    onRemoveValue(config.key, v);
                   }}
                   className="text-text-subtle hover:text-error"
                 >

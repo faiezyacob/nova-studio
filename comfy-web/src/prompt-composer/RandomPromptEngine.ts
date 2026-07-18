@@ -145,7 +145,7 @@ export function generatePrompt(state: PromptState): string {
 
   const orderedKeys: PromptCategoryKey[] = [
     "subject", "ethnicity", "age", "bodyType", "skin",
-    "hair", "hairColor", "facialHair", "eyes",
+    "hair", "hairColor", "eyes",
     "expression", "pose", "clothing", "accessories",
     "location", "weather", "time",
     "lighting", "camera", "lens", "composition",

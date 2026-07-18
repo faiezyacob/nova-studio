@@ -18,7 +18,7 @@ export async function loadPack(): Promise<ThemePackData> {
 
   const categoryKeys: PromptCategoryKey[] = [
     "subject", "ethnicity", "age", "bodyType", "skin",
-    "hair", "hairColor", "facialHair", "eyes",
+    "hair", "hairColor", "eyes",
     "expression", "pose", "clothing", "accessories",
     "location", "weather", "time",
     "lighting", "camera", "lens", "composition",
