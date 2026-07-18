@@ -16,7 +16,7 @@ interface SummaryGroup {
 
 const SUMMARY_GROUPS: SummaryGroup[] = [
   { key: "subject", label: "Subject", categoryKeys: ["subject", "ethnicity", "age"] },
-  { key: "appearance", label: "Appearance", categoryKeys: ["bodyType", "skin", "hair", "hairColor", "hairStyle", "facialHair", "eyes"] },
+  { key: "appearance", label: "Appearance", categoryKeys: ["bodyType", "skin", "hair", "hairColor", "facialHair", "eyes"] },
   { key: "expression", label: "Expression", categoryKeys: ["expression"] },
   { key: "pose", label: "Pose", categoryKeys: ["pose"] },
   { key: "clothing", label: "Clothing", categoryKeys: ["clothing"] },
@@ -33,7 +33,7 @@ const SUMMARY_GROUPS: SummaryGroup[] = [
 function buildTemplateGroups(template: TemplateDefinition): SummaryGroup[] {
   const groups: SummaryGroup[] = [];
 
-  const appearanceKeys = ["bodyType", "skin", "hair", "hairColor", "hairStyle", "facialHair", "eyes"];
+  const appearanceKeys = ["bodyType", "skin", "hair", "hairColor", "facialHair", "eyes"];
   const environmentKeys = ["location", "environment", "weather", "time"];
   const cameraKeys = ["camera", "lens", "composition"];
 

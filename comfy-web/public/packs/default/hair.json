@@ -1,182 +1,55 @@
 [
-  {
-    "name": "Long flowing hair",
-    "weight": 8,
-    "tags": ["default"]
-  },
-  {
-    "name": "Short cropped hair",
-    "weight": 8,
-    "tags": ["default"]
-  },
-  {
-    "name": "Medium length hair",
-    "weight": 7,
-    "tags": ["default"]
-  },
-  {
-    "name": "Pixie cut",
-    "weight": 5,
-    "tags": ["default"]
-  },
-  {
-    "name": "Ponytail",
-    "weight": 7,
-    "tags": ["default"]
-  },
-  {
-    "name": "Braided hair",
-    "weight": 6,
-    "tags": ["default"]
-  },
-  {
-    "name": "Curly hair",
-    "weight": 6,
-    "tags": ["default"]
-  },
-  {
-    "name": "Wavy hair",
-    "weight": 6,
-    "tags": ["default"]
-  },
-  {
-    "name": "Straight hair",
-    "weight": 6,
-    "tags": ["default"]
-  },
-  {
-    "name": "Messy hair",
-    "weight": 5,
-    "tags": ["default"]
-  },
-  {
-    "name": "Bun",
-    "weight": 5,
-    "tags": ["default"]
-  },
-  {
-    "name": "Twin tails",
-    "weight": 5,
-    "tags": ["anime"]
-  },
-  {
-    "name": "Bob cut",
-    "weight": 5,
-    "tags": ["default"]
-  },
-  {
-    "name": "Mohawk",
-    "weight": 4,
-    "tags": ["punk"]
-  },
-  {
-    "name": "Afro",
-    "weight": 5,
-    "tags": ["default"]
-  },
-  {
-    "name": "Dreadlocks",
-    "weight": 4,
-    "tags": ["default"]
-  },
-  {
-    "name": "Bald",
-    "weight": 3,
-    "tags": ["default"]
-  },
-  {
-    "name": "Undercut",
-    "weight": 4,
-    "tags": ["modern"]
-  },
-  {
-    "name": "Side swept",
-    "weight": 4,
-    "tags": ["default"]
-  },
-  {
-    "name": "Wild untamed hair",
-    "weight": 4,
-    "tags": ["fantasy"]
-  },
-  {
-    "name": "Flower crown",
-    "weight": 3,
-    "tags": ["fantasy", "nature"]
-  },
-  {
-    "name": "Ornate headpiece",
-    "weight": 3,
-    "tags": ["fantasy"]
-  },
-  {
-    "name": "Tentacle hair",
-    "weight": 2,
-    "tags": ["fantasy", "horror"]
-  },
-  {
-    "name": "Short bob cut",
-    "weight": 6,
-    "tags": ["anime"]
-  },
-  {
-    "name": "Long twin tails",
-    "weight": 6,
-    "tags": ["anime"]
-  },
-  {
-    "name": "Side ponytail",
-    "weight": 5,
-    "tags": ["anime"]
-  },
-  {
-    "name": "Messy layers",
-    "weight": 6,
-    "tags": ["anime"]
-  },
-  {
-    "name": "Straight with bangs",
-    "weight": 6,
-    "tags": ["anime"]
-  },
-  {
-    "name": "Short pixie cut",
-    "weight": 4,
-    "tags": ["anime"]
-  },
-  {
-    "name": "Braided crown",
-    "weight": 4,
-    "tags": ["anime"]
-  },
-  {
-    "name": "High ponytail",
-    "weight": 6,
-    "tags": ["anime"]
-  },
-  {
-    "name": "Low twintails",
-    "weight": 5,
-    "tags": ["anime"]
-  },
-  {
-    "name": "Ahoge (antenna hair)",
-    "weight": 5,
-    "tags": ["anime"]
-  },
-  {
-    "name": "Drill curls",
-    "weight": 4,
-    "tags": ["anime"]
-  },
-  {
-    "name": "Hime cut",
-    "weight": 4,
-    "tags": ["anime"]
-  },
-  {
-    "name": "Wavy shoulder-length",
-    "weight": 5,
-    "tags": ["anime"]
-  }
+  { "name": "Long straight hair", "weight": 8, "tags": ["default"], "category": "default" },
+  { "name": "Long wavy hair", "weight": 8, "tags": ["default"], "category": "default" },
+  { "name": "Long curly hair", "weight": 6, "tags": ["default"], "category": "default" },
+  { "name": "Medium-length hair", "weight": 7, "tags": ["default"], "category": "default" },
+  { "name": "Short cropped hair", "weight": 7, "tags": ["default"], "category": "default" },
+  { "name": "Bob cut", "weight": 6, "tags": ["default"], "category": "default" },
+  { "name": "Lob cut", "weight": 5, "tags": ["default"], "category": "default" },
+  { "name": "Pixie cut", "weight": 5, "tags": ["default"], "category": "default" },
+  { "name": "Buzz cut", "weight": 3, "tags": ["default"], "category": "default" },
+  { "name": "Bald", "weight": 2, "tags": ["default"], "category": "default" },
+
+  { "name": "Ponytail", "weight": 7, "tags": ["default"], "category": "styled" },
+  { "name": "High ponytail", "weight": 6, "tags": ["default"], "category": "styled" },
+  { "name": "Low ponytail", "weight": 5, "tags": ["default"], "category": "styled" },
+  { "name": "Side ponytail", "weight": 5, "tags": ["default"], "category": "styled" },
+  { "name": "Messy bun", "weight": 6, "tags": ["default"], "category": "styled" },
+  { "name": "Top knot", "weight": 5, "tags": ["default"], "category": "styled" },
+  { "name": "Braided hair", "weight": 6, "tags": ["default"], "category": "styled" },
+  { "name": "French braid", "weight": 5, "tags": ["default"], "category": "styled" },
+  { "name": "Dutch braid", "weight": 5, "tags": ["default"], "category": "styled" },
+  { "name": "Braided crown", "weight": 4, "tags": ["default"], "category": "styled" },
+  { "name": "Half-up half-down hairstyle", "weight": 6, "tags": ["default"], "category": "styled" },
+  { "name": "Space buns", "weight": 4, "tags": ["default"], "category": "styled" },
+
+  { "name": "Messy layered hair", "weight": 6, "tags": ["modern"], "category": "modern" },
+  { "name": "Curtain bangs", "weight": 5, "tags": ["modern"], "category": "modern" },
+  { "name": "Straight hair with bangs", "weight": 6, "tags": ["modern"], "category": "modern" },
+  { "name": "Wolf cut", "weight": 5, "tags": ["modern"], "category": "modern" },
+  { "name": "Shag cut", "weight": 4, "tags": ["modern"], "category": "modern" },
+  { "name": "Undercut", "weight": 4, "tags": ["modern"], "category": "modern" },
+  { "name": "Fade haircut", "weight": 5, "tags": ["modern"], "category": "modern" },
+  { "name": "Pompadour", "weight": 4, "tags": ["modern"], "category": "modern" },
+  { "name": "Quiff hairstyle", "weight": 4, "tags": ["modern"], "category": "modern" },
+  { "name": "Mohawk", "weight": 3, "tags": ["punk"], "category": "modern" },
+
+  { "name": "Twin tails", "weight": 6, "tags": ["anime"], "category": "anime" },
+  { "name": "Long twin tails", "weight": 6, "tags": ["anime"], "category": "anime" },
+  { "name": "Low twin tails", "weight": 5, "tags": ["anime"], "category": "anime" },
+  { "name": "Ahoge (antenna hair)", "weight": 5, "tags": ["anime"], "category": "anime" },
+  { "name": "Drill curls", "weight": 4, "tags": ["anime"], "category": "anime" },
+  { "name": "Hime cut", "weight": 4, "tags": ["anime"], "category": "anime" },
+
+  { "name": "Wild untamed hair", "weight": 4, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Windblown hair", "weight": 5, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Glowing ethereal hair", "weight": 3, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Floating magical hair", "weight": 3, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Tentacle hair", "weight": 2, "tags": ["fantasy", "horror"], "category": "fantasy" },
+
+  { "name": "Afro", "weight": 5, "tags": ["default"], "category": "textured" },
+  { "name": "Dreadlocks", "weight": 4, "tags": ["default"], "category": "textured" },
+  { "name": "Cornrows", "weight": 4, "tags": ["default"], "category": "textured" },
+  { "name": "Box braids", "weight": 4, "tags": ["default"], "category": "textured" },
+  { "name": "Twists", "weight": 4, "tags": ["default"], "category": "textured" }
 ]

@@ -50,6 +50,15 @@ const CATEGORY_FILTERS: Record<string, readonly { value: string; label: string }
     { value: "indoor", label: "Indoor" },
     { value: "outdoor", label: "Outdoor" },
   ],
+  hair: [
+    { value: "", label: "All" },
+    { value: "default", label: "Default" },
+    { value: "styled", label: "Styled" },
+    { value: "modern", label: "Modern" },
+    { value: "anime", label: "Anime" },
+    { value: "fantasy", label: "Fantasy" },
+    { value: "textured", label: "Textured" },
+  ]
 };
 
 interface PromptSearchDialogProps {
