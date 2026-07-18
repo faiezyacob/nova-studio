@@ -10,6 +10,7 @@ export type PromptCategoryKey =
   | "expression"
   | "pose"
   | "clothing"
+  | "footwear"
   | "accessories"
   | "location"
   | "weather"
@@ -22,7 +23,6 @@ export type PromptCategoryKey =
   | "composition"
   | "mood"
   | "style"
-  | "renderStyle"
   | "details";
 
 export interface PromptValue {
@@ -91,19 +91,19 @@ export const CATEGORY_CONFIGS: CategoryConfig[] = [
   { key: "expression", label: "Expression", multi: false, order: 8, description: "Facial expression" },
   { key: "pose", label: "Pose", multi: false, order: 9, description: "Body pose or action" },
   { key: "clothing", label: "Clothing", multi: true, order: 10, description: "Outfit and garments" },
-  { key: "accessories", label: "Accessories", multi: true, order: 11, description: "Jewelry, props, items" },
-  { key: "location", label: "Location", multi: false, order: 12, description: "Scene location" },
-  { key: "weather", label: "Weather", multi: false, order: 13, description: "Weather conditions" },
-  { key: "time", label: "Time", multi: false, order: 14, description: "Time of day" },
-  { key: "lightSource", label: "Light Source", multi: false, order: 15, description: "Source of light in the scene" },
-  { key: "lightStyle", label: "Light Style", multi: true, order: 16, description: "Lighting technique and quality" },
-  { key: "cameraAngle", label: "Camera Angle", multi: false, order: 17, description: "Camera positioning and perspective" },
-  { key: "cameraShot", label: "Camera Shot", multi: false, order: 18, description: "Framing and shot type" },
-  { key: "lens", label: "Lens", multi: false, order: 19, description: "Lens focal length and type" },
-  { key: "composition", label: "Composition", multi: false, order: 20, description: "Framing and layout" },
-  { key: "mood", label: "Mood", multi: true, order: 21, description: "Emotional atmosphere" },
-  { key: "style", label: "Art Style", multi: false, order: 22, description: "Artistic style" },
-  { key: "renderStyle", label: "Render Style", multi: false, order: 23, description: "Image render style and quality" },
+  { key: "footwear", label: "Footwear", multi: false, order: 11, description: "Shoes, boots, and sandals" },
+  { key: "accessories", label: "Accessories", multi: true, order: 12, description: "Jewelry, props, items" },
+  { key: "location", label: "Location", multi: false, order: 13, description: "Scene location" },
+  { key: "weather", label: "Weather", multi: false, order: 14, description: "Weather conditions" },
+  { key: "time", label: "Time", multi: false, order: 15, description: "Time of day" },
+  { key: "lightSource", label: "Light Source", multi: false, order: 16, description: "Source of light in the scene" },
+  { key: "lightStyle", label: "Light Style", multi: true, order: 17, description: "Lighting technique and quality" },
+  { key: "cameraAngle", label: "Camera Angle", multi: false, order: 18, description: "Camera positioning and perspective" },
+  { key: "cameraShot", label: "Camera Shot", multi: false, order: 19, description: "Framing and shot type" },
+  { key: "lens", label: "Lens", multi: false, order: 20, description: "Lens focal length and type" },
+  { key: "composition", label: "Composition", multi: false, order: 21, description: "Framing and layout" },
+  { key: "mood", label: "Mood", multi: true, order: 22, description: "Emotional atmosphere" },
+  { key: "style", label: "Art Style", multi: false, order: 23, description: "Artistic style" },
   { key: "details", label: "Details", multi: true, order: 24, description: "Extra descriptive details" },
 ];
 

@@ -17,7 +17,7 @@
   { "name": "Lightweight windbreaker with joggers", "weight": 4, "tags": ["modern"], "category": "modern" },
 
   { "name": "Fur-lined coat with jeans", "weight": 4, "tags": ["default"], "category": "casual" },
-  { "name": "Cowboy boots, plaid shirt, and jeans", "weight": 5, "tags": ["default"], "category": "casual" },
+  { "name": "Plaid shirt and jeans", "weight": 5, "tags": ["default"], "category": "casual" },
   { "name": "Raincoat with waterproof pants", "weight": 4, "tags": ["default"], "category": "casual" },
   { "name": "Poncho with cargo pants", "weight": 3, "tags": ["default"], "category": "casual" },
   { "name": "Apron over t-shirt and jeans", "weight": 3, "tags": ["default"], "category": "casual" },
@@ -110,7 +110,7 @@
   { "name": "Sports bra with matching shorts", "weight": 6, "tags": ["seductive", "sport"], "category": "seductive" },
   { "name": "Lace bralette with satin shorts", "weight": 5, "tags": ["seductive"], "category": "seductive" },
   { "name": "Silk slip dress", "weight": 5, "tags": ["seductive"], "category": "seductive" },
-  { "name": "Off-shoulder sweater with thigh-high boots", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Off-shoulder sweater with thigh-high socks", "weight": 5, "tags": ["seductive"], "category": "seductive" },
   { "name": "Satin cami with matching shorts", "weight": 5, "tags": ["seductive"], "category": "seductive" },
   { "name": "Cropped hoodie with leggings", "weight": 5, "tags": ["seductive", "modern"], "category": "seductive" },
   { "name": "Bodycon mini dress", "weight": 6, "tags": ["seductive"], "category": "seductive" },

@@ -58,6 +58,22 @@ const CATEGORY_FILTERS: Record<string, readonly { value: string; label: string }
     { value: "anime", label: "Anime" },
     { value: "fantasy", label: "Fantasy" },
     { value: "textured", label: "Textured" },
+  ],
+  footwear: [
+    { value: "", label: "All" },
+    { value: "modern", label: "Modern" },
+    { value: "casual", label: "Casual" },
+    { value: "fantasy", label: "Fantasy" },
+    { value: "sci-fi", label: "Sci-Fi" },
+    { value: "anime", label: "Anime" },
+    { value: "seductive", label: "Seductive" },
+    { value: "dark", label: "Dark / Gothic" },
+    { value: "vintage", label: "Vintage" },
+    { value: "cultural", label: "Cultural" },
+    { value: "streetwear", label: "Streetwear" },
+    { value: "korean", label: "Korean" },
+    { value: "old_money", label: "Old Money" },
+    { value: "athleisure", label: "Athleisure" },
   ]
 };
 

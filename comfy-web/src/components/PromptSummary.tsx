@@ -25,7 +25,6 @@ const SUMMARY_GROUPS: SummaryGroup[] = [
   { key: "camera", label: "Camera", categoryKeys: ["cameraAngle", "cameraShot", "lens", "composition"] },
   { key: "mood", label: "Mood", categoryKeys: ["mood"] },
   { key: "style", label: "Style", categoryKeys: ["style"] },
-  { key: "renderStyle", label: "Render Style", categoryKeys: ["renderStyle"] },
   { key: "details", label: "Details", categoryKeys: ["details"] },
 ];
 

@@ -1,0 +1,75 @@
+[
+  { "name": "White sneakers", "weight": 8, "tags": ["modern"], "category": "modern" },
+  { "name": "Black sneakers", "weight": 8, "tags": ["modern"], "category": "modern" },
+  { "name": "Running shoes", "weight": 7, "tags": ["modern", "athleisure"], "category": "modern" },
+  { "name": "Canvas sneakers", "weight": 6, "tags": ["modern"], "category": "modern" },
+  { "name": "Slip-on shoes", "weight": 5, "tags": ["modern"], "category": "modern" },
+  { "name": "Chelsea boots", "weight": 6, "tags": ["modern"], "category": "modern" },
+  { "name": "Combat boots", "weight": 6, "tags": ["modern"], "category": "modern" },
+  { "name": "Work boots", "weight": 5, "tags": ["modern"], "category": "modern" },
+
+  { "name": "Leather loafers", "weight": 6, "tags": ["casual"], "category": "casual" },
+  { "name": "Boat shoes", "weight": 5, "tags": ["casual"], "category": "casual" },
+  { "name": "Sandals", "weight": 6, "tags": ["casual"], "category": "casual" },
+  { "name": "Flip-flops", "weight": 5, "tags": ["casual", "beach"], "category": "casual" },
+  { "name": "Barefoot", "weight": 10, "tags": ["casual", "nature"], "category": "casual" },
+  { "name": "Cowboy boots", "weight": 5, "tags": ["casual", "western"], "category": "casual" },
+
+  { "name": "Steel sabatons", "weight": 6, "tags": ["fantasy", "medieval"], "category": "fantasy" },
+  { "name": "Leather boots", "weight": 7, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Ranger boots", "weight": 6, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Knight boots", "weight": 6, "tags": ["fantasy", "medieval"], "category": "fantasy" },
+  { "name": "Elven boots", "weight": 5, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Wizard slippers", "weight": 4, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Fur boots", "weight": 5, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Dragon scale boots", "weight": 4, "tags": ["fantasy"], "category": "fantasy" },
+
+  { "name": "Powered exosuit boots", "weight": 5, "tags": ["sci-fi"], "category": "sci-fi" },
+  { "name": "Cyberpunk boots", "weight": 6, "tags": ["sci-fi"], "category": "sci-fi" },
+  { "name": "Magnetic boots", "weight": 5, "tags": ["sci-fi"], "category": "sci-fi" },
+  { "name": "Futuristic sneakers", "weight": 6, "tags": ["sci-fi"], "category": "sci-fi" },
+  { "name": "Space boots", "weight": 5, "tags": ["sci-fi"], "category": "sci-fi" },
+  { "name": "Mechanical boots", "weight": 5, "tags": ["sci-fi"], "category": "sci-fi" },
+
+  { "name": "School loafers", "weight": 6, "tags": ["anime"], "category": "anime" },
+  { "name": "Mary Jane shoes", "weight": 5, "tags": ["anime"], "category": "anime" },
+  { "name": "Knee-high boots", "weight": 5, "tags": ["anime"], "category": "anime" },
+  { "name": "Traditional geta sandals", "weight": 5, "tags": ["anime", "asian"], "category": "anime" },
+  { "name": "Traditional zori sandals", "weight": 5, "tags": ["anime", "asian"], "category": "anime" },
+
+  { "name": "High heels", "weight": 7, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Stiletto heels", "weight": 6, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Platform heels", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Thigh-high boots", "weight": 6, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Over-the-knee boots", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Strappy heels", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+
+  { "name": "Worn leather boots", "weight": 5, "tags": ["dark"], "category": "dark" },
+  { "name": "Spiked boots", "weight": 5, "tags": ["dark"], "category": "dark" },
+  { "name": "Heavy combat boots", "weight": 6, "tags": ["dark"], "category": "dark" },
+
+  { "name": "Victorian boots", "weight": 5, "tags": ["vintage"], "category": "vintage" },
+  { "name": "Oxford shoes", "weight": 6, "tags": ["vintage"], "category": "vintage" },
+  { "name": "Wingtip shoes", "weight": 5, "tags": ["vintage"], "category": "vintage" },
+
+  { "name": "Traditional wooden clogs", "weight": 4, "tags": ["cultural"], "category": "cultural" },
+  { "name": "Mojari shoes", "weight": 4, "tags": ["cultural"], "category": "cultural" },
+  { "name": "Traditional embroidered slippers", "weight": 4, "tags": ["cultural"], "category": "cultural" },
+
+  { "name": "Chunky sneakers", "weight": 6, "tags": ["streetwear"], "category": "streetwear" },
+  { "name": "High-top sneakers", "weight": 6, "tags": ["streetwear"], "category": "streetwear" },
+  { "name": "Skate shoes", "weight": 5, "tags": ["streetwear"], "category": "streetwear" },
+
+  { "name": "Minimal white sneakers", "weight": 6, "tags": ["korean"], "category": "korean" },
+  { "name": "Platform sneakers", "weight": 5, "tags": ["korean"], "category": "korean" },
+  { "name": "Loafers", "weight": 5, "tags": ["korean"], "category": "korean" },
+
+  { "name": "Suede loafers", "weight": 6, "tags": ["old_money"], "category": "old_money" },
+  { "name": "Oxford dress shoes", "weight": 6, "tags": ["old_money"], "category": "old_money" },
+
+  { "name": "Training shoes", "weight": 7, "tags": ["athleisure"], "category": "athleisure" },
+  { "name": "Cross-training shoes", "weight": 6, "tags": ["athleisure"], "category": "athleisure" },
+  { "name": "Basketball shoes", "weight": 5, "tags": ["athleisure"], "category": "athleisure" },
+  { "name": "Tennis shoes", "weight": 5, "tags": ["athleisure"], "category": "athleisure" },
+  { "name": "Hiking shoes", "weight": 5, "tags": ["athleisure"], "category": "athleisure" }
+]
