@@ -567,6 +567,7 @@ export default function PromptComposer({
           categoryLabel={
             activeCategories.find((c) => c.key === searchCategory)?.label || ""
           }
+          categoryKey={searchCategory}
           onConfirm={(values) => handleSelectValues(searchCategory, values)}
           onClose={() => setSearchCategory(null)}
         />

@@ -30,6 +30,7 @@ export interface PromptValue {
   name: string;
   weight: number;
   tags: string[];
+  category?: string;
 }
 
 export interface CategoryState {

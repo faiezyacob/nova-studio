@@ -1,755 +1,198 @@
 [
-  {
-    "name": "Armor",
-    "weight": 6,
-    "tags": [
-      "fantasy",
-      "medieval"
-    ]
-  },
-  {
-    "name": "Leather jacket",
-    "weight": 7,
-    "tags": [
-      "modern"
-    ]
-  },
-  {
-    "name": "Dress",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Suit",
-    "weight": 7,
-    "tags": [
-      "modern"
-    ]
-  },
-  {
-    "name": "T-shirt and jeans",
-    "weight": 8,
-    "tags": [
-      "modern"
-    ]
-  },
-  {
-    "name": "Robe",
-    "weight": 5,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Cloak",
-    "weight": 5,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Kimono",
-    "weight": 5,
-    "tags": [
-      "asian"
-    ]
-  },
-  {
-    "name": "Traditional clothing",
-    "weight": 5,
-    "tags": [
-      "cultural"
-    ]
-  },
-  {
-    "name": "Flowing gown",
-    "weight": 5,
-    "tags": [
-      "fantasy",
-      "elegant"
-    ]
-  },
-  {
-    "name": "Military uniform",
-    "weight": 5,
-    "tags": [
-      "historical"
-    ]
-  },
-  {
-    "name": "Hoodie",
-    "weight": 6,
-    "tags": [
-      "modern"
-    ]
-  },
-  {
-    "name": "Leather pants",
-    "weight": 5,
-    "tags": [
-      "modern"
-    ]
-  },
-  {
-    "name": "Silk robe",
-    "weight": 4,
-    "tags": [
-      "elegant"
-    ]
-  },
-  {
-    "name": "Mech suit",
-    "weight": 4,
-    "tags": [
-      "sci-fi"
-    ]
-  },
+  { "name": "Fitted white t-shirt with slim blue jeans", "weight": 8, "tags": ["modern"], "category": "modern" },
+  { "name": "Black leather pants with fitted turtleneck", "weight": 5, "tags": ["modern"], "category": "modern" },
+  { "name": "Black biker jacket over graphic tee with ripped jeans", "weight": 5, "tags": ["modern"], "category": "modern" },
+  { "name": "Lab coat", "weight": 4, "tags": ["modern", "sci-fi"], "category": "modern" },
+  { "name": "Strapless crop top with high-waisted jeans", "weight": 4, "tags": ["modern"], "category": "modern" },
+  { "name": "Tactical gear", "weight": 5, "tags": ["sci-fi", "modern"], "category": "modern" },
+  { "name": "Overalls", "weight": 4, "tags": ["modern"], "category": "modern" },
+  { "name": "Jumpsuit", "weight": 5, "tags": ["modern"], "category": "modern" },
+  { "name": "Matching athletic tracksuit", "weight": 4, "tags": ["modern"], "category": "modern" },
+  { "name": "Polo shirt with chinos", "weight": 5, "tags": ["modern"], "category": "modern" },
+  { "name": "Beige chinos with rolled sleeves shirt", "weight": 5, "tags": ["modern"], "category": "modern" },
+  { "name": "Black turtleneck with tailored trousers", "weight": 4, "tags": ["modern"], "category": "modern" },
+  { "name": "Denim jacket over white tee with black jeans", "weight": 5, "tags": ["modern"], "category": "modern" },
+  { "name": "Varsity jacket with cargo pants", "weight": 4, "tags": ["modern"], "category": "modern" },
+  { "name": "Bomber jacket over fitted t-shirt", "weight": 5, "tags": ["modern"], "category": "modern" },
+  { "name": "Lightweight windbreaker with joggers", "weight": 4, "tags": ["modern"], "category": "modern" },
 
-  {
-    "name": "Wedding dress",
-    "weight": 4,
-    "tags": [
-      "elegant"
-    ]
-  },
-  {
-    "name": "Corset",
-    "weight": 4,
-    "tags": [
-      "elegant"
-    ]
-  },
-  {
-    "name": "Torn rags",
-    "weight": 3,
-    "tags": [
-      "dark"
-    ]
-  },
-  {
-    "name": "Skin-tight suit",
-    "weight": 4,
-    "tags": [
-      "sci-fi"
-    ]
-  },
-  {
-    "name": "Viking armor",
-    "weight": 4,
-    "tags": [
-      "fantasy",
-      "medieval"
-    ]
-  },
-  {
-    "name": "Samurai armor",
-    "weight": 4,
-    "tags": [
-      "fantasy",
-      "asian"
-    ]
-  },
-  {
-    "name": "Biker jacket",
-    "weight": 5,
-    "tags": [
-      "modern"
-    ]
-  },
-  {
-    "name": "Gothic dress",
-    "weight": 4,
-    "tags": [
-      "dark"
-    ]
-  },
-  {
-    "name": "Lab coat",
-    "weight": 4,
-    "tags": [
-      "modern",
-      "sci-fi"
-    ]
-  },
-  {
-    "name": "Strapless top",
-    "weight": 4,
-    "tags": [
-      "modern"
-    ]
-  },
-  {
-    "name": "Tactical gear",
-    "weight": 5,
-    "tags": [
-      "sci-fi",
-      "modern"
-    ]
-  },
-  {
-    "name": "Fur-lined coat",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Suspenders and shirt",
-    "weight": 4,
-    "tags": [
-      "vintage"
-    ]
-  },
-  {
-    "name": "Transparent fabric",
-    "weight": 3,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Sheer lace top",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Bikini",
-    "weight": 6,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Lingerie set",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Mesh top",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Crop top",
-    "weight": 6,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Mini skirt",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Thigh-high stockings",
-    "weight": 4,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Backless dress",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Cutout bodysuit",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "High-slit dress",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Bustier top",
-    "weight": 4,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Tanga bottoms",
-    "weight": 4,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Chiffon wrap",
-    "weight": 4,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "String bikini",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Low-cut bodysuit",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Garter belt and stockings",
-    "weight": 4,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Bandeau top",
-    "weight": 4,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Sarong wrap",
-    "weight": 4,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "See-through blouse",
-    "weight": 4,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Oversized t-shirt only",
-    "weight": 6,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Sports bra and matching shorts",
-    "weight": 6,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Lace bralette",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Silk slip dress",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Off-shoulder sweater",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Satin cami set",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Cropped hoodie",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Bodycon mini dress",
-    "weight": 6,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Fishnet bodysuit",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Velvet bodysuit",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Babydoll lingerie",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Cut-out one-piece",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "High-waist thong bikini",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Lace-trim robe",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Push-up bra set",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Matching lounge set",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Ribbed crop top and leggings",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Satin pajama set",
-    "weight": 4,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Bandeau and hot pants",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Plate armor",
-    "weight": 8,
-    "tags": [
-      "fantasy",
-      "medieval"
-    ]
-  },
-  {
-    "name": "Chain mail",
-    "weight": 7,
-    "tags": [
-      "fantasy",
-      "medieval"
-    ]
-  },
-  {
-    "name": "Enchanted robe",
-    "weight": 8,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Leather bracers and tunic",
-    "weight": 7,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Cloak of shadows",
-    "weight": 6,
-    "tags": [
-      "fantasy",
-      "dark"
-    ]
-  },
-  {
-    "name": "Elven silk gown",
-    "weight": 6,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Dwarven forge apron",
-    "weight": 5,
-    "tags": [
-      "fantasy",
-      "medieval"
-    ]
-  },
-  {
-    "name": "Wizard robes with runes",
-    "weight": 7,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Dragon scale armor",
-    "weight": 6,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Fae flower dress",
-    "weight": 5,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Battle-worn plate",
-    "weight": 6,
-    "tags": [
-      "fantasy",
-      "medieval"
-    ]
-  },
-  {
-    "name": "Witch cloak",
-    "weight": 5,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Runic battle gear",
-    "weight": 6,
-    "tags": [
-      "fantasy",
-      "medieval"
-    ]
-  },
-  {
-    "name": "Thorn-covered armor",
-    "weight": 4,
-    "tags": [
-      "fantasy",
-      "nature"
-    ]
-  },
-  {
-    "name": "Celestial vestments",
-    "weight": 4,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Shadow-weave cloak",
-    "weight": 5,
-    "tags": [
-      "fantasy",
-      "dark"
-    ]
-  },
-  {
-    "name": "Winged breastplate",
-    "weight": 5,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Forest ranger leathers",
-    "weight": 6,
-    "tags": [
-      "fantasy",
-      "nature"
-    ]
-  },
-  {
-    "name": "Crown and royal gown",
-    "weight": 5,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Bone armor",
-    "weight": 4,
-    "tags": [
-      "fantasy",
-      "dark"
-    ]
-  },
+  { "name": "Fur-lined coat with jeans", "weight": 4, "tags": ["default"], "category": "casual" },
+  { "name": "Cowboy boots, plaid shirt, and jeans", "weight": 5, "tags": ["default"], "category": "casual" },
+  { "name": "Raincoat with waterproof pants", "weight": 4, "tags": ["default"], "category": "casual" },
+  { "name": "Poncho with cargo pants", "weight": 3, "tags": ["default"], "category": "casual" },
+  { "name": "Apron over t-shirt and jeans", "weight": 3, "tags": ["default"], "category": "casual" },
+  { "name": "Vest with button-up shirt and chinos", "weight": 5, "tags": ["default"], "category": "casual" },
+  { "name": "Cardigan with jeans", "weight": 5, "tags": ["default"], "category": "casual" },
+  { "name": "Peacoat with wool trousers", "weight": 4, "tags": ["default"], "category": "casual" },
+  { "name": "Trench coat with dress pants", "weight": 5, "tags": ["cinematic"], "category": "casual" },
+  { "name": "Sweater with jeans", "weight": 6, "tags": ["default"], "category": "casual" },
+  { "name": "Puffer jacket with cargo pants", "weight": 5, "tags": ["default"], "category": "casual" },
 
-  {
-    "name": "Sailor school uniform",
-    "weight": 7,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Miko shrine maiden outfit",
-    "weight": 6,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Battle kimono",
-    "weight": 5,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Magical girl costume",
-    "weight": 7,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Fantasy armor",
-    "weight": 6,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Gothic lolita dress",
-    "weight": 5,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Delinquent uniform",
-    "weight": 4,
-    "tags": [
-      "anime"
-    ]
-  },
+  { "name": "Armor", "weight": 6, "tags": ["fantasy", "medieval"], "category": "fantasy" },
+  { "name": "Flowing gown", "weight": 5, "tags": ["fantasy", "elegant"], "category": "fantasy" },
+  { "name": "Transparent fabric", "weight": 3, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Viking armor", "weight": 4, "tags": ["fantasy", "medieval"], "category": "fantasy" },
+  { "name": "Samurai armor", "weight": 4, "tags": ["fantasy", "asian"], "category": "fantasy" },
+  { "name": "Plate armor", "weight": 8, "tags": ["fantasy", "medieval"], "category": "fantasy" },
+  { "name": "Chain mail", "weight": 7, "tags": ["fantasy", "medieval"], "category": "fantasy" },
+  { "name": "Enchanted robe", "weight": 8, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Leather bracers and tunic", "weight": 7, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Cloak of shadows", "weight": 6, "tags": ["fantasy", "dark"], "category": "fantasy" },
+  { "name": "Elven silk gown", "weight": 6, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Dwarven forge apron", "weight": 5, "tags": ["fantasy", "medieval"], "category": "fantasy" },
+  { "name": "Wizard robes with runes", "weight": 7, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Dragon scale armor", "weight": 6, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Fae flower dress", "weight": 5, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Battle-worn plate", "weight": 6, "tags": ["fantasy", "medieval"], "category": "fantasy" },
+  { "name": "Witch cloak", "weight": 5, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Runic battle gear", "weight": 6, "tags": ["fantasy", "medieval"], "category": "fantasy" },
+  { "name": "Thorn-covered armor", "weight": 4, "tags": ["fantasy", "nature"], "category": "fantasy" },
+  { "name": "Celestial vestments", "weight": 4, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Shadow-weave cloak", "weight": 5, "tags": ["fantasy", "dark"], "category": "fantasy" },
+  { "name": "Winged breastplate", "weight": 5, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Forest ranger leathers", "weight": 6, "tags": ["fantasy", "nature"], "category": "fantasy" },
+  { "name": "Crown and royal gown", "weight": 5, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Bone armor", "weight": 4, "tags": ["fantasy", "dark"], "category": "fantasy" },
+  { "name": "Ninja garb", "weight": 5, "tags": ["fantasy", "asian"], "category": "fantasy" },
+  { "name": "Pirate coat", "weight": 5, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Royal ceremonial armor", "weight": 5, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Golden paladin armor", "weight": 5, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Crystal mage robes", "weight": 5, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Moon priestess gown", "weight": 5, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Desert nomad robes", "weight": 5, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Dark priest robes", "weight": 5, "tags": ["fantasy", "dark"], "category": "fantasy" },
+  { "name": "Arcane scholar robes", "weight": 5, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Frost knight armor", "weight": 5, "tags": ["fantasy"], "category": "fantasy" },
+  { "name": "Druid ceremonial robes", "weight": 5, "tags": ["fantasy", "nature"], "category": "fantasy" },
+  { "name": "Dragon hunter armor", "weight": 5, "tags": ["fantasy"], "category": "fantasy" },
 
-  {
-    "name": "Flowing robes",
-    "weight": 5,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Tactical bodysuit",
-    "weight": 4,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Traditional yukata",
-    "weight": 4,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Modern casual",
-    "weight": 5,
-    "tags": [
-      "anime"
-    ]
-  },
-  { "name": "Cowboy boots and jeans", "weight": 5, "tags": ["default"] },
-  { "name": "Raincoat", "weight": 4, "tags": ["default"] },
-  { "name": "Poncho", "weight": 3, "tags": ["default"] },
-  { "name": "Overalls", "weight": 4, "tags": ["modern"] },
-  { "name": "Jumpsuit", "weight": 5, "tags": ["modern"] },
-  { "name": "Tracksuit", "weight": 4, "tags": ["modern"] },
-  { "name": "Sportswear", "weight": 5, "tags": ["modern"] },
-  { "name": "Apron", "weight": 3, "tags": ["default"] },
-  { "name": "Vest", "weight": 5, "tags": ["default"] },
-  { "name": "Cardigan", "weight": 5, "tags": ["default"] },
-  { "name": "Peacoat", "weight": 4, "tags": ["default"] },
-  { "name": "Trench coat", "weight": 5, "tags": ["cinematic"] },
-  { "name": "Blazer", "weight": 5, "tags": ["modern"] },
-  { "name": "Polo shirt", "weight": 5, "tags": ["modern"] },
-  { "name": "Cargo pants", "weight": 4, "tags": ["modern"] },
-  { "name": "Chinos", "weight": 5, "tags": ["modern"] },
-  { "name": "Sweater", "weight": 6, "tags": ["default"] },
-  { "name": "Turtleneck", "weight": 4, "tags": ["modern"] },
-  { "name": "Denim jacket", "weight": 5, "tags": ["modern"] },
-  { "name": "Varsity jacket", "weight": 4, "tags": ["modern"] },
-  { "name": "Bomber jacket", "weight": 5, "tags": ["modern"] },
-  { "name": "Windbreaker", "weight": 4, "tags": ["modern"] },
-  { "name": "Puffer jacket", "weight": 5, "tags": ["default"] },
-  { "name": "Kilt", "weight": 3, "tags": ["cultural"] },
-  { "name": "Hanfu", "weight": 4, "tags": ["asian"] },
-  { "name": "Hanbok", "weight": 4, "tags": ["asian"] },
-  { "name": "Sari", "weight": 5, "tags": ["cultural"] },
-  { "name": "Dirndl", "weight": 3, "tags": ["cultural"] },
-  { "name": "Lederhosen", "weight": 3, "tags": ["cultural"] },
-  { "name": "Bodysuit", "weight": 5, "tags": ["seductive"] },
-  { "name": "Leotard", "weight": 4, "tags": ["seductive"] },
-  { "name": "Cheongsam", "weight": 4, "tags": ["asian"] },
-  { "name": "Ninja garb", "weight": 5, "tags": ["fantasy", "asian"] },
-  { "name": "Pirate coat", "weight": 5, "tags": ["fantasy"] },
-  { "name": "High-tech armor", "weight": 4, "tags": ["sci-fi"] },
-  { "name": "Neon bodysuit", "weight": 4, "tags": ["sci-fi"] },
-  { "name": "Cyberpunk jacket", "weight": 5, "tags": ["sci-fi"] },
-  { "name": "Space suit", "weight": 4, "tags": ["sci-fi"] },
-  { "name": "Wasteland rags", "weight": 4, "tags": ["dark"] },
-  { "name": "Post-apocalyptic armor", "weight": 4, "tags": ["dark"] },
-  { "name": "Victorian gown", "weight": 5, "tags": ["vintage"] },
-  { "name": "1920s flapper dress", "weight": 4, "tags": ["vintage"] },
-  { "name": "1950s poodle skirt", "weight": 3, "tags": ["vintage"] },
-  { "name": "1980s neon outfit", "weight": 4, "tags": ["vintage"] },
-  { "name": "Steampunk outfit", "weight": 5, "tags": ["sci-fi"] },
-  { "name": "Solarpunk attire", "weight": 3, "tags": ["sci-fi"] },
-  { "name": "Gothic lolita", "weight": 4, "tags": ["anime", "dark"] },
-  { "name": "Cyberpunk techwear", "weight": 5, "tags": ["sci-fi"] }
+  { "name": "Mech suit", "weight": 4, "tags": ["sci-fi"], "category": "sci-fi" },
+  { "name": "Skin-tight suit", "weight": 4, "tags": ["sci-fi"], "category": "sci-fi" },
+  { "name": "High-tech armor", "weight": 4, "tags": ["sci-fi"], "category": "sci-fi" },
+  { "name": "Neon bodysuit", "weight": 4, "tags": ["sci-fi"], "category": "sci-fi" },
+  { "name": "Cyberpunk jacket", "weight": 5, "tags": ["sci-fi"], "category": "sci-fi" },
+  { "name": "Space suit", "weight": 4, "tags": ["sci-fi"], "category": "sci-fi" },
+  { "name": "Steampunk outfit", "weight": 5, "tags": ["sci-fi"], "category": "sci-fi" },
+  { "name": "Solarpunk attire", "weight": 3, "tags": ["sci-fi"], "category": "sci-fi" },
+  { "name": "Cyberpunk techwear", "weight": 5, "tags": ["sci-fi"], "category": "sci-fi" },
+
+  { "name": "Sailor school uniform", "weight": 7, "tags": ["anime"], "category": "anime" },
+  { "name": "Miko shrine maiden outfit", "weight": 6, "tags": ["anime"], "category": "anime" },
+  { "name": "Battle kimono", "weight": 5, "tags": ["anime"], "category": "anime" },
+  { "name": "Magical girl costume", "weight": 7, "tags": ["anime"], "category": "anime" },
+  { "name": "Fantasy armor", "weight": 6, "tags": ["anime"], "category": "anime" },
+  { "name": "Gothic lolita dress", "weight": 5, "tags": ["anime"], "category": "anime" },
+  { "name": "Delinquent uniform", "weight": 4, "tags": ["anime"], "category": "anime" },
+  { "name": "Flowing robes", "weight": 5, "tags": ["anime"], "category": "anime" },
+  { "name": "Tactical bodysuit", "weight": 4, "tags": ["anime"], "category": "anime" },
+  { "name": "Traditional yukata", "weight": 4, "tags": ["anime"], "category": "anime" },
+  { "name": "Modern casual", "weight": 5, "tags": ["anime"], "category": "anime" },
+  { "name": "Gothic lolita", "weight": 4, "tags": ["anime", "dark"], "category": "anime" },
+
+  { "name": "Sheer lace top with high-waisted skirt", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Bikini", "weight": 6, "tags": ["seductive", "beach"], "category": "seductive" },
+  { "name": "Lace lingerie set", "weight": 4, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Mesh top with leather pants", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Crop top with denim shorts", "weight": 6, "tags": ["seductive", "modern"], "category": "seductive" },
+  { "name": "Crop top with mini skirt", "weight": 6, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Backless dress", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Cutout bodysuit", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "High-slit evening dress", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Bustier top with pencil skirt", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Chiffon wrap over bikini", "weight": 4, "tags": ["seductive", "beach"], "category": "seductive" },
+  { "name": "String bikini", "weight": 5, "tags": ["seductive", "beach"], "category": "seductive" },
+  { "name": "Low-cut bodysuit", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Garter belt with stockings", "weight": 4, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Bandeau top with flowy skirt", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Sarong wrap over bikini", "weight": 4, "tags": ["seductive", "beach"], "category": "seductive" },
+  { "name": "See-through blouse with fitted trousers", "weight": 4, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Oversized t-shirt with thigh-high socks", "weight": 6, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Sports bra with matching shorts", "weight": 6, "tags": ["seductive", "sport"], "category": "seductive" },
+  { "name": "Lace bralette with satin shorts", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Silk slip dress", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Off-shoulder sweater with thigh-high boots", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Satin cami with matching shorts", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Cropped hoodie with leggings", "weight": 5, "tags": ["seductive", "modern"], "category": "seductive" },
+  { "name": "Bodycon mini dress", "weight": 6, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Fishnet bodysuit", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Velvet bodysuit", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Babydoll lingerie", "weight": 4, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Cut-out one-piece swimsuit", "weight": 5, "tags": ["seductive", "beach"], "category": "seductive" },
+  { "name": "High-waisted bikini", "weight": 5, "tags": ["seductive", "beach"], "category": "seductive" },
+  { "name": "Lace-trim robe over lingerie", "weight": 4, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Matching lounge set", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Ribbed crop top with leggings", "weight": 5, "tags": ["seductive", "modern"], "category": "seductive" },
+  { "name": "Satin pajama set", "weight": 4, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Bandeau top with hot pants", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Bodysuit", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Leotard with thigh-high stockings", "weight": 4, "tags": ["seductive"], "category": "seductive" },
+
+  { "name": "Torn rags", "weight": 3, "tags": ["dark"], "category": "dark" },
+  { "name": "Gothic dress", "weight": 4, "tags": ["dark"], "category": "dark" },
+  { "name": "Wasteland rags", "weight": 4, "tags": ["dark"], "category": "dark" },
+  { "name": "Post-apocalyptic armor", "weight": 4, "tags": ["dark"], "category": "dark" },
+
+  { "name": "Suspenders and shirt", "weight": 4, "tags": ["vintage"], "category": "vintage" },
+  { "name": "Victorian gown", "weight": 5, "tags": ["vintage"], "category": "vintage" },
+  { "name": "1920s flapper dress", "weight": 4, "tags": ["vintage"], "category": "vintage" },
+  { "name": "1950s poodle skirt", "weight": 3, "tags": ["vintage"], "category": "vintage" },
+  { "name": "1980s neon outfit", "weight": 4, "tags": ["vintage"], "category": "vintage" },
+
+  { "name": "Kimono", "weight": 5, "tags": ["asian"], "category": "cultural" },
+  { "name": "Silk robe", "weight": 4, "tags": ["elegant"], "category": "cultural" },
+  { "name": "Wedding dress", "weight": 4, "tags": ["elegant"], "category": "cultural" },
+  { "name": "Corset", "weight": 4, "tags": ["elegant"], "category": "cultural" },
+  { "name": "Military uniform", "weight": 5, "tags": ["historical"], "category": "cultural" },
+  { "name": "Kilt", "weight": 3, "tags": ["cultural"], "category": "cultural" },
+  { "name": "Hanfu", "weight": 4, "tags": ["asian"], "category": "cultural" },
+  { "name": "Hanbok", "weight": 4, "tags": ["asian"], "category": "cultural" },
+  { "name": "Sari", "weight": 5, "tags": ["cultural"], "category": "cultural" },
+  { "name": "Dirndl", "weight": 3, "tags": ["cultural"], "category": "cultural" },
+  { "name": "Lederhosen", "weight": 3, "tags": ["cultural"], "category": "cultural" },
+  { "name": "Cheongsam", "weight": 4, "tags": ["asian"], "category": "cultural" },
+
+  { "name": "Baggy jeans with oversized hoodie", "weight": 4, "tags": ["streetwear"], "category": "streetwear" },
+  { "name": "Cargo pants with cropped hoodie", "weight": 4, "tags": ["streetwear"], "category": "streetwear" },
+  { "name": "Techwear outfit", "weight": 4, "tags": ["streetwear"], "category": "streetwear" },
+  { "name": "Oversized bomber jacket with joggers", "weight": 4, "tags": ["streetwear"], "category": "streetwear" },
+  { "name": "Oversized flannel over graphic tee", "weight": 4, "tags": ["streetwear"], "category": "streetwear" },
+  { "name": "Wide-leg jeans with crop top", "weight": 4, "tags": ["streetwear"], "category": "streetwear" },
+  { "name": "Sneakerhead outfit", "weight": 4, "tags": ["streetwear"], "category": "streetwear" },
+  { "name": "Parachute pants with fitted tank", "weight": 4, "tags": ["streetwear"], "category": "streetwear" },
+  { "name": "Streetwear varsity outfit", "weight": 4, "tags": ["streetwear"], "category": "streetwear" },
+  { "name": "Monochrome streetwear", "weight": 4, "tags": ["streetwear"], "category": "streetwear" },
+
+  { "name": "Oversized cardigan with pleated skirt", "weight": 4, "tags": ["korean"], "category": "korean" },
+  { "name": "Baby tee with wide-leg jeans", "weight": 4, "tags": ["korean"], "category": "korean" },
+  { "name": "Knit dress", "weight": 4, "tags": ["korean"], "category": "korean" },
+  { "name": "Pastel oversized sweater", "weight": 4, "tags": ["korean"], "category": "korean" },
+  { "name": "Layered cardigan outfit", "weight": 4, "tags": ["korean"], "category": "korean" },
+  { "name": "Wide-leg trousers with fitted top", "weight": 4, "tags": ["korean"], "category": "korean" },
+  { "name": "Soft cardigan with denim skirt", "weight": 4, "tags": ["korean"], "category": "korean" },
+  { "name": "Preppy sweater with pleated skirt", "weight": 4, "tags": ["korean"], "category": "korean" },
+  { "name": "Minimal beige outfit", "weight": 4, "tags": ["korean"], "category": "korean" },
+  { "name": "Soft knit lounge outfit", "weight": 4, "tags": ["korean"], "category": "korean" },
+
+  { "name": "Cashmere sweater with tailored trousers", "weight": 4, "tags": ["old_money"], "category": "old_money" },
+  { "name": "Beige trench coat over knit dress", "weight": 4, "tags": ["old_money"], "category": "old_money" },
+  { "name": "Silk blouse with pencil skirt", "weight": 4, "tags": ["old_money"], "category": "old_money" },
+  { "name": "White blouse with beige trousers", "weight": 4, "tags": ["old_money"], "category": "old_money" },
+  { "name": "Tailored linen suit", "weight": 4, "tags": ["old_money"], "category": "old_money" },
+  { "name": "Luxury wool overcoat", "weight": 4, "tags": ["old_money"], "category": "old_money" },
+  { "name": "Polo sweater with chinos", "weight": 4, "tags": ["old_money"], "category": "old_money" },
+  { "name": "Monochrome tailored outfit", "weight": 4, "tags": ["old_money"], "category": "old_money" },
+  { "name": "Ivory knit dress", "weight": 4, "tags": ["old_money"], "category": "old_money" },
+  { "name": "Elegant business attire", "weight": 4, "tags": ["old_money"], "category": "old_money" },
+  
+  { "name": "Matching yoga set", "weight": 4, "tags": ["athleisure"], "category": "athleisure" },
+  { "name": "Sports bra with leggings", "weight": 4, "tags": ["athleisure"], "category": "athleisure" },
+  { "name": "Running jacket with shorts", "weight": 4, "tags": ["athleisure"], "category": "athleisure" },
+  { "name": "Tennis dress", "weight": 4, "tags": ["athleisure"], "category": "athleisure" },
+  { "name": "Golf polo with skirt", "weight": 4, "tags": ["athleisure"], "category": "athleisure" },
+  { "name": "Gym crop top with joggers", "weight": 4, "tags": ["athleisure"], "category": "athleisure" },
+  { "name": "Zip-up athletic jacket", "weight": 4, "tags": ["athleisure"], "category": "athleisure" },
+  { "name": "Fitness co-ord set", "weight": 4, "tags": ["athleisure"], "category": "athleisure" },
+  { "name": "Cycling outfit", "weight": 4, "tags": ["athleisure"], "category": "athleisure" },
+  { "name": "Training hoodie with leggings", "weight": 4, "tags": ["athleisure"], "category": "athleisure" }
+
 ]
