@@ -1,201 +1,38 @@
 [
-  {
-    "name": "Brown eyes",
-    "weight": 9,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Blue eyes",
-    "weight": 8,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Green eyes",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Hazel eyes",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Dark brown eyes",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Gray eyes",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Amber eyes",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Gold eyes",
-    "weight": 5,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Red eyes",
-    "weight": 4,
-    "tags": [
-      "fantasy",
-      "dark"
-    ]
-  },
-  {
-    "name": "Violet eyes",
-    "weight": 4,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Silver eyes",
-    "weight": 4,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Glowing eyes",
-    "weight": 4,
-    "tags": [
-      "fantasy",
-      "sci-fi"
-    ]
-  },
-  {
-    "name": "Heterochromia",
-    "weight": 3,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Slit pupils",
-    "weight": 3,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "No pupils",
-    "weight": 2,
-    "tags": [
-      "horror"
-    ]
-  },
-  {
-    "name": "Cybernetic eyes",
-    "weight": 3,
-    "tags": [
-      "sci-fi"
-    ]
-  },
-  {
-    "name": "Empty eye sockets",
-    "weight": 2,
-    "tags": [
-      "horror"
-    ]
-  },
-  {
-    "name": "Multiple eyes",
-    "weight": 2,
-    "tags": [
-      "horror",
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Black eyes",
-    "weight": 3,
-    "tags": [
-      "dark"
-    ]
-  },
-  {
-    "name": "Crystal eyes",
-    "weight": 3,
-    "tags": [
-      "fantasy"
-    ]
-  },
-  {
-    "name": "Large expressive eyes",
-    "weight": 9,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Sharp fox eyes",
-    "weight": 5,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Gentle drooping eyes",
-    "weight": 5,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Nekomata eyes",
-    "weight": 4,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Cyclops eye",
-    "weight": 2,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Sparkling eyes",
-    "weight": 6,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Cold determined eyes",
-    "weight": 5,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Round innocent eyes",
-    "weight": 6,
-    "tags": [
-      "anime"
-    ]
-  }
+  { "name": "Dark brown eyes", "weight": 9, "tags": ["default"] },
+  { "name": "Brown eyes", "weight": 8, "tags": ["default"] },
+  { "name": "Blue eyes", "weight": 8, "tags": ["default"] },
+  { "name": "Green eyes", "weight": 7, "tags": ["default"] },
+  { "name": "Hazel eyes", "weight": 7, "tags": ["default"] },
+  { "name": "Gray eyes", "weight": 6, "tags": ["default"] },
+  { "name": "Amber eyes", "weight": 6, "tags": ["default"] },
+
+  { "name": "Golden eyes", "weight": 5, "tags": ["fantasy"] },
+  { "name": "Silver eyes", "weight": 5, "tags": ["fantasy"] },
+  { "name": "Violet eyes", "weight": 5, "tags": ["fantasy"] },
+  { "name": "Red eyes", "weight": 4, "tags": ["fantasy", "dark"] },
+  { "name": "Black eyes", "weight": 4, "tags": ["dark"] },
+
+  { "name": "Almond-shaped eyes", "weight": 8, "tags": ["default"] },
+  { "name": "Round eyes", "weight": 7, "tags": ["default"] },
+  { "name": "Narrow eyes", "weight": 5, "tags": ["default"] },
+  { "name": "Upturned eyes", "weight": 5, "tags": ["default"] },
+  { "name": "Downturned eyes", "weight": 5, "tags": ["default"] },
+
+  { "name": "Large expressive eyes", "weight": 8, "tags": ["anime"] },
+  { "name": "Sharp fox eyes", "weight": 6, "tags": ["anime"] },
+  { "name": "Gentle drooping eyes", "weight": 5, "tags": ["anime"] },
+  { "name": "Round innocent eyes", "weight": 6, "tags": ["anime"] },
+
+  { "name": "Sparkling eyes", "weight": 5, "tags": ["anime"] },
+  { "name": "Glowing eyes", "weight": 5, "tags": ["fantasy", "sci-fi"] },
+  { "name": "Heterochromia", "weight": 4, "tags": ["fantasy"] },
+  { "name": "Slit pupils", "weight": 4, "tags": ["fantasy"] },
+  { "name": "Cybernetic eyes", "weight": 4, "tags": ["sci-fi"] },
+  { "name": "Crystal eyes", "weight": 3, "tags": ["fantasy"] },
+
+  { "name": "Detailed iris", "weight": 5, "tags": ["default"] },
+  { "name": "Reflective eyes", "weight": 5, "tags": ["default"] },
+  { "name": "Catchlight in the eyes", "weight": 6, "tags": ["default"] },
+  { "name": "Glossy eyes", "weight": 5, "tags": ["default"] }
 ]

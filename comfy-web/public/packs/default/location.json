@@ -217,7 +217,6 @@
   { "name": "Closet", "weight": 3, "tags": ["modern", "default"], "category": "indoor" },
   { "name": "Camping tent", "weight": 4, "tags": ["nature", "modern"], "category": "indoor" },
   { "name": "Houseboat", "weight": 3, "tags": ["nature", "modern"], "category": "indoor" },
-  { "name": "Kitchen at night", "weight": 3, "tags": ["modern", "default"], "category": "indoor" },
   { "name": "Bathroom mirror", "weight": 3, "tags": ["modern", "default"], "category": "indoor" },
   { "name": "Front yard", "weight": 3, "tags": ["nature", "modern"], "category": "indoor" },
   { "name": "Snowy cabin", "weight": 5, "tags": ["nature", "modern"], "category": "indoor" },

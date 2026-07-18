@@ -74,6 +74,16 @@ const CATEGORY_FILTERS: Record<string, readonly { value: string; label: string }
     { value: "korean", label: "Korean" },
     { value: "old_money", label: "Old Money" },
     { value: "athleisure", label: "Athleisure" },
+  ],
+  expression: [
+    { value: "", label: "All" },
+    { value: "general", label: "General" },
+    { value: "action", label: "Action" },
+    { value: "horror", label: "Horror" },
+    { value: "dark", label: "Dark" },
+    { value: "playful", label: "Playful" },
+    { value: "seductive", label: "Seductive" },
+    { value: "anime", label: "Anime" },
   ]
 };
 

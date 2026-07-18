@@ -1,408 +1,66 @@
 [
-  {
-    "name": "Serene",
-    "weight": 8,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Joyful",
-    "weight": 7,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Melancholy",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Fierce",
-    "weight": 6,
-    "tags": [
-      "action"
-    ]
-  },
-  {
-    "name": "Mysterious",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Determined",
-    "weight": 6,
-    "tags": [
-      "action"
-    ]
-  },
-  {
-    "name": "Angry",
-    "weight": 5,
-    "tags": [
-      "action"
-    ]
-  },
-  {
-    "name": "Surprised",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Sad",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Contemplative",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Playful",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Flirtatious",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Confident",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Scared",
-    "weight": 4,
-    "tags": [
-      "horror"
-    ]
-  },
-  {
-    "name": "Sinister smile",
-    "weight": 4,
-    "tags": [
-      "dark"
-    ]
-  },
-  {
-    "name": "Tearful",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Focused",
-    "weight": 5,
-    "tags": [
-      "action"
-    ]
-  },
-  {
-    "name": "Dreamy",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Stoic",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Ecstatic",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Pained",
-    "weight": 3,
-    "tags": [
-      "dark"
-    ]
-  },
-  {
-    "name": "Whispering",
-    "weight": 3,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Winking",
-    "weight": 3,
-    "tags": [
-      "playful"
-    ]
-  },
-  {
-    "name": "Stern",
-    "weight": 5,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Gentle smile",
-    "weight": 6,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Agonized",
-    "weight": 3,
-    "tags": [
-      "dark"
-    ]
-  },
-  {
-    "name": "Smirking",
-    "weight": 4,
-    "tags": [
-      "default"
-    ]
-  },
-  {
-    "name": "Vacant stare",
-    "weight": 3,
-    "tags": [
-      "horror"
-    ]
-  },
-  {
-    "name": "Seductive gaze",
-    "weight": 6,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Bedroom eyes",
-    "weight": 6,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Sultry smirk",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Bite lip expression",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Half-lidded eyes",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Seductive pout",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Playful seductive smile",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Sultry side-eye",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Come-hither look",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Soft parted lips",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Intimate whisper expression",
-    "weight": 4,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Alluring stare",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Flirty raised eyebrow",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Sultry half-smile",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Dreamy seductive expression",
-    "weight": 4,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Confident seductive smile",
-    "weight": 5,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Blowing kiss expression",
-    "weight": 4,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Dazed bedroom expression",
-    "weight": 4,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Eyes closed seductive smile",
-    "weight": 4,
-    "tags": [
-      "seductive"
-    ]
-  },
-  {
-    "name": "Determined expression",
-    "weight": 7,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Tsundere blush",
-    "weight": 6,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Cool smirk",
-    "weight": 6,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Crying softly",
-    "weight": 4,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Battle cry",
-    "weight": 5,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Peaceful closed eyes",
-    "weight": 5,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Shy averted gaze",
-    "weight": 5,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Manic grin",
-    "weight": 4,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Serious scowl",
-    "weight": 5,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Playful wink",
-    "weight": 5,
-    "tags": [
-      "anime"
-    ]
-  },
-  {
-    "name": "Wide shocked eyes",
-    "weight": 4,
-    "tags": [
-      "anime"
-    ]
-  }
+  { "name": "Serene", "weight": 8, "tags": ["default"], "category": "general" },
+  { "name": "Joyful", "weight": 7, "tags": ["default"], "category": "general" },
+  { "name": "Melancholy", "weight": 6, "tags": ["default"], "category": "general" },
+  { "name": "Mysterious", "weight": 6, "tags": ["default"], "category": "general" },
+  { "name": "Surprised", "weight": 5, "tags": ["default"], "category": "general" },
+  { "name": "Sad", "weight": 5, "tags": ["default"], "category": "general" },
+  { "name": "Contemplative", "weight": 5, "tags": ["default"], "category": "general" },
+  { "name": "Playful", "weight": 5, "tags": ["default"], "category": "general" },
+  { "name": "Flirtatious", "weight": 4, "tags": ["default"], "category": "general" },
+  { "name": "Confident", "weight": 6, "tags": ["default"], "category": "general" },
+  { "name": "Tearful", "weight": 4, "tags": ["default"], "category": "general" },
+  { "name": "Dreamy", "weight": 5, "tags": ["default"], "category": "general" },
+  { "name": "Stoic", "weight": 5, "tags": ["default"], "category": "general" },
+  { "name": "Ecstatic", "weight": 4, "tags": ["default"], "category": "general" },
+  { "name": "Whispering", "weight": 3, "tags": ["default"], "category": "general" },
+  { "name": "Stern", "weight": 5, "tags": ["default"], "category": "general" },
+  { "name": "Gentle smile", "weight": 6, "tags": ["default"], "category": "general" },
+  { "name": "Smirking", "weight": 4, "tags": ["default"], "category": "general" },
+
+  { "name": "Fierce", "weight": 6, "tags": ["action"], "category": "action" },
+  { "name": "Determined", "weight": 6, "tags": ["action"], "category": "action" },
+  { "name": "Angry", "weight": 5, "tags": ["action"], "category": "action" },
+  { "name": "Focused", "weight": 5, "tags": ["action"], "category": "action" },
+
+  { "name": "Scared", "weight": 4, "tags": ["horror"], "category": "horror" },
+  { "name": "Vacant stare", "weight": 3, "tags": ["horror"], "category": "horror" },
+
+  { "name": "Sinister smile", "weight": 4, "tags": ["dark"], "category": "dark" },
+  { "name": "Pained", "weight": 3, "tags": ["dark"], "category": "dark" },
+  { "name": "Agonized", "weight": 3, "tags": ["dark"], "category": "dark" },
+
+  { "name": "Winking", "weight": 3, "tags": ["playful"], "category": "playful" },
+
+  { "name": "Seductive gaze", "weight": 6, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Bedroom eyes", "weight": 6, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Sultry smirk", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Bite lip expression", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Half-lidded eyes", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Seductive pout", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Playful seductive smile", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Sultry side-eye", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Come-hither look", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Soft parted lips", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Intimate whisper expression", "weight": 4, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Alluring stare", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Flirty raised eyebrow", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Sultry half-smile", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Dreamy seductive expression", "weight": 4, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Confident seductive smile", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Blowing kiss expression", "weight": 4, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Dazed bedroom expression", "weight": 4, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Eyes closed seductive smile", "weight": 4, "tags": ["seductive"], "category": "seductive" },
+
+  { "name": "Determined expression", "weight": 7, "tags": ["anime"], "category": "anime" },
+  { "name": "Tsundere blush", "weight": 6, "tags": ["anime"], "category": "anime" },
+  { "name": "Cool smirk", "weight": 6, "tags": ["anime"], "category": "anime" },
+  { "name": "Crying softly", "weight": 4, "tags": ["anime"], "category": "anime" },
+  { "name": "Battle cry", "weight": 5, "tags": ["anime"], "category": "anime" },
+  { "name": "Peaceful closed eyes", "weight": 5, "tags": ["anime"], "category": "anime" },
+  { "name": "Shy averted gaze", "weight": 5, "tags": ["anime"], "category": "anime" },
+  { "name": "Manic grin", "weight": 4, "tags": ["anime"], "category": "anime" },
+  { "name": "Serious scowl", "weight": 5, "tags": ["anime"], "category": "anime" },
+  { "name": "Playful wink", "weight": 5, "tags": ["anime"], "category": "anime" },
+  { "name": "Wide shocked eyes", "weight": 4, "tags": ["anime"], "category": "anime" }
 ]
