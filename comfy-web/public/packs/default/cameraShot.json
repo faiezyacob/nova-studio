@@ -1,0 +1,22 @@
+[
+  { "name": "Extreme close-up", "weight": 5, "tags": ["portrait"] },
+  { "name": "Close-up", "weight": 7, "tags": ["portrait"] },
+  { "name": "Medium close-up", "weight": 6, "tags": ["portrait"] },
+  { "name": "Medium shot", "weight": 6, "tags": ["default"] },
+  { "name": "Three-quarter shot", "weight": 4, "tags": ["default"] },
+  { "name": "Full body shot", "weight": 7, "tags": ["default"] },
+  { "name": "Wide shot", "weight": 5, "tags": ["default"] },
+  { "name": "Establishing shot", "weight": 4, "tags": ["cinematic"] },
+  { "name": "Macro detail shot", "weight": 4, "tags": ["default"] },
+  { "name": "Two shot", "weight": 4, "tags": ["cinematic"] },
+  { "name": "Insert shot", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Selfie shot", "weight": 7, "tags": ["default"] },
+  { "name": "Reaction shot", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Tracking shot", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Crane shot", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Steadicam shot", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Dolly zoom", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Rack focus", "weight": 3, "tags": ["cinematic"] },
+  { "name": "Framed by foreground elements", "weight": 4, "tags": ["default"] },
+  { "name": "Silhouette against bright background", "weight": 4, "tags": ["cinematic"] }
+]

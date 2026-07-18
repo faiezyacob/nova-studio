@@ -21,11 +21,11 @@ const SUMMARY_GROUPS: SummaryGroup[] = [
   { key: "clothing", label: "Clothing", categoryKeys: ["clothing"] },
   { key: "accessories", label: "Accessories", categoryKeys: ["accessories"] },
   { key: "environment", label: "Environment", categoryKeys: ["location", "weather", "time"] },
-  { key: "lighting", label: "Lighting", categoryKeys: ["lighting"] },
-  { key: "camera", label: "Camera", categoryKeys: ["camera", "lens", "composition"] },
+  { key: "lighting", label: "Lighting", categoryKeys: ["lightSource", "lightStyle"] },
+  { key: "camera", label: "Camera", categoryKeys: ["cameraAngle", "cameraShot", "lens", "composition"] },
   { key: "mood", label: "Mood", categoryKeys: ["mood"] },
   { key: "style", label: "Style", categoryKeys: ["style"] },
-  { key: "quality", label: "Quality", categoryKeys: ["quality"] },
+  { key: "renderStyle", label: "Render Style", categoryKeys: ["renderStyle"] },
   { key: "details", label: "Details", categoryKeys: ["details"] },
 ];
 

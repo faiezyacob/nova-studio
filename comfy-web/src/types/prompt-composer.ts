@@ -14,13 +14,15 @@ export type PromptCategoryKey =
   | "location"
   | "weather"
   | "time"
-  | "lighting"
-  | "camera"
+  | "lightSource"
+  | "lightStyle"
+  | "cameraAngle"
+  | "cameraShot"
   | "lens"
   | "composition"
   | "mood"
   | "style"
-  | "quality"
+  | "renderStyle"
   | "details";
 
 export interface PromptValue {
@@ -93,14 +95,16 @@ export const CATEGORY_CONFIGS: CategoryConfig[] = [
   { key: "location", label: "Location", multi: false, order: 12, description: "Scene location" },
   { key: "weather", label: "Weather", multi: false, order: 13, description: "Weather conditions" },
   { key: "time", label: "Time", multi: false, order: 14, description: "Time of day" },
-  { key: "lighting", label: "Lighting", multi: true, order: 15, description: "Light sources and quality" },
-  { key: "camera", label: "Camera", multi: false, order: 16, description: "Camera angle and type" },
-  { key: "lens", label: "Lens", multi: false, order: 17, description: "Lens focal length and type" },
-  { key: "composition", label: "Composition", multi: false, order: 18, description: "Framing and layout" },
-  { key: "mood", label: "Mood", multi: true, order: 19, description: "Emotional atmosphere" },
-  { key: "style", label: "Art Style", multi: false, order: 20, description: "Artistic style" },
-  { key: "quality", label: "Quality", multi: false, order: 21, description: "Image quality tags" },
-  { key: "details", label: "Details", multi: true, order: 22, description: "Extra descriptive details" },
+  { key: "lightSource", label: "Light Source", multi: false, order: 15, description: "Source of light in the scene" },
+  { key: "lightStyle", label: "Light Style", multi: true, order: 16, description: "Lighting technique and quality" },
+  { key: "cameraAngle", label: "Camera Angle", multi: false, order: 17, description: "Camera positioning and perspective" },
+  { key: "cameraShot", label: "Camera Shot", multi: false, order: 18, description: "Framing and shot type" },
+  { key: "lens", label: "Lens", multi: false, order: 19, description: "Lens focal length and type" },
+  { key: "composition", label: "Composition", multi: false, order: 20, description: "Framing and layout" },
+  { key: "mood", label: "Mood", multi: true, order: 21, description: "Emotional atmosphere" },
+  { key: "style", label: "Art Style", multi: false, order: 22, description: "Artistic style" },
+  { key: "renderStyle", label: "Render Style", multi: false, order: 23, description: "Image render style and quality" },
+  { key: "details", label: "Details", multi: true, order: 24, description: "Extra descriptive details" },
 ];
 
 export const CATEGORY_ORDER: PromptCategoryKey[] = CATEGORY_CONFIGS.map(c => c.key);

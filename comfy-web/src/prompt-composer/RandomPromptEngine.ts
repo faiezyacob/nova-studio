@@ -79,7 +79,7 @@ export function randomizeCategory(
 
   const selected = getWeightedRandom(available, packData, category);
   const isMulti = category === "hair" || category === "eyes" || category === "clothing"
-    || category === "accessories" || category === "lighting"
+    || category === "accessories" || category === "lightStyle"
     || category === "mood" || category === "details";
 
   if (isMulti && Math.random() > 0.5) {
@@ -148,8 +148,8 @@ export function generatePrompt(state: PromptState): string {
     "hair", "hairColor", "eyes",
     "expression", "pose", "clothing", "accessories",
     "location", "weather", "time",
-    "lighting", "camera", "lens", "composition",
-    "mood", "style", "quality", "details",
+    "lightSource", "lightStyle", "cameraAngle", "cameraShot", "lens", "composition",
+    "mood", "style", "renderStyle", "details",
   ];
 
   for (const key of orderedKeys) {
@@ -210,7 +210,8 @@ export function generateInspirationPrompt(concept: string, _packData: ThemePackD
   }
   if (conceptLower.includes("neon") || conceptLower.includes("cyber") || conceptLower.includes("futuristic")) {
     state.style = { value: ["cyberpunk"], locked: false, enabled: true };
-    state.lighting = { value: ["neon glow"], locked: false, enabled: true };
+    state.lightSource = { value: ["Neon signs"], locked: false, enabled: true };
+    state.lightStyle = { value: ["Cold blue lighting"], locked: false, enabled: true };
   }
   if (conceptLower.includes("dream") || conceptLower.includes("surreal") || conceptLower.includes("impossible")) {
     state.style = { value: ["surrealism"], locked: false, enabled: true };

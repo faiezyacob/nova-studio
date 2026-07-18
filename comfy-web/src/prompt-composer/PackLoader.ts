@@ -21,8 +21,8 @@ export async function loadPack(): Promise<ThemePackData> {
     "hair", "hairColor", "eyes",
     "expression", "pose", "clothing", "accessories",
     "location", "weather", "time",
-    "lighting", "camera", "lens", "composition",
-    "mood", "style", "quality", "details",
+    "lightSource", "lightStyle", "cameraAngle", "cameraShot", "lens", "composition",
+    "mood", "style", "renderStyle", "details",
   ];
 
   const results = await Promise.allSettled(

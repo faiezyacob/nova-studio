@@ -1,0 +1,22 @@
+[
+  { "name": "Soft diffused lighting", "weight": 7, "tags": ["default"] },
+  { "name": "Hard directional lighting", "weight": 4, "tags": ["default"] },
+  { "name": "Dramatic side lighting", "weight": 6, "tags": ["default"] },
+  { "name": "Backlit", "weight": 6, "tags": ["default"] },
+  { "name": "Rim lighting", "weight": 6, "tags": ["default"] },
+  { "name": "Silhouette lighting", "weight": 4, "tags": ["default"] },
+  { "name": "Rembrandt lighting", "weight": 4, "tags": ["portrait"] },
+  { "name": "Butterfly lighting", "weight": 3, "tags": ["portrait"] },
+  { "name": "Split lighting", "weight": 4, "tags": ["cinematic"] },
+  { "name": "Chiaroscuro lighting", "weight": 4, "tags": ["art"] },
+  { "name": "God rays", "weight": 5, "tags": ["default"] },
+  { "name": "Volumetric light rays", "weight": 5, "tags": ["default"] },
+  { "name": "Dappled light", "weight": 5, "tags": ["nature"] },
+  { "name": "Refraction", "weight": 3, "tags": ["default"] },
+  { "name": "Prismatic lighting", "weight": 3, "tags": ["default"] },
+  { "name": "Warm amber tones", "weight": 5, "tags": ["default"] },
+  { "name": "Cold blue lighting", "weight": 5, "tags": ["default"] },
+  { "name": "Mixed color temperature", "weight": 4, "tags": ["urban"] },
+  { "name": "Dramatic shadows", "weight": 5, "tags": ["cinematic"] },
+  { "name": "Soft wrap-around light", "weight": 4, "tags": ["default"] }
+]
