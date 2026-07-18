@@ -182,13 +182,6 @@
       ]
     },
     "then": {
-      "environment": [
-        "Dense vegetation",
-        "Scattered trees",
-        "Dappled light through leaves",
-        "Moss-covered surfaces",
-        "Vines climbing walls"
-      ],
       "weather": [
         "Clear sky",
         "Cloudy",
@@ -199,10 +192,7 @@
       ]
     },
     "otherwise": {
-      "environment": [
-        "Dense vegetation",
-        "Scattered trees"
-      ]
+      "weather": []
     }
   },
   {
@@ -216,12 +206,6 @@
       ]
     },
     "then": {
-      "environment": [
-        "Ancient architecture",
-        "Shattered stone",
-        "Overgrown ruins",
-        "Dust motes in light"
-      ],
       "lighting": [
         "Volumetric light rays",
         "Candlelight",
@@ -229,9 +213,7 @@
       ]
     },
     "otherwise": {
-      "environment": [
-        "Ancient architecture"
-      ]
+      "lighting": []
     }
   },
   {
@@ -312,12 +294,6 @@
         "Moonlight through canopy",
         "Bioluminescent glow",
         "Magical fireflies"
-      ],
-      "environment": [
-        "Glowing mushrooms",
-        "Enchanted vines",
-        "Bioluminescent flora",
-        "Thick moss"
       ]
     },
     "otherwise": {
@@ -393,20 +369,13 @@
       ]
     },
     "then": {
-      "environment": [
-        "Snow-covered ground",
-        "Frosted surfaces",
-        "Icicles hanging"
-      ],
       "lighting": [
         "Cold blue light",
         "Soft diffused light"
       ]
     },
     "otherwise": {
-      "environment": [
-        "Snow-covered ground"
-      ]
+      "lighting": []
     }
   },
   {
@@ -641,11 +610,6 @@
         "Candlelight",
         "Firelight",
         "Lantern light"
-      ],
-      "environment": [
-        "Torchlit walls",
-        "Stone walls",
-        "Ancient architecture"
       ]
     },
     "otherwise": {

@@ -20,7 +20,7 @@ export async function loadPack(): Promise<ThemePackData> {
     "subject", "ethnicity", "age", "bodyType", "skin",
     "hair", "hairColor", "facialHair", "eyes",
     "expression", "pose", "clothing", "accessories",
-    "location", "environment", "weather", "time",
+    "location", "weather", "time",
     "lighting", "camera", "lens", "composition",
     "mood", "style", "quality", "details",
   ];

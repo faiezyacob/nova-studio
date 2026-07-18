@@ -7,8 +7,7 @@ export async function savePreset(
   name: string,
   state: PromptState,
   packName: string,
-  mutationPercent: number,
-  templateId?: string
+  mutationPercent: number
 ): Promise<ComposerPreset> {
   const presets = await listPresets();
   const preset: ComposerPreset = {
@@ -17,7 +16,6 @@ export async function savePreset(
     state: JSON.parse(JSON.stringify(state)),
     packName,
     mutationPercent,
-    templateId,
     createdAt: Date.now(),
   };
 

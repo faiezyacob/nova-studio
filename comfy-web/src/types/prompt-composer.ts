@@ -13,7 +13,6 @@ export type PromptCategoryKey =
   | "clothing"
   | "accessories"
   | "location"
-  | "environment"
   | "weather"
   | "time"
   | "lighting"
@@ -68,7 +67,6 @@ export interface ComposerPreset {
   state: PromptState;
   packName: string;
   mutationPercent: number;
-  templateId?: string;
   createdAt: number;
 }
 
@@ -95,17 +93,16 @@ export const CATEGORY_CONFIGS: CategoryConfig[] = [
   { key: "clothing", label: "Clothing", multi: true, order: 11, description: "Outfit and garments" },
   { key: "accessories", label: "Accessories", multi: true, order: 12, description: "Jewelry, props, items" },
   { key: "location", label: "Location", multi: false, order: 13, description: "Scene location" },
-  { key: "environment", label: "Environment", multi: true, order: 14, description: "Surrounding details" },
-  { key: "weather", label: "Weather", multi: false, order: 15, description: "Weather conditions" },
-  { key: "time", label: "Time", multi: false, order: 16, description: "Time of day" },
-  { key: "lighting", label: "Lighting", multi: true, order: 17, description: "Light sources and quality" },
-  { key: "camera", label: "Camera", multi: false, order: 18, description: "Camera angle and type" },
-  { key: "lens", label: "Lens", multi: false, order: 19, description: "Lens focal length and type" },
-  { key: "composition", label: "Composition", multi: false, order: 20, description: "Framing and layout" },
-  { key: "mood", label: "Mood", multi: true, order: 21, description: "Emotional atmosphere" },
-  { key: "style", label: "Art Style", multi: false, order: 22, description: "Artistic style" },
-  { key: "quality", label: "Quality", multi: false, order: 23, description: "Image quality tags" },
-  { key: "details", label: "Details", multi: true, order: 24, description: "Extra descriptive details" },
+  { key: "weather", label: "Weather", multi: false, order: 14, description: "Weather conditions" },
+  { key: "time", label: "Time", multi: false, order: 15, description: "Time of day" },
+  { key: "lighting", label: "Lighting", multi: true, order: 16, description: "Light sources and quality" },
+  { key: "camera", label: "Camera", multi: false, order: 17, description: "Camera angle and type" },
+  { key: "lens", label: "Lens", multi: false, order: 18, description: "Lens focal length and type" },
+  { key: "composition", label: "Composition", multi: false, order: 19, description: "Framing and layout" },
+  { key: "mood", label: "Mood", multi: true, order: 20, description: "Emotional atmosphere" },
+  { key: "style", label: "Art Style", multi: false, order: 21, description: "Artistic style" },
+  { key: "quality", label: "Quality", multi: false, order: 22, description: "Image quality tags" },
+  { key: "details", label: "Details", multi: true, order: 23, description: "Extra descriptive details" },
 ];
 
 export const CATEGORY_ORDER: PromptCategoryKey[] = CATEGORY_CONFIGS.map(c => c.key);
@@ -118,36 +115,4 @@ export function createEmptyState(): PromptState {
   return state;
 }
 
-export type TemplateCategoryKey = string;
 
-export interface TemplateCategoryDef {
-  key: TemplateCategoryKey;
-  label: string;
-  multi: boolean;
-  order: number;
-  description: string;
-  pack?: string;
-}
-
-export interface TemplateDefinition {
-  id: string;
-  name: string;
-  description?: string;
-  icon?: string;
-  categories: TemplateCategoryDef[];
-}
-
-export interface ResolvedTemplate {
-  definition: TemplateDefinition;
-  categories: Partial<Record<TemplateCategoryKey, PromptValue[]>>;
-}
-
-export type TemplateState = Record<TemplateCategoryKey, CategoryState>;
-
-export function createTemplateEmptyState(template: TemplateDefinition): TemplateState {
-  const state: TemplateState = {};
-  for (const cat of template.categories) {
-    state[cat.key] = { value: [], locked: false, enabled: true };
-  }
-  return state;
-}
