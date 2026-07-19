@@ -7,6 +7,14 @@ import {
   RelationshipRule,
 } from "@/types/prompt-composer";
 
+function getConfig(key: PromptCategoryKey) {
+  return CATEGORY_CONFIGS.find((c) => c.key === key);
+}
+
+function isMulti(category: PromptCategoryKey): boolean {
+  return getConfig(category)?.multi ?? false;
+}
+
 function getAvailableValues(
   category: PromptCategoryKey,
   packData: ThemePackData,
@@ -55,6 +63,12 @@ function getWeightedRandom(values: string[], packData: ThemePackData, category: 
   return weighted[Math.floor(Math.random() * weighted.length)];
 }
 
+function shouldOmitCategory(category: PromptCategoryKey): boolean {
+  const config = getConfig(category);
+  if (!config || config.probability === undefined) return false;
+  return Math.random() > config.probability;
+}
+
 export function randomizeCategory(
   state: PromptState,
   category: PromptCategoryKey,
@@ -63,26 +77,22 @@ export function randomizeCategory(
 ): PromptState {
   if (state[category].locked || !state[category].enabled) return state;
 
-  const config = CATEGORY_ORDER;
-  const categoryIndex = config.indexOf(category);
+  const config = getConfig(category);
   const newState = { ...state };
 
-  // Build partial state up to this category for rule evaluation
-  const partialState = { ...state };
-  for (const key of config) {
-    if (config.indexOf(key) >= categoryIndex) break;
-    partialState[key] = { ...newState[key] };
+  // For categories with a probability (like pose sub-categories), randomly omit
+  if (config?.probability !== undefined && shouldOmitCategory(category)) {
+    newState[category] = { ...newState[category], value: [] };
+    return newState;
   }
 
-  const available = getAvailableValues(category, packData, rules, partialState);
+  const available = getAvailableValues(category, packData, rules, newState);
   if (available.length === 0) return newState;
 
   const selected = getWeightedRandom(available, packData, category);
-  const isMulti = category === "hair" || category === "eyes" || category === "top" || category === "pants"
-    || category === "accessories" || category === "lightStyle"
-    || category === "mood" || category === "details";
+  const multi = isMulti(category);
 
-  if (isMulti && Math.random() > 0.5) {
+  if (multi && Math.random() > 0.5) {
     const count = Math.floor(Math.random() * 2) + 1;
     const picked: string[] = [];
     const pool = [...available];
@@ -143,19 +153,10 @@ export function mutate(
 export function generatePrompt(state: PromptState): string {
   const parts: string[] = [];
 
-  const orderedKeys: PromptCategoryKey[] = [
-    "subject", "ethnicity", "age", "bodyType", "skin",
-    "hair", "hairColor", "eyes",
-    "expression", "pose", "top", "pants", "footwear", "accessories",
-    "location", "weather", "time",
-    "lightSource", "lightStyle", "cameraAngle", "cameraShot", "lens", "composition",
-    "mood", "style", "details",
-  ];
-
-  for (const key of orderedKeys) {
+  for (const key of CATEGORY_ORDER) {
     const cat = state[key];
     if (!cat.enabled || cat.value.length === 0) continue;
-    const config = CATEGORY_CONFIGS.find((c) => c.key === key);
+    const config = getConfig(key);
     const label = config?.label ?? key;
     parts.push(`${label}: ${cat.value.join(", ")}`);
   }

@@ -9,6 +9,7 @@ import {
   RelationshipRule,
   CATEGORY_CONFIGS,
   createEmptyState,
+  migrateState,
 } from "@/types/prompt-composer";
 import { loadPack, loadRules } from "@/prompt-composer/PackLoader";
 import {
@@ -240,7 +241,7 @@ export default function PromptComposer({
   };
 
   const handleLoadPreset = async (preset: ComposerPreset) => {
-    setState(preset.state);
+    setState(migrateState(preset.state));
     onMutationPercentChange(preset.mutationPercent);
     toast.success(`Loaded "${preset.name}"`);
   };

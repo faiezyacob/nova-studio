@@ -4,6 +4,7 @@ import {
   PromptCategoryKey,
   PromptValue,
   RelationshipRule,
+  CATEGORY_CONFIGS,
 } from "@/types/prompt-composer";
 
 const PACK_BASE_PATH = "/packs/default";
@@ -16,14 +17,7 @@ export async function loadPack(): Promise<ThemePackData> {
   const meta = await fetchJSON<ThemePackMeta>(`${PACK_BASE_PATH}/meta.json`);
   const categories: Partial<Record<PromptCategoryKey, PromptValue[]>> = {};
 
-  const categoryKeys: PromptCategoryKey[] = [
-    "subject", "ethnicity", "age", "bodyType", "skin",
-    "hair", "hairColor", "eyes",
-    "expression", "pose", "top", "pants", "footwear", "accessories",
-    "location", "weather", "time",
-    "lightSource", "lightStyle", "cameraAngle", "cameraShot", "lens", "composition",
-    "mood", "style", "details",
-  ];
+  const categoryKeys: PromptCategoryKey[] = CATEGORY_CONFIGS.map(c => c.key);
 
   const results = await Promise.allSettled(
     categoryKeys.map(async (key) => {

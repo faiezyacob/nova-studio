@@ -1,0 +1,16 @@
+[
+  { "name": "Facing camera", "weight": 9, "tags": ["default"] },
+  { "name": "Slight head tilt to the left", "weight": 7, "tags": ["default"] },
+  { "name": "Slight head tilt to the right", "weight": 7, "tags": ["default"] },
+  { "name": "Head turned left", "weight": 6, "tags": ["default"] },
+  { "name": "Head turned right", "weight": 6, "tags": ["default"] },
+  { "name": "Looking over left shoulder", "weight": 5, "tags": ["default"] },
+  { "name": "Looking over right shoulder", "weight": 5, "tags": ["default"] },
+  { "name": "Looking downward", "weight": 6, "tags": ["default"] },
+  { "name": "Looking upward", "weight": 5, "tags": ["default"] },
+  { "name": "Looking slightly left", "weight": 5, "tags": ["default"] },
+  { "name": "Looking slightly right", "weight": 5, "tags": ["default"] },
+  { "name": "Looking away from camera", "weight": 5, "tags": ["default"] },
+  { "name": "Chin slightly raised", "weight": 4, "tags": ["default"] },
+  { "name": "Chin slightly lowered", "weight": 4, "tags": ["default"] }
+]

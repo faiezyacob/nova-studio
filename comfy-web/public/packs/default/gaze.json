@@ -1,0 +1,10 @@
+[
+  { "name": "Looking toward camera", "weight": 8, "tags": ["default"] },
+  { "name": "Looking past camera", "weight": 5, "tags": ["default"] },
+  { "name": "Looking downward", "weight": 6, "tags": ["default"] },
+  { "name": "Looking upward", "weight": 5, "tags": ["default"] },
+  { "name": "Looking sideways", "weight": 5, "tags": ["default"] },
+  { "name": "Eyes closed", "weight": 4, "tags": ["default"] },
+  { "name": "Looking to the side", "weight": 5, "tags": ["default"] },
+  { "name": "Looking over shoulder", "weight": 5, "tags": ["default"] }
+]

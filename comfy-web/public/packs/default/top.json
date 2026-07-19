@@ -59,6 +59,7 @@
   { "name": "Steampunk outfit", "weight": 5, "tags": ["sci-fi"], "category": "sci-fi" },
   { "name": "Solarpunk attire", "weight": 3, "tags": ["sci-fi"], "category": "sci-fi" },
   { "name": "Cyberpunk techwear", "weight": 5, "tags": ["sci-fi"], "category": "sci-fi" },
+  { "name": "Spiderman suit", "weight": 4, "tags": ["sci-fi"], "category": "sci-fi" },
 
   { "name": "Sailor school uniform", "weight": 7, "tags": ["anime"], "category": "anime" },
   { "name": "Miko shrine maiden outfit", "weight": 6, "tags": ["anime"], "category": "anime" },
