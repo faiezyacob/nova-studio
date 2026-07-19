@@ -7,23 +7,27 @@ const COMFYUI_URL = process.env.COMFYUI_URL || "http://127.0.0.1:8188";
 const api = new ComfyApi(COMFYUI_URL, undefined, { wsTimeout: 300000 });
 
 interface WanOptions {
-  image: string; // base64 or filename
+  image: string;
   prompt: string;
   negative_prompt?: string;
   width?: number;
   height?: number;
   imgWidth?: number;
   imgHeight?: number;
-  frames?: number;
+  duration?: number;
+  fps?: number;
+  turbo?: boolean;
   generationId?: string;
 }
 
 async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: string; video_path: string; subfolder: string; frame_path?: string; frame_subfolder?: string }> {
-  const { image, prompt, negative_prompt, width, height, imgWidth, imgHeight, frames, generationId } = options;
+  const { image, prompt, negative_prompt, width, height, imgWidth, imgHeight, duration, fps, turbo, generationId } = options;
 
-  const videoWidth = width || 480;
-  const videoHeight = height || 832;
-  const videoFrames = frames || 81;
+  const videoWidth = width || 640;
+  const videoHeight = height || 640;
+  const videoFps = fps || 16;
+  const videoDuration = duration || 5;
+  const videoFrames = Math.floor(videoDuration * videoFps + 1);
   const origWidth = imgWidth || videoWidth;
   const origHeight = imgHeight || videoHeight;
 
@@ -32,21 +36,16 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
 
   const nodes: Record<string, any> = {};
 
-  // =========================
-  // LOAD MODELS
-  // Node 21 in original = high_noise, Node 15 in original = low_noise
-  // =========================
-
-  // HIGH NOISE model (original node 21)
+  // HIGH NOISE model (fp8 scaled)
   nodes["1"] = {
-    class_type: "UnetLoaderGGUF",
-    inputs: { unet_name: "TurboWan2.2-I2V-A14B-high-720P-Q4_K_M.gguf" },
+    class_type: "UNETLoader",
+    inputs: { unet_name: "wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors", weight_dtype: "default" },
   };
 
-  // LOW NOISE model (original node 15)
+  // LOW NOISE model (fp8 scaled)
   nodes["2"] = {
-    class_type: "UnetLoaderGGUF",
-    inputs: { unet_name: "TurboWan2.2-I2V-A14B-low-720P-Q4_K_M.gguf" },
+    class_type: "UNETLoader",
+    inputs: { unet_name: "wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors", weight_dtype: "default" },
   };
 
   nodes["3"] = {
@@ -63,77 +62,49 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
     },
   };
 
-  // =========================
-  // HIGH NOISE MODEL PIPELINE
-  // Original: node21 -> node9(sage) -> node11(torch) -> node14(lora 3.0) -> node7(SD3) -> KSampler23 (FIRST)
-  // =========================
+  // HIGH NOISE pipeline
+  // Turbo: node1 -> lora (high noise, strength 1.0) -> sd3(shift:5)
+  // Non-turbo: node1 -> sd3(shift:5)
+  const turb = turbo === true;
 
   nodes["10"] = {
-    class_type: "PathchSageAttentionKJ",
+    class_type: "LoraLoaderModelOnly",
     inputs: {
-      model: ["1", 0], // high noise
-      sage_attention: "auto",
+      model: ["1", 0],
+      lora_name: "wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors",
+      strength_model: turb ? 1.0 : 0,
     },
   };
 
   nodes["11"] = {
-    class_type: "ModelPatchTorchSettings",
-    inputs: {
-      model: ["10", 0],
-      enable_fp16_accumulation: true,
-    },
-  };
-
-  nodes["12"] = {
-    class_type: "LoraLoaderModelOnly",
-    inputs: {
-      model: ["11", 0],
-      lora_name: "lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors",
-      strength_model: 4.0,
-    },
-  };
-
-  nodes["13"] = {
     class_type: "ModelSamplingSD3",
     inputs: {
-      model: ["12", 0],
-      shift: 4,
+      model: ["10", 0],
+      shift: 5,
     },
   };
 
-  // =========================
-  // LOW NOISE MODEL PIPELINE (no LoRA - all motion handled by high-noise stage)
-  // =========================
-
+  // LOW NOISE pipeline
+  // Turbo: node2 -> lora (low noise, strength 1.0) -> sd3(shift:5)
+  // Non-turbo: node2 -> sd3(shift:5)
   nodes["20"] = {
-    class_type: "PathchSageAttentionKJ",
+    class_type: "LoraLoaderModelOnly",
     inputs: {
-      model: ["2", 0], // low noise
-      sage_attention: "auto",
+      model: ["2", 0],
+      lora_name: "wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors",
+      strength_model: turb ? 1.0 : 0,
     },
   };
 
   nodes["21"] = {
-    class_type: "ModelPatchTorchSettings",
-    inputs: {
-      model: ["20", 0],
-      enable_fp16_accumulation: true,
-    },
-  };
-
-  nodes["23"] = {
     class_type: "ModelSamplingSD3",
     inputs: {
-      model: ["21", 0],
-      shift: 4,
+      model: ["20", 0],
+      shift: 5,
     },
   };
 
-  // =========================
-  // PROMPTS
-  // =========================
-
-  // Negative prompt (original node 3)
+  // Negative prompt
   nodes["30"] = {
     class_type: "CLIPTextEncode",
     inputs: {
@@ -143,7 +114,7 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
     },
   };
 
-  // Positive prompt (original node 17)
+  // Positive prompt
   nodes["31"] = {
     class_type: "CLIPTextEncode",
     inputs: {
@@ -159,10 +130,8 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
   let imageFilename = "";
 
   if (typeof image === "string" && !image.startsWith("data:") && !image.includes(",")) {
-    // Already a ComfyUI filename
     imageFilename = image;
   } else if (typeof image === "string" && image.startsWith("data:")) {
-    // Parse mime type from data URI for correct extension
     const mimeMatch = image.match(/^data:([^;]+);base64,/);
     const mimeType = mimeMatch ? mimeMatch[1] : "image/png";
     const ext =
@@ -174,8 +143,8 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
     const buffer = Buffer.from(base64Data, "base64");
 
     const uploadForm = new FormData();
-    const blob = new Blob([buffer], { type: mimeType }); // ✅ FIXED: use actual mime type
-    uploadForm.append("image", blob, `input_image.${ext}`); // ✅ FIXED: correct extension
+    const blob = new Blob([buffer], { type: mimeType });
+    uploadForm.append("image", blob, `input_image.${ext}`);
     uploadForm.append("overwrite", "true");
 
     const uploadResponse = await fetch(`${COMFYUI_URL}/upload/image`, {
@@ -195,41 +164,17 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
     throw new Error("Invalid image format - must be filename or base64 data URI");
   }
 
-  // LoadImage (original node 18)
+  // LoadImage
   nodes["40"] = {
     class_type: "LoadImage",
     inputs: {
       image: imageFilename,
-      upload: "image", // ✅ match original widget_values: ["filename", "image"]
-    },
-  };
-
-  // =========================
-  // IMAGE RESIZE
-  // Original node 20 widget_values:
-  // [512, 512, "nearest-exact", "stretch", "0, 0, 0", "center", 2, "cpu", "nearest-exact", 8, true, "0, 0, 0", "center"]
-  // Note: node 20 in original is mode:4 (bypassed/muted in original!) 
-  // but we include it active here since we need resize
-  // =========================
-
-  nodes["41"] = {
-    class_type: "ImageResizeKJv2",
-    inputs: {
-      image: ["40", 0],
-      width: videoWidth,
-      height: videoHeight,
-      upscale_method: "bicubic",
-      keep_proportion: "stretch",   // ✅ matches original widget "stretch"
-      pad_color: "0, 0, 0",
-      crop_position: "center",
-      divisible_by: 8,
+      upload: "image",
     },
   };
 
   // =========================
   // WAN IMAGE TO VIDEO
-  // Original node 19 widget_values: [480, 832, 81, 1, 1, 81]
-  // Maps to: width, height, length, batch_size, ?, ?
   // =========================
 
   nodes["50"] = {
@@ -238,67 +183,64 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
       positive: ["31", 0],
       negative: ["30", 0],
       vae: ["3", 0],
-      start_image: ["41", 0],
+      start_image: ["40", 0],
       width: videoWidth,
       height: videoHeight,
-      length: videoFrames,   // ✅ FIXED: "length" not "frames" - matches original
+      length: videoFrames,
       batch_size: 1,
     },
   };
 
   // =========================
   // SAMPLERS
-  // ✅ CRITICAL FIX: HIGH NOISE runs FIRST, LOW NOISE runs SECOND
   //
-  // Original KSampler23 (first, high noise model node7):
-  //   widget_values: ["enable", 230675135476310, 6, 1, "euler", "simple", 0, 3, "disable"]
-  //   = add_noise=enable, seed=xxx, steps=6, cfg=1, sampler=euler, scheduler=simple,
-  //     start_at_step=0, end_at_step=3, return_with_leftover_noise=disable
+  // When turbo mode is ON:  steps=4,  cfg=1,   split_step=2  (4-step LoRA)
+  // When turbo mode is OFF: steps=20, cfg=3.5, split_step=10 (standard)
   //
-  // Original KSampler16 (second, low noise model node8):
-  //   widget_values: ["enable", 0, 6, 1, "euler", "simple", 0, 3, "disable"]
-  //   = add_noise=enable, seed=0, steps=6, cfg=1, sampler=euler, scheduler=simple,
-  //     start_at_step=0, end_at_step=3, return_with_leftover_noise=disable
-  //
-  // NOTE: second sampler takes latent from FIRST sampler output (link 15: node23->node16)
+  // FIRST sampler (high noise): er_sde, end_at_step=split_step, return_with_leftover_noise=enable
+  // SECOND sampler (low noise): euler,  start_at_step=split_step, end_at_step=10000
   // =========================
 
-  // FIRST sampler - HIGH NOISE model (original KSampler node 23)
+  const steps = turb ? 4 : 20;
+  const cfg = turb ? 1 : 3.5;
+  const splitStep = turb ? 2 : 10;
+
+  // FIRST sampler - high noise model
   nodes["60"] = {
     class_type: "KSamplerAdvanced",
     inputs: {
-      model: ["13", 0],             // ✅ HIGH NOISE model pipeline
+      model: ["11", 0],
       positive: ["50", 0],
       negative: ["50", 1],
-      latent_image: ["50", 2],      // ✅ takes latent from WanImageToVideo
-      add_noise: "enable",          // ✅ matches original
+      latent_image: ["50", 2],
+      add_noise: "enable",
       noise_seed: seed,
-      steps: 10,
-      cfg: 1,
+      steps: steps,
+      cfg: cfg,
       sampler_name: "er_sde",
       scheduler: "simple",
       start_at_step: 0,
-      end_at_step: 4,
-      return_with_leftover_noise: "enable", // ✅ Changed to enable so Node 61 can continue
+      end_at_step: splitStep,
+      return_with_leftover_noise: "enable",
     },
   };
 
-  // SECOND sampler - LOW NOISE model (original KSampler node 16)
+  // SECOND sampler - low noise model
   nodes["61"] = {
     class_type: "KSamplerAdvanced",
     inputs: {
-      model: ["23", 0],             // ✅ LOW NOISE model pipeline
+      model: ["21", 0],
       positive: ["50", 0],
       negative: ["50", 1],
-      latent_image: ["60", 0],      // ✅ takes latent from FIRST sampler output
-      add_noise: "disable",         // ✅ FIXED: Second pass should not re-add noise
-      noise_seed: 0,
-      steps: 10,
-      cfg: 1,
-      sampler_name: "er_sde",
+      latent_image: ["60", 0],
+      add_noise: "disable",
+      noise_seed: seed,
+      steps: steps,
+      cfg: cfg,
+      sampler_name: "euler",
       scheduler: "simple",
-      start_at_step: 4,             // ✅ FIXED: Start where first one left off
-      end_at_step: 10000,           // ✅ FIXED: Finish all steps
+      start_at_step: splitStep,
+      end_at_step: 10000,
       return_with_leftover_noise: "disable",
     },
   };
@@ -307,7 +249,7 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
   // DECODE + OUTPUT
   // =========================
 
-  // VAEDecode (original node 5)
+  // VAEDecode
   nodes["70"] = {
     class_type: "VAEDecode",
     inputs: {
@@ -316,12 +258,7 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
     },
   };
 
-  // =========================
-  // FRAME UPSCALE + SAVE (continuity frame at original image dimensions)
-  // Node 71: upscale decoded frame to original image dimensions
-  // Node 72: save the upscaled frame as PNG
-  // =========================
-
+  // Frame upscale to original image dimensions
   nodes["71"] = {
     class_type: "ImageResizeKJv2",
     inputs: {
@@ -336,6 +273,7 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
     },
   };
 
+  // Save frame
   nodes["72"] = {
     class_type: "SaveImage",
     inputs: {
@@ -344,24 +282,23 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
     },
   };
 
-  // CreateVideo (original node 24) - widget_values: [16]
+  // CreateVideo
   nodes["80"] = {
     class_type: "CreateVideo",
     inputs: {
       images: ["70", 0],
-      fps: 16,
+      fps: videoFps,
     },
   };
 
-  // SaveVideo (original node 25)
-  // widget_values: ["video/ComfyUI", "auto", "auto", "ComfyUI"]
+  // SaveVideo
   nodes["90"] = {
     class_type: "SaveVideo",
     inputs: {
       video: ["80", 0],
-      filename_prefix: `video/${prefix}`, // ✅ FIXED: original uses "video/ComfyUI" prefix
-      format: "auto",                      // ✅ FIXED: original uses "auto"
-      codec: "auto",                       // ✅ FIXED: original uses "auto"
+      filename_prefix: `video/${prefix}`,
+      format: "auto",
+      codec: "auto",
     },
   };
 
@@ -380,15 +317,13 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
 
     builder.setInputNode("prompt", "31.inputs.text");
     builder.setInputNode("negative_prompt", "30.inputs.text");
-    builder.setInputNode("width", "41.inputs.width");
-    builder.setInputNode("height", "41.inputs.height");
-    builder.setInputNode("frames", "50.inputs.length"); // ✅ FIXED: "length" not "frames"
+    builder.setInputNode("width", "50.inputs.width");
+    builder.setInputNode("height", "50.inputs.height");
+    builder.setInputNode("frames", "50.inputs.length");
     builder.setInputNode("seed", "60.inputs.noise_seed");
     builder.setOutputNode("video_path", "90");
     builder.setOutputNode("frame_path", "72");
 
-    // Set actual values
-    console.log('[WAN API] Mapping prompt to node 31 inputs.text:', prompt);
     builder
       .input("prompt", prompt)
       .input("negative_prompt", negative_prompt ||
@@ -400,7 +335,6 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
       .input("seed", seed);
 
     console.log("Submitting workflow with seed:", seed);
-    console.log("Nodes:", JSON.stringify(nodes, null, 2));
 
     const wrapper = new CallWrapper(api, builder);
 
@@ -409,14 +343,12 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
       resolved = true;
       console.log("Generation SUCCESS:", data);
 
-      // Extract video filename and subfolder from output
       const outputNode = data?.["90"];
       const videoData = outputNode?.videos?.[0] || outputNode?.gifs?.[0];
 
       const videoFile = videoData?.filename || `${prefix}_00001_.mp4`;
       const videoSubfolder = videoData?.subfolder || "video";
 
-      // Extract frame filename and subfolder from output
       const frameNode = data?.["72"];
       const frameData = frameNode?.images?.[0];
       const frameFile = frameData?.filename || "";
@@ -472,7 +404,9 @@ export async function POST(request: NextRequest) {
     const height = body.get('height') ? parseInt(body.get('height') as string) : undefined;
     const imgWidth = body.get('imgWidth') ? parseInt(body.get('imgWidth') as string) : undefined;
     const imgHeight = body.get('imgHeight') ? parseInt(body.get('imgHeight') as string) : undefined;
-    const frames = body.get('frames') ? parseInt(body.get('frames') as string) : undefined;
+    const duration = body.get('duration') ? parseFloat(body.get('duration') as string) : undefined;
+    const fps = body.get('fps') ? parseFloat(body.get('fps') as string) : undefined;
+    const turbo = body.get('turbo') === 'true';
     const generationId = request.headers.get('x-generation-id') || undefined;
 
     if (!imageFile || !prompt) {
@@ -482,7 +416,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    console.log('[WAN API] Received prompt:', prompt);
 
     const arrayBuffer = await imageFile.arrayBuffer();
     const base64 = Buffer.from(arrayBuffer).toString('base64');
@@ -499,7 +432,9 @@ export async function POST(request: NextRequest) {
       height,
       imgWidth,
       imgHeight,
-      frames,
+      duration,
+      fps,
+      turbo,
       generationId,
     });
 

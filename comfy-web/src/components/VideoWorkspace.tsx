@@ -102,6 +102,7 @@ export default function VideoWorkspace({
   const [videoToUpscale, setVideoToUpscale] = useState<VideoGalleryItem | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [promptEnhancement, setPromptEnhancement] = useState(false);
+  const [turboMode, setTurboMode] = useState(true);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
@@ -664,6 +665,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
         formData.append('width', String(finalWidth));
         formData.append('height', String(finalHeight));
         formData.append('frames', String(durationFrames));
+        formData.append('turbo', String(turboMode));
         const response = await fetch('/api/comfy/wan', {
           method: 'POST',
           headers: { 'X-Generation-Id': generationId },
@@ -1105,6 +1107,23 @@ Based on the image, write a prompt that describes exactly enough action to reali
                     {promptEnhancement ? "On" : "Off"}
                   </button>
                 </div>
+
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase tracking-widest text-text-subtle">Turbo</span>
+                  <button
+                    onClick={() => setTurboMode(!turboMode)}
+                    disabled={isGenerating}
+                    className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs transition disabled:opacity-50 ${
+                      turboMode
+                        ? "border-gold/50 bg-hover text-gold-dim"
+                        : "border-border-strong bg-surface-2 text-text-subtle"
+                    }`}
+                    title="Enable 4-step turbo mode for faster generation"
+                  >
+                    <span className={`h-2 w-2 rounded-full ${turboMode ? "bg-gold" : "bg-text-subtle"}`} />
+                    {turboMode ? "On" : "Off"}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -1195,19 +1214,19 @@ Based on the image, write a prompt that describes exactly enough action to reali
                 <div className="flex flex-col gap-2">
                   <button
                     onClick={() => window.open(`/generated/${videoResult.filename}`, '_blank')}
-                    className="rounded-lg border border-gold-dim/40 bg-hover px-3 py-2 text-xs text-gold-dim transition duration-150 ease-out hover:bg-active"
+                    className="rounded-lg border border-border-strong px-3 py-2 text-xs text-gold-dim transition duration-150 ease-out hover:border-gold-focus hover:text-gold-hover"
                   >
                     View
                   </button>
                   <button
                     onClick={() => openUpscale(videoResult)}
-                    className="rounded-lg border border-gold/30 bg-gold/[0.08] px-3 py-2 text-xs text-gold transition duration-150 ease-out hover:bg-gold/[0.15]"
+                    className="rounded-lg border border-border-strong px-3 py-2 text-xs text-gold-dim transition duration-150 ease-out hover:border-gold-focus hover:text-gold-hover"
                   >
                     Upscale
                   </button>
                   <button
                     onClick={() => navigator.clipboard.writeText(videoResult.prompt)}
-                    className="rounded-lg border border-border-strong bg-surface-2 px-3 py-2 text-xs text-text-secondary transition duration-150 ease-out hover:border-gold-dim/60 hover:text-text-primary"
+                    className="rounded-lg border border-border-strong px-3 py-2 text-xs text-gold-dim transition duration-150 ease-out hover:border-gold-focus hover:text-gold-hover"
                   >
                     Copy Prompt
                   </button>
@@ -1233,7 +1252,7 @@ Based on the image, write a prompt that describes exactly enough action to reali
                 {!isSelectMode && (
                   <button
                     onClick={() => setIsEditorOpen(true)}
-                    className="rounded-lg border border-gold-dim/40 bg-hover px-3 py-1.5 text-xs text-gold-dim transition duration-150 ease-out hover:bg-active"
+                    className="rounded-lg border border-border-strong px-3 py-2 text-xs text-gold-dim transition duration-150 ease-out hover:border-gold-focus hover:text-gold-hover"
                   >
                     <svg className="mr-1.5 inline-block h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M11 4a.5.5 0 01.5-.5h1a.5.5 0 01.5.5v1a.5.5 0 01-.5.5h-1a.5.5 0 01-.5-.5V4zM12.5 8.5a.5.5 0 00-1 0v3.793l-1.146-1.147a.5.5 0 00-.708.708l2 2a.5.5 0 00.708 0l2-2a.5.5 0 00-.708-.708L12.5 12.293V8.5zM4 5.5A2.5 2.5 0 016.5 3h1A1.5 1.5 0 019 4.5V5h6v-.5A1.5 1.5 0 0116.5 3h1A2.5 2.5 0 0120 5.5v12a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 012 17.5v-12z" />
@@ -1367,22 +1386,20 @@ Based on the image, write a prompt that describes exactly enough action to reali
                         </div>
                       </div>
                     </div>
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent p-3 pt-12">
-                      <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                    <div className="absolute inset-x-0 bottom-0 translate-y-full opacity-0 bg-gradient-to-t from-black/90 to-transparent p-2.5 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                      <div className="flex items-center gap-1 flex-wrap mb-1">
                         {video.resolution && (
-                          <span className="inline-block rounded-md border border-gold/20 bg-black/70 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-gold backdrop-blur-sm">
+                          <span className="inline-block rounded-md bg-gold/20 px-2 py-0.5 text-[9px] font-medium text-[#d8b88d] backdrop-blur-sm border border-gold/30">
                             {video.resolution}
                           </span>
                         )}
                         {video.model && (
-                          <span className="inline-block rounded-md border border-[#8b9bb4]/20 bg-black/70 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-[#8b9bb4] backdrop-blur-sm">
+                          <span className="inline-block rounded-md bg-gold/20 px-2 py-0.5 text-[9px] font-medium text-[#d8b88d] backdrop-blur-sm border border-gold/30">
                             {video.model}
                           </span>
                         )}
                       </div>
-                      <p className="line-clamp-2 text-[11px] font-medium leading-snug text-text-primary drop-shadow-md opacity-90">
-                        {video.prompt}
-                      </p>
+                      <p className="line-clamp-2 text-[11px] leading-relaxed text-text-primary opacity-90">{video.prompt}</p>
                     </div>
                   </div>
                 ))}

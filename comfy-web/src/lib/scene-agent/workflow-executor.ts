@@ -126,6 +126,7 @@ export async function generateVideoSegment(
     if (imgWidth !== undefined) formData.append('imgWidth', String(imgWidth));
     if (imgHeight !== undefined) formData.append('imgHeight', String(imgHeight));
     formData.append('frames', String(frames));
+    formData.append('turbo', 'true');
 
     let result: VideoResult;
 
