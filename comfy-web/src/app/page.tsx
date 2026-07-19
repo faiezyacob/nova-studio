@@ -54,6 +54,16 @@ export default function App() {
   // Agent Session States
   const [agentSessions, setAgentSessions] = useState<AgentSession[]>([]);
   const [activeAgentSessionId, setActiveAgentSessionId] = useState<string | null>(null);
+  const [agentSettings, setAgentSettings] = useState({
+    imageStyle: "realistic",
+    duration: 10,
+    aspectRatio: "9:16",
+    resolution: "480p",
+    selectedLoras: [] as Lora[],
+    promptEnhancement: false,
+    applyStyleOnEnhance: true,
+    imageWorkflow: "z-image-turbo",
+  });
 
   const [isPurging, setIsPurging] = useState(false);
   const [isRestarting, setIsRestarting] = useState(false);
@@ -278,6 +288,16 @@ export default function App() {
       db.remove("agent_sessions");
     }
   }, [agentSessions]);
+
+  useEffect(() => {
+    db.get("agent_workspace_settings").then(saved => {
+      if (saved && typeof saved === 'object') setAgentSettings(prev => ({ ...prev, ...(saved as Record<string, unknown>) }));
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    db.set("agent_workspace_settings", agentSettings);
+  }, [agentSettings]);
 
   useEffect(() => {
     if (!chatSessionsLoaded.current) return;
@@ -791,6 +811,8 @@ export default function App() {
               availableModels={availableModels}
               selectedModel={selectedModel}
               switchModel={switchModel}
+              agentSettings={agentSettings}
+              setAgentSettings={setAgentSettings}
             />
           ) : (
             <ChatWorkspace

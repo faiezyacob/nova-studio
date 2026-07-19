@@ -25,19 +25,31 @@ interface UpscaleOptions {
 async function upscaleVideo(options: UpscaleOptions): Promise<{ prompt_id: string; video_path: string; subfolder: string }> {
   const { filename, subfolder, upscale_model, width, height, scale = 2, double_fps, generationId } = options;
 
-  // Construct absolute path for VHS_LoadVideo from public/generated
-  const videoPath = path.join(LOCAL_GENERATED_DIR, filename);
+  // Resolve video path: check ComfyUI output first, then public/generated
+  const comfyDir = subfolder
+    ? path.join(COMFY_OUTPUT_DIR, subfolder)
+    : COMFY_OUTPUT_DIR;
+
+  let videoPath = path.join(comfyDir, filename);
+  if (!existsSync(videoPath)) {
+    videoPath = path.join(LOCAL_GENERATED_DIR, filename);
+  }
+  if (!existsSync(videoPath)) {
+    throw new Error(`Video file not found: ${filename}`);
+  }
+  // Normalize to forward slashes for ComfyUI/VHS compatibility on Windows
+  videoPath = videoPath.replace(/\\/g, '/');
 
   const prefix = `upscale_${Math.floor(Date.now() / 1000)}`;
 
   const nodes: Record<string, any> = {};
 
-  // Node 1: Load Video — use actual source dimensions so VHS_LoadVideo
-  // doesn't fall back to a default resolution (e.g. 1024×1024)
+  // Node 1: Load Video — use VHS_LoadVideoPath for absolute paths
+  // (VHS_LoadVideo only works with ComfyUI's input/ directory)
   const srcW = width || 480;
   const srcH = height || 832;
   nodes["1"] = {
-    class_type: "VHS_LoadVideo",
+    class_type: "VHS_LoadVideoPath",
     inputs: {
       video: videoPath,
       force_rate: 0,
@@ -308,10 +320,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Filename is required' }, { status: 400 });
     }
 
+    // Validate video file exists before doing anything
+    const comfyDir = subfolder
+      ? path.join(COMFY_OUTPUT_DIR, subfolder)
+      : COMFY_OUTPUT_DIR;
+    let resolvedPath = path.join(comfyDir, filename);
+    if (!existsSync(resolvedPath)) {
+      resolvedPath = path.join(LOCAL_GENERATED_DIR, filename);
+    }
+    if (!existsSync(resolvedPath)) {
+      return NextResponse.json(
+        { error: `Video file not found: ${filename}` },
+        { status: 404 }
+      );
+    }
+
     // Fallback: If width/height are missing, try to get them using ffprobe
     if (!width || !height) {
       try {
-        const videoPath = path.join(LOCAL_GENERATED_DIR, filename);
+        const videoPath = resolvedPath;
 
         console.log(`[UPSCALE API] Dimensions missing, probing: ${videoPath}`);
         const { execSync } = require('child_process');

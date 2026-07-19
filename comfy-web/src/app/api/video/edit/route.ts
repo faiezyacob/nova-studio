@@ -194,9 +194,20 @@ export async function POST(request: NextRequest) {
           const cmd = `ffmpeg -i "${combinedPath}" -i "${audioFilePath}" -c:v copy -c:a aac -map 0:v -map 1:a -shortest -movflags +faststart "${finalOutputPath}"`;
           await execPromise(cmd);
         } else {
-          // Mix audio with original
-          const cmd = `ffmpeg -i "${combinedPath}" -i "${audioFilePath}" -filter_complex "[1:a]volume=${volume}[a1];[0:a][a1]amix=inputs=2:duration=first" -c:v copy -c:a aac -movflags +faststart "${finalOutputPath}"`;
-          await execPromise(cmd);
+          // Check if input video has an audio stream
+          const probeCmd = `ffmpeg -i "${combinedPath}" 2>&1`;
+          const probeResult = await execPromise(probeCmd).catch((e: { stdout: string }) => e);
+          const hasAudio = (typeof probeResult === 'string' ? probeResult : probeResult.stdout || '').includes('Audio:');
+
+          if (hasAudio) {
+            // Mix audio with original
+            const cmd = `ffmpeg -i "${combinedPath}" -i "${audioFilePath}" -filter_complex "[1:a]volume=${volume}[a1];[0:a][a1]amix=inputs=2:duration=first" -c:v copy -c:a aac -movflags +faststart "${finalOutputPath}"`;
+            await execPromise(cmd);
+          } else {
+            // No original audio — just add the new audio track
+            const cmd = `ffmpeg -i "${combinedPath}" -i "${audioFilePath}" -c:v copy -c:a aac -map 0:v -map 1:a -shortest -movflags +faststart "${finalOutputPath}"`;
+            await execPromise(cmd);
+          }
         }
       } else {
         // Audio specified but file missing — fall through to no-audio path

@@ -32,9 +32,10 @@ export async function generateImage(
   prompt: string,
   width: number,
   height: number,
-  lora: Lora | null,
+  loras: Lora[],
   queue: TaskQueue,
   taskId: string,
+  imageWorkflow?: string,
 ): Promise<string | null> {
   const generationId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -52,7 +53,7 @@ export async function generateImage(
   eventSource.onerror = () => {};
 
   try {
-    const loras = lora && lora.name ? [lora] : [];
+    const filteredLoras = imageWorkflow === 'ideogram4' ? [] : loras.filter(l => l.name);
     const res = await fetch(IMAGE_API_URL, {
       method: 'POST',
       headers: {
@@ -63,7 +64,8 @@ export async function generateImage(
         prompt: prompt.trim(),
         width,
         height,
-        loras,
+        loras: filteredLoras,
+        workflow: imageWorkflow || undefined,
       }),
     });
 

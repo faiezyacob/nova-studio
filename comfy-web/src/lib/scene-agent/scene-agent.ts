@@ -110,7 +110,8 @@ export class SceneAgent {
       workflow?: 'wan' | 'ltx';
       imageStyle?: string;
       styleDescription?: string;
-      lora?: Lora | null;
+      loras?: Lora[];
+      imageWorkflow?: string;
     },
   ): Promise<void> {
     if (!this.acquireLock()) {
@@ -172,7 +173,7 @@ export class SceneAgent {
 
       imageFilename = await this.queue.runTask(async (task) => {
         const finalPrompt = plan.image_prompt;
-        const result = await generateImage(finalPrompt, imageWidth, imageHeight, options?.lora || null, this.queue, task.id);
+        const result = await generateImage(finalPrompt, imageWidth, imageHeight, options?.loras || [], this.queue, task.id, options?.imageWorkflow);
         if (!result) throw new Error('Image generation failed');
         return result;
       });
@@ -212,7 +213,7 @@ export class SceneAgent {
           }
           imageFilename = await this.queue.rerunTask('generate_image', async (task) => {
             const finalPrompt = this._currentImagePrompt;
-            const result = await generateImage(finalPrompt, imageWidth, imageHeight, options?.lora || null, this.queue, task.id);
+            const result = await generateImage(finalPrompt, imageWidth, imageHeight, options?.loras || [], this.queue, task.id, options?.imageWorkflow);
             if (!result) throw new Error('Image regeneration failed');
             return result;
           });

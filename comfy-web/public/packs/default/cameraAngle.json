@@ -1,4 +1,7 @@
 [
+  { "name": "Front view", "weight": 9, "tags": ["default"] },
+  { "name": "Side view", "weight": 8, "tags": ["default"] },
+  { "name": "Back view", "weight": 7, "tags": ["default"] },
   { "name": "Eye level", "weight": 8, "tags": ["default"] },
   { "name": "Low angle", "weight": 7, "tags": ["default"] },
   { "name": "High angle", "weight": 7, "tags": ["default"] },

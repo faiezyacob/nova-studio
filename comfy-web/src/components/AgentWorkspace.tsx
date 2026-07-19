@@ -70,10 +70,27 @@ const RESOLUTION_SCALE: Record<string, number> = {
   '720p': 1.5,
 };
 
-const IMAGE_STYLES = ["realistic", "photography", "cinematic", "anime", "cgi"];
+function ChevronIcon() {
+  return (
+    <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle">
+      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+      </svg>
+    </div>
+  );
+}
+
+const IMAGE_STYLES = ["none", "realistic", "photography", "cinematic", "anime", "cgi"];
 
 const AVAILABLE_LORAS = [
   "RealisticSnapshot-Zimage-Turbov5.safetensors",
+  "retroanime.safetensors",
+  "sunsetblur.safetensors",
+  "Krea2-realism-V2.safetensors",
+  "Krea2_Cinematic_Artstyle.safetensors",
+  "m87_lora_v1.safetensors",
+  "krea2_alexandradaddario_v1_onetrainer.safetensors",
+  "krea2_sydneysweeney_v1.safetensors",
 ];
 
 const STYLE_DESCRIPTIONS: Record<string, string> = {
@@ -237,6 +254,17 @@ function ScenePreview({ plan }: { plan: ScenePlan | null }) {
   );
 }
 
+interface AgentSettings {
+  imageStyle: string;
+  duration: number;
+  aspectRatio: string;
+  resolution: string;
+  selectedLoras: Lora[];
+  promptEnhancement: boolean;
+  applyStyleOnEnhance: boolean;
+  imageWorkflow: string;
+}
+
 interface AgentWorkspaceProps {
   agentSessions: AgentSession[];
   setAgentSessions: React.Dispatch<React.SetStateAction<AgentSession[]>>;
@@ -245,6 +273,8 @@ interface AgentWorkspaceProps {
   availableModels: string[];
   selectedModel: string;
   switchModel: (model: string) => void;
+  agentSettings: AgentSettings;
+  setAgentSettings: React.Dispatch<React.SetStateAction<AgentSettings>>;
 }
 
 export default function AgentWorkspace({
@@ -255,6 +285,8 @@ export default function AgentWorkspace({
   availableModels,
   selectedModel,
   switchModel,
+  agentSettings,
+  setAgentSettings,
 }: AgentWorkspaceProps) {
   const logsRef = useRef<HTMLDivElement>(null);
 
@@ -264,11 +296,14 @@ export default function AgentWorkspace({
   );
 
   const [userInput, setUserInput] = useState('');
-  const [duration, setDuration] = useState(10);
-  const [aspectRatio, setAspectRatio] = useState('9:16');
-  const [resolution, setResolution] = useState('480p');
-  const [imageStyle, setImageStyle] = useState('realistic');
-  const [selectedLora, setSelectedLora] = useState<Lora>({ name: '', strength_model: 1.0, strength_clip: 1.0 });
+  const imageStyle = agentSettings.imageStyle;
+  const duration = agentSettings.duration;
+  const aspectRatio = agentSettings.aspectRatio;
+  const resolution = agentSettings.resolution;
+  const selectedLoras = agentSettings.selectedLoras;
+  const promptEnhancement = agentSettings.promptEnhancement;
+  const applyStyleOnEnhance = agentSettings.applyStyleOnEnhance;
+  const imageWorkflow = agentSettings.imageWorkflow;
   const [isRunning, setIsRunning] = useState(false);
   const [isUpscaleOpen, setIsUpscaleOpen] = useState(false);
   const [videoToUpscale, setVideoToUpscale] = useState<VideoGalleryItem | null>(null);
@@ -277,6 +312,10 @@ export default function AgentWorkspace({
   const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null);
   const [editableImagePrompt, setEditableImagePrompt] = useState('');
   const [isAwaitingImageConfirm, setIsAwaitingImageConfirm] = useState(false);
+
+  const updateSettings = (patch: Partial<AgentSettings>) => {
+    setAgentSettings(prev => ({ ...prev, ...patch }));
+  };
 
   useEffect(() => {
     setSelectedImagePreview(null);
@@ -410,8 +449,7 @@ export default function AgentWorkspace({
   useEffect(() => {
     if (activeSession && activeSession.status !== 'running' && activeSession.status !== 'planning' && activeSession.status !== 'clarifying') {
       setUserInput(activeSession.description);
-      setDuration(activeSession.duration);
-      setAspectRatio(parseRatioFromSession(activeSession));
+      updateSettings({ duration: activeSession.duration, aspectRatio: parseRatioFromSession(activeSession) });
     }
   }, [activeSession?.id]);
 
@@ -434,6 +472,82 @@ export default function AgentWorkspace({
 
   const activeRatio = RATIO_PRESETS.find((r) => r.label === aspectRatio) || RATIO_PRESETS[0];
 
+  const enhancePrompt = async (rawPrompt: string): Promise<string> => {
+    if (!rawPrompt.trim() || !selectedModel) return rawPrompt;
+
+    const isIdeogram = imageWorkflow === 'ideogram4';
+
+    const styleBlock = applyStyleOnEnhance ? (STYLE_DESCRIPTIONS[imageStyle] || '') : '';
+
+    const systemPrompt = isIdeogram
+      ? `You are a STRICT JSON GENERATOR for Ideogram 4.0.
+Output ONLY one valid minified JSON object. No markdown, no explanations.
+The output must be fully parseable by JSON.parse().
+
+HARD OUTPUT RULES:
+- Output ONLY one JSON object
+- No markdown or code fences
+- Must contain EXACTLY these top-level keys: "high_level_description", "style_description", "compositional_deconstruction"
+- "style_description" must contain: "aesthetics", "lighting", "medium", "color_palette" (3 hex colors)
+- If medium is not "photograph", include "art_style"
+- Include spatial bbox coordinates for elements
+
+SELECTED STYLE:
+${styleBlock}
+
+Describe the scene as if it naturally exists in the selected style.`
+      : `You are a prompt enhancer optimized for image generation.
+Return ONLY the final enhanced prompt inside <prompt></prompt>.
+STRICT RULES:
+- Output ONE natural flowing sentence only
+- Rewrite the entire prompt into a cohesive single sentence
+- Blend the style FULLY and NATURALLY into the description
+- Keep the scene realistic and believable
+- Preserve the original intent of the prompt
+- Focus on lighting, composition, texture, and natural detail
+- Avoid keyword stuffing or comma-separated tags
+${applyStyleOnEnhance ? `STYLE ENFORCEMENT:\n${styleBlock}` : ''}
+If you output anything outside <prompt></prompt>, the answer is invalid.`;
+
+    try {
+      const response = await fetch('/api/lmstudio/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: selectedModel,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: rawPrompt },
+          ],
+          temperature: isIdeogram ? 0.7 : 0.4,
+        }),
+      });
+
+      if (!response.ok) return rawPrompt;
+      const data = await response.json();
+      const rawText = data.choices?.[0]?.message?.content || '';
+
+      if (isIdeogram) {
+        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          try {
+            JSON.parse(jsonMatch[0]);
+            return jsonMatch[0];
+          } catch {
+            return rawText.trim();
+          }
+        }
+        return rawText.trim() || rawPrompt;
+      }
+
+      const match = rawText.match(/<prompt>([\s\S]*?)<\/prompt>/i);
+      const enhanced = match?.[1]?.trim() || rawText.trim();
+      return enhanced.replace(/^["']|["']$/g, '').replace(/\s+/g, ' ').trim() || rawPrompt;
+    } catch {
+      return rawPrompt;
+    }
+  };
+
   const handleStartOrRestart = async () => {
     if (!userInput.trim() || !selectedModel || isRunning) return;
 
@@ -455,8 +569,13 @@ export default function AgentWorkspace({
                 `[Agent] Aspect Ratio: ${activeRatio.label} (${activeRatio.videoWidth}x${activeRatio.videoHeight})`,
                 `[Agent] Resolution: ${resolution}`,
                 `[Agent] Style: ${imageStyle}`,
-                ...(selectedLora.name ? [`[Agent] LoRA: ${selectedLora.name} (strength_model: ${selectedLora.strength_model})`] : []),
+                `[Agent] Image Engine: ${imageWorkflow}`,
+                ...(selectedLoras.filter(l => l.name).length > 0
+                  ? selectedLoras.filter(l => l.name).map(l => `[Agent] LoRA: ${l.name} (strength_model: ${l.strength_model})`)
+                  : []),
                 `[Agent] Model: ${selectedModel}`,
+                `[Agent] Enhance Prompt: ${promptEnhancement ? 'On' : 'Off'}`,
+                ...(promptEnhancement ? [`[Agent] Apply Style on Enhance: ${applyStyleOnEnhance ? 'On' : 'Off'}`] : []),
               ],
               outputVideo: null,
               scenePlan: null,
@@ -468,12 +587,34 @@ export default function AgentWorkspace({
 
     setIsRunning(true);
 
+    let finalPrompt = userInput.trim();
+
+    if (promptEnhancement) {
+      try {
+        await fetch('/api/comfy/free', { method: 'POST' });
+      } catch { /* ignore */ }
+      try {
+        await fetch('/api/system/free', { method: 'POST' });
+      } catch { /* ignore */ }
+      window.dispatchEvent(new Event('vram-stats-request'));
+      toast.loading('Enhancing prompt...', { id: 'enhance' });
+      finalPrompt = await enhancePrompt(userInput.trim());
+      toast.success('Prompt enhanced', { id: 'enhance' });
+      try {
+        await fetch('/api/comfy/free', { method: 'POST' });
+      } catch { /* ignore */ }
+      try {
+        await fetch('/api/system/free', { method: 'POST' });
+      } catch { /* ignore */ }
+      window.dispatchEvent(new Event('vram-stats-request'));
+    }
+
     const resolutionScale = RESOLUTION_SCALE[resolution] || 1;
     const videoWidth = Math.round(activeRatio.videoWidth * resolutionScale);
     const videoHeight = Math.round(activeRatio.videoHeight * resolutionScale);
 
     try {
-      await sceneAgent.startScene(userInput.trim(), duration, selectedModel, {
+      await sceneAgent.startScene(finalPrompt, duration, selectedModel, {
         imageWidth: activeRatio.imgWidth,
         imageHeight: activeRatio.imgHeight,
         videoWidth,
@@ -482,7 +623,8 @@ export default function AgentWorkspace({
         workflow: 'wan',
         imageStyle,
         styleDescription: STYLE_DESCRIPTIONS[imageStyle] || '',
-        lora: selectedLora.name ? { name: selectedLora.name, strength_model: selectedLora.strength_model, strength_clip: selectedLora.strength_clip } : null,
+        loras: selectedLoras.filter(l => l.name),
+        imageWorkflow,
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Agent failed';
@@ -500,8 +642,7 @@ export default function AgentWorkspace({
   const handleRestart = () => {
     if (!activeSession) return;
     setUserInput(activeSession.description);
-    setDuration(activeSession.duration);
-    setAspectRatio(parseRatioFromSession(activeSession));
+    updateSettings({ duration: activeSession.duration, aspectRatio: parseRatioFromSession(activeSession) });
     const filesToDelete = [
       ...(activeSession.generatedFiles || []),
       ...(activeSession.outputVideo ? [activeSession.outputVideo] : []),
@@ -625,16 +766,17 @@ export default function AgentWorkspace({
                 className="w-full resize-none rounded-xl border border-border-strong bg-surface-2 px-3 py-3 text-sm text-text-primary outline-none transition placeholder:text-text-subtle focus:border-gold-focus"
               />
 
-              <div className="mt-4">
+              <div className="mt-4 space-y-3">
+                {/* Row 1: Model + Style + Enhance + Engine + Generate */}
                 <div className="flex flex-wrap items-end gap-3">
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] uppercase tracking-widest text-text-subtle">Model</span>
-                    <div className="relative">
+                    <div className="relative min-w-[140px] max-w-[200px]">
                       <select
                         value={selectedModel}
                         onChange={(e) => switchModel(e.target.value)}
                         disabled={availableModels.length === 0}
-                        className="rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition focus:border-gold-focus appearance-none truncate"
+                        className="w-full rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition focus:border-gold-focus appearance-none truncate disabled:opacity-50"
                       >
                         {availableModels.length === 0 ? (
                           <option value="">No models</option>
@@ -644,19 +786,16 @@ export default function AgentWorkspace({
                           ))
                         )}
                       </select>
-                      <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle">
-                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
+                      <ChevronIcon />
                     </div>
                   </div>
+
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] uppercase tracking-widest text-text-subtle">Style</span>
                     <div className="relative">
                       <select
                         value={imageStyle}
-                        onChange={(e) => setImageStyle(e.target.value)}
+                        onChange={(e) => updateSettings({ imageStyle: e.target.value })}
                         className="rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition focus:border-gold-focus appearance-none"
                       >
                         {IMAGE_STYLES.map((style) => (
@@ -665,13 +804,60 @@ export default function AgentWorkspace({
                           </option>
                         ))}
                       </select>
-                      <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle">
-                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
+                      <ChevronIcon />
                     </div>
                   </div>
+
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] uppercase tracking-widest text-text-subtle">Enhance</span>
+                    <button
+                      onClick={() => updateSettings({ promptEnhancement: !promptEnhancement })}
+                      className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition ${
+                        promptEnhancement
+                          ? 'border-gold/50 bg-hover text-gold-dim'
+                          : 'border-border-strong bg-surface-2 text-text-subtle'
+                      }`}
+                      title="Enable automatic prompt enhancement before generation"
+                    >
+                      <span className={`h-2 w-2 rounded-full ${promptEnhancement ? 'bg-gold' : 'bg-text-subtle'}`} />
+                      {promptEnhancement ? 'On' : 'Off'}
+                    </button>
+                  </div>
+
+                  {promptEnhancement && (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] uppercase tracking-widest text-text-subtle">Apply Style</span>
+                      <button
+                        onClick={() => updateSettings({ applyStyleOnEnhance: !applyStyleOnEnhance })}
+                        className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition ${
+                          applyStyleOnEnhance
+                            ? 'border-gold/50 bg-hover text-gold-dim'
+                            : 'border-border-strong bg-surface-2 text-text-subtle'
+                        }`}
+                        title="Apply selected style during prompt enhancement"
+                      >
+                        <span className={`h-2 w-2 rounded-full ${applyStyleOnEnhance ? 'bg-gold' : 'bg-text-subtle'}`} />
+                        {applyStyleOnEnhance ? 'On' : 'Off'}
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] uppercase tracking-widest text-text-subtle">Engine</span>
+                    <div className="relative min-w-[140px] max-w-[200px]">
+                      <select
+                        value={imageWorkflow}
+                        onChange={(e) => updateSettings({ imageWorkflow: e.target.value })}
+                        className="w-full rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition focus:border-gold-focus appearance-none truncate"
+                      >
+                        <option value="z-image-turbo">Z Image Turbo</option>
+                        <option value="krea2-turbo">Krea2 Turbo Enhanced</option>
+                        <option value="ideogram4">Ideogram v4</option>
+                      </select>
+                      <ChevronIcon />
+                    </div>
+                  </div>
+
                   <button
                     onClick={handleStartOrRestart}
                     disabled={!userInput.trim() || !selectedModel || isRunning}
@@ -684,9 +870,10 @@ export default function AgentWorkspace({
                   </button>
                 </div>
 
-                <div className="mt-3 h-px bg-border-subtle" />
+                <div className="h-px bg-border-subtle" />
 
-                <div className="mt-3 flex flex-wrap items-end gap-6">
+                {/* Row 2: Duration + Aspect Ratio + Resolution */}
+                <div className="flex flex-wrap items-end gap-6">
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] uppercase tracking-widest text-text-subtle">Duration</span>
                     <div className="flex items-center gap-2">
@@ -696,7 +883,7 @@ export default function AgentWorkspace({
                         max={15}
                         step={1}
                         value={duration}
-                        onChange={(e) => setDuration(parseInt(e.target.value))}
+                        onChange={(e) => updateSettings({ duration: parseInt(e.target.value) })}
                         className="w-36 appearance-none rounded-full bg-border-strong py-1 cursor-pointer
                           [&::-webkit-slider-thumb]:appearance-none
                           [&::-webkit-slider-thumb]:h-4
@@ -714,7 +901,7 @@ export default function AgentWorkspace({
                       {RATIO_PRESETS.map((r) => (
                         <button
                           key={r.label}
-                          onClick={() => setAspectRatio(r.label)}
+                          onClick={() => updateSettings({ aspectRatio: r.label })}
                           className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
                             aspectRatio === r.label
                               ? 'border-gold bg-gold/[0.1] text-text-primary'
@@ -732,7 +919,7 @@ export default function AgentWorkspace({
                       {RESOLUTIONS.map((r) => (
                         <button
                           key={r}
-                          onClick={() => setResolution(r)}
+                          onClick={() => updateSettings({ resolution: r })}
                           className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
                             resolution === r
                               ? 'border-gold bg-gold/[0.1] text-text-primary'
@@ -746,69 +933,79 @@ export default function AgentWorkspace({
                   </div>
                 </div>
 
-                {AVAILABLE_LORAS.length > 0 && (
-                  <>
-                    <div className="mt-3 h-px bg-border-subtle" />
-                    <div className="mt-3 flex flex-wrap items-end gap-3">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[10px] uppercase tracking-widest text-text-subtle">LoRA (Image Only)</span>
-                        <div className="relative max-w-[280px]">
-                          <select
-                            value={selectedLora.name}
-                            onChange={(e) => setSelectedLora({ ...selectedLora, name: e.target.value })}
-                            className="w-full rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition focus:border-gold-focus appearance-none"
-                          >
-                            <option value="">None</option>
-                            {AVAILABLE_LORAS.map((loraName) => (
-                              <option key={loraName} value={loraName}>
-                                {loraName.replace('.safetensors', '')}
-                              </option>
-                            ))}
-                          </select>
-                          <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle">
-                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                            </svg>
+                <div className="h-px bg-border-subtle" />
+
+                {/* Row 3: LoRA Stacking (Image Only) */}
+                {imageWorkflow !== 'ideogram4' && (
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] uppercase tracking-widest text-text-subtle">LoRAs (Image Only)</span>
+                    <div className="space-y-2">
+                      {selectedLoras.length < AVAILABLE_LORAS.length && (
+                        <button
+                          onClick={() => updateSettings({ selectedLoras: [...selectedLoras, { name: "", strength_model: 1.0, strength_clip: 1.0 }] })}
+                          className="flex items-center gap-1.5 rounded-lg border border-dashed border-border-strong px-3 py-1.5 text-xs text-text-muted transition hover:border-gold-focus hover:text-gold-dim"
+                        >
+                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                          </svg>
+                          Add LoRA
+                        </button>
+                      )}
+                      {selectedLoras.map((lora, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <div className="relative w-[180px] shrink-0">
+                            <select
+                              value={lora.name}
+                              onChange={(e) => {
+                                const updated = [...selectedLoras];
+                                updated[index] = { ...lora, name: e.target.value };
+                                updateSettings({ selectedLoras: updated });
+                              }}
+                              className="w-full rounded-lg border border-border-strong bg-surface-2 px-3 py-2 pr-8 text-xs text-text-primary outline-none transition focus:border-gold-focus appearance-none"
+                            >
+                              <option value="">None</option>
+                              {AVAILABLE_LORAS.map((loraName) => (
+                                <option key={loraName} value={loraName}>
+                                  {loraName.replace('.safetensors', '')}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronIcon />
                           </div>
+                          <div className="flex items-center gap-2 w-[140px] shrink-0">
+                            <input
+                              type="range"
+                              min="0"
+                              max="2"
+                              step="0.1"
+                              value={lora.strength_model}
+                              onChange={(e) => {
+                                const updated = [...selectedLoras];
+                                updated[index] = { ...lora, strength_model: parseFloat(e.target.value) };
+                                updateSettings({ selectedLoras: updated });
+                              }}
+                              className="flex-1 h-1.5 appearance-none rounded-full outline-none bg-border-strong cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gold [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition [&::-webkit-slider-thumb]:hover:bg-gold-hover [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gold [&::-moz-range-thumb]:border-0"
+                            />
+                            <span className="w-9 text-center rounded-md bg-surface-2 border border-border-strong py-0.5 text-[11px] tabular-nums text-gold">
+                              {lora.strength_model.toFixed(2)}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              const updated = selectedLoras.filter((_, i) => i !== index);
+                              updateSettings({ selectedLoras: updated });
+                            }}
+                            className="ml-5 rounded-lg border border-border-strong p-1.5 text-text-subtle transition hover:border-error/50 hover:text-error"
+                            title="Remove LoRA"
+                          >
+                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
                         </div>
-                      </div>
-                      <div className="flex flex-col gap-1 min-w-[140px] max-w-[200px]">
-                        <span className="text-[10px] uppercase tracking-widest text-text-subtle">Strength</span>
-                        <div className="flex items-center gap-2 h-[34px]">
-                          <input
-                            type="range"
-                            min="0"
-                            max="1"
-                            step="0.1"
-                            value={selectedLora.strength_model}
-                            onChange={(e) =>
-                              setSelectedLora({ ...selectedLora, strength_model: parseFloat(e.target.value) })
-                            }
-                            className="
-                              flex-1 h-1.5 appearance-none rounded-full outline-none
-                              bg-border-strong cursor-pointer
-                              [&::-webkit-slider-thumb]:appearance-none
-                              [&::-webkit-slider-thumb]:h-3.5
-                              [&::-webkit-slider-thumb]:w-3.5
-                              [&::-webkit-slider-thumb]:rounded-full
-                              [&::-webkit-slider-thumb]:bg-gold
-                              [&::-webkit-slider-thumb]:cursor-pointer
-                              [&::-webkit-slider-thumb]:transition
-                              [&::-webkit-slider-thumb]:hover:bg-gold-hover
-                              [&::-moz-range-thumb]:h-3.5
-                              [&::-moz-range-thumb]:w-3.5
-                              [&::-moz-range-thumb]:rounded-full
-                              [&::-moz-range-thumb]:bg-gold
-                              [&::-moz-range-thumb]:border-0
-                            "
-                          />
-                          <span className="w-9 text-center rounded-md bg-surface-2 border border-border-strong py-0.5 text-[11px] tabular-nums text-gold">
-                            {selectedLora.strength_model.toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
+                      ))}
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
@@ -928,7 +1125,7 @@ export default function AgentWorkspace({
               <button
                 onClick={() => {
                   setUserInput('');
-                  setDuration(10);
+                  updateSettings({ duration: 10 });
                   const newSession: AgentSession = {
                     id: `agent_${Date.now()}`,
                     title: `Scene ${agentSessions.length + 1}`,

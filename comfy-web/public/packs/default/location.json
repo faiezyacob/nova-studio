@@ -164,6 +164,8 @@
   { "name": "At Hot air balloon", "weight": 4, "tags": ["nature", "modern"], "category": "outdoor" },
   { "name": "At Gas station", "weight": 3, "tags": ["modern", "default"], "category": "outdoor" },
   { "name": "At Suburban neighborhood", "weight": 4, "tags": ["modern"], "category": "outdoor" },
+  { "name": "At cafe", "weight": 4, "tags": ["modern"], "category": "outdoor" },
+  { "name": "At luxury brand store", "weight": 4, "tags": ["modern"], "category": "outdoor" },
   
   { "name": "In Library", "weight": 5, "tags": ["default"], "category": "indoor" },
   { "name": "In Bedroom", "weight": 5, "tags": ["default"], "category": "indoor" },
