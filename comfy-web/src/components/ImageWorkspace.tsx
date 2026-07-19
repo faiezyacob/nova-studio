@@ -17,6 +17,7 @@ const AVAILABLE_LORAS = [
   "Krea2-realism-V2.safetensors",
   "Krea2_Cinematic_Artstyle.safetensors",
   "m87_lora_v1.safetensors",
+  "snofs_krea_v1_nostrip.safetensors",
   "krea2_alexandradaddario_v1_onetrainer.safetensors",
   "krea2_sydneysweeney_v1.safetensors",
 ];

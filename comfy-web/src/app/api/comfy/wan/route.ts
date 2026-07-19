@@ -40,13 +40,13 @@ async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: strin
   // HIGH NOISE model (original node 21)
   nodes["1"] = {
     class_type: "UnetLoaderGGUF",
-    inputs: { unet_name: "wan2.2_i2v_high_noise_14B_Q4_K_M.gguf" },
+    inputs: { unet_name: "TurboWan2.2-I2V-A14B-high-720P-Q4_K_M.gguf" },
   };
 
   // LOW NOISE model (original node 15)
   nodes["2"] = {
     class_type: "UnetLoaderGGUF",
-    inputs: { unet_name: "wan2.2_i2v_low_noise_14B_Q4_K_M.gguf" },
+    inputs: { unet_name: "TurboWan2.2-I2V-A14B-low-720P-Q4_K_M.gguf" },
   };
 
   nodes["3"] = {

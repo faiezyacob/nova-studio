@@ -46,5 +46,16 @@
   { "name": "Riding horseback", "weight": 4, "tags": ["fantasy"], "category": "fantasy" },
   { "name": "Sitting on bed edge", "weight": 5, "tags": ["default"], "category": "general" },
   { "name": "Stretching", "weight": 4, "tags": ["default"], "category": "general" },
-  { "name": "Cute sitting pose", "weight": 5, "tags": ["anime"], "category": "anime" }
+  { "name": "Cute sitting pose", "weight": 5, "tags": ["anime"], "category": "anime" },
+  { "name": "Sitting with legs spread", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Side lying with hip raised", "weight": 4, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Back view hips tilted", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Sitting on knees thighs together", "weight": 4, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Standing with hand on thigh", "weight": 5, "tags": ["seductive", "fashion"], "category": "seductive" },
+  { "name": "Reclining with one leg raised", "weight": 4, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Crouching with knees apart", "weight": 4, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Sitting backwards on chair", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Kneeling with thighs spread", "weight": 5, "tags": ["seductive"], "category": "seductive" },
+  { "name": "Standing contrapposto exaggerated", "weight": 5, "tags": ["seductive", "fashion"], "category": "seductive" },
+  { "name": "Crawling towards camera", "weight": 4, "tags": ["seductive"], "category": "seductive" }
 ]
