@@ -67,6 +67,7 @@ export async function migrateFromLocalStorage() {
         if (existing === undefined) {
           await db.set(key, JSON.parse(val));
         }
+        localStorage.removeItem(key);
       }
     } catch {
       // ignore parse errors for individual keys

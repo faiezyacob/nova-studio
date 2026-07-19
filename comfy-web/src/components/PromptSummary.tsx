@@ -18,7 +18,7 @@ const SUMMARY_GROUPS: SummaryGroup[] = [
   { key: "appearance", label: "Appearance", categoryKeys: ["bodyType", "skin", "hair", "hairColor", "eyes"] },
   { key: "expression", label: "Expression", categoryKeys: ["expression"] },
   { key: "pose", label: "Pose", categoryKeys: ["pose"] },
-  { key: "clothing", label: "Clothing", categoryKeys: ["clothing"] },
+  { key: "clothing", label: "Clothing", categoryKeys: ["top", "pants"] },
   { key: "accessories", label: "Accessories", categoryKeys: ["accessories"] },
   { key: "environment", label: "Environment", categoryKeys: ["location", "weather", "time"] },
   { key: "lighting", label: "Lighting", categoryKeys: ["lightSource", "lightStyle"] },

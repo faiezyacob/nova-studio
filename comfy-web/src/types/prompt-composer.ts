@@ -9,7 +9,8 @@ export type PromptCategoryKey =
   | "eyes"
   | "expression"
   | "pose"
-  | "clothing"
+  | "top"
+  | "pants"
   | "footwear"
   | "accessories"
   | "location"
@@ -90,21 +91,22 @@ export const CATEGORY_CONFIGS: CategoryConfig[] = [
   { key: "eyes", label: "Eyes", multi: true, order: 7, description: "Eye color and style" },
   { key: "expression", label: "Expression", multi: false, order: 8, description: "Facial expression" },
   { key: "pose", label: "Pose", multi: false, order: 9, description: "Body pose or action" },
-  { key: "clothing", label: "Clothing", multi: true, order: 10, description: "Outfit and garments" },
-  { key: "footwear", label: "Footwear", multi: false, order: 11, description: "Shoes, boots, and sandals" },
-  { key: "accessories", label: "Accessories", multi: true, order: 12, description: "Jewelry, props, items" },
-  { key: "location", label: "Location", multi: false, order: 13, description: "Scene location" },
-  { key: "weather", label: "Weather", multi: false, order: 14, description: "Weather conditions" },
-  { key: "time", label: "Time", multi: false, order: 15, description: "Time of day" },
-  { key: "lightSource", label: "Light Source", multi: false, order: 16, description: "Source of light in the scene" },
-  { key: "lightStyle", label: "Light Style", multi: true, order: 17, description: "Lighting technique and quality" },
-  { key: "cameraAngle", label: "Camera Angle", multi: false, order: 18, description: "Camera positioning and perspective" },
-  { key: "cameraShot", label: "Camera Shot", multi: false, order: 19, description: "Framing and shot type" },
-  { key: "lens", label: "Lens", multi: false, order: 20, description: "Lens focal length and type" },
-  { key: "composition", label: "Composition", multi: false, order: 21, description: "Framing and layout" },
-  { key: "mood", label: "Mood", multi: true, order: 22, description: "Emotional atmosphere" },
-  { key: "style", label: "Art Style", multi: false, order: 23, description: "Artistic style" },
-  { key: "details", label: "Details", multi: true, order: 24, description: "Extra descriptive details" },
+  { key: "top", label: "Top", multi: true, order: 10, description: "Upper body garments and outfits" },
+  { key: "pants", label: "Pants", multi: true, order: 11, description: "Lower body garments and bottoms" },
+  { key: "footwear", label: "Footwear", multi: false, order: 12, description: "Shoes, boots, and sandals" },
+  { key: "accessories", label: "Accessories", multi: true, order: 13, description: "Jewelry, props, items" },
+  { key: "location", label: "Location", multi: false, order: 14, description: "Scene location" },
+  { key: "weather", label: "Weather", multi: false, order: 15, description: "Weather conditions" },
+  { key: "time", label: "Time", multi: false, order: 16, description: "Time of day" },
+  { key: "lightSource", label: "Light Source", multi: false, order: 17, description: "Source of light in the scene" },
+  { key: "lightStyle", label: "Light Style", multi: true, order: 18, description: "Lighting technique and quality" },
+  { key: "cameraAngle", label: "Camera Angle", multi: false, order: 19, description: "Camera positioning and perspective" },
+  { key: "cameraShot", label: "Camera Shot", multi: false, order: 20, description: "Framing and shot type" },
+  { key: "lens", label: "Lens", multi: false, order: 21, description: "Lens focal length and type" },
+  { key: "composition", label: "Composition", multi: false, order: 22, description: "Framing and layout" },
+  { key: "mood", label: "Mood", multi: true, order: 23, description: "Emotional atmosphere" },
+  { key: "style", label: "Art Style", multi: false, order: 24, description: "Artistic style" },
+  { key: "details", label: "Details", multi: true, order: 25, description: "Extra descriptive details" },
 ];
 
 export const CATEGORY_ORDER: PromptCategoryKey[] = CATEGORY_CONFIGS.map(c => c.key);

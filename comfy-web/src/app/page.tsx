@@ -59,6 +59,8 @@ export default function App() {
   const [isRestarting, setIsRestarting] = useState(false);
   const [vramStats, setVramStats] = useState<{ used: number; total: number; percent: number, ram?: { used: number; total: number; percent: number } } | null>(null);
   const modeManuallySet = useRef(false);
+  const chatSessionsLoaded = useRef(false);
+  const agentSessionsLoaded = useRef(false);
 
   const [confirmModal, setConfirmModal] = useState<{
     open: boolean;
@@ -87,6 +89,20 @@ export default function App() {
         if (saved.width) setImageWidth(saved.width);
         if (saved.height) setImageHeight(saved.height);
       }
+    });
+  }, []);
+
+  // Hydrate image workflow from IndexedDB
+  useEffect(() => {
+    db.get<string>("image_workflow").then(saved => {
+      if (saved) setImageWorkflow(saved);
+    });
+  }, []);
+
+  // Hydrate selected lorae from IndexedDB
+  useEffect(() => {
+    db.get<Lora[]>("image_loras").then(saved => {
+      if (saved && Array.isArray(saved)) setSelectedLoras(saved);
     });
   }, []);
 
@@ -234,7 +250,11 @@ export default function App() {
         setChatSessions(savedSessions);
         setActiveSessionId(savedSessions[0].id);
       }
-    }).catch(e => console.error("Failed to load chat sessions", e));
+      chatSessionsLoaded.current = true;
+    }).catch(e => {
+      console.error("Failed to load chat sessions", e);
+      chatSessionsLoaded.current = true;
+    });
   }, []);
 
   useEffect(() => {
@@ -243,10 +263,15 @@ export default function App() {
         setAgentSessions(saved);
         setActiveAgentSessionId(saved[0].id);
       }
-    }).catch(e => console.error("Failed to load agent sessions", e));
+      agentSessionsLoaded.current = true;
+    }).catch(e => {
+      console.error("Failed to load agent sessions", e);
+      agentSessionsLoaded.current = true;
+    });
   }, []);
 
   useEffect(() => {
+    if (!agentSessionsLoaded.current) return;
     if (agentSessions.length > 0) {
       db.set("agent_sessions", agentSessions);
     } else {
@@ -255,6 +280,7 @@ export default function App() {
   }, [agentSessions]);
 
   useEffect(() => {
+    if (!chatSessionsLoaded.current) return;
     if (chatSessions.length > 0) {
       db.set("chat_sessions", chatSessions);
     } else {
@@ -303,6 +329,14 @@ export default function App() {
   useEffect(() => {
     db.set("image_dimensions", { width: imageWidth, height: imageHeight });
   }, [imageWidth, imageHeight]);
+
+  useEffect(() => {
+    db.set("image_workflow", imageWorkflow);
+  }, [imageWorkflow]);
+
+  useEffect(() => {
+    db.set("image_loras", selectedLoras);
+  }, [selectedLoras]);
 
   useEffect(() => {
     db.get<VideoGalleryItem[]>("video_gallery").then(saved => {

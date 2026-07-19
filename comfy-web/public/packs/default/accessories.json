@@ -129,8 +129,22 @@
     ]
   },
   {
-    "name": "Piercings",
+    "name": "Lip Piercings",
     "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Nose Piercings",
+    "weight": 4,
+    "tags": [
+      "default"
+    ]
+  },
+  {
+    "name": "Belly button piercing",
+    "weight": 3,
     "tags": [
       "default"
     ]

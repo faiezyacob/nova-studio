@@ -78,7 +78,7 @@ export function randomizeCategory(
   if (available.length === 0) return newState;
 
   const selected = getWeightedRandom(available, packData, category);
-  const isMulti = category === "hair" || category === "eyes" || category === "clothing"
+  const isMulti = category === "hair" || category === "eyes" || category === "top" || category === "pants"
     || category === "accessories" || category === "lightStyle"
     || category === "mood" || category === "details";
 
@@ -146,7 +146,7 @@ export function generatePrompt(state: PromptState): string {
   const orderedKeys: PromptCategoryKey[] = [
     "subject", "ethnicity", "age", "bodyType", "skin",
     "hair", "hairColor", "eyes",
-    "expression", "pose", "clothing", "footwear", "accessories",
+    "expression", "pose", "top", "pants", "footwear", "accessories",
     "location", "weather", "time",
     "lightSource", "lightStyle", "cameraAngle", "cameraShot", "lens", "composition",
     "mood", "style", "details",

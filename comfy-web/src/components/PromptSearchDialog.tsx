@@ -14,7 +14,7 @@ export const SUBJECT_CATEGORIES = [
   { value: "anime", label: "Anime" },
 ] as const;
 
-export const CLOTHING_CATEGORIES = [
+export const TOP_CATEGORIES = [
   { value: "", label: "All" },
   { value: "modern", label: "Modern" },
   { value: "casual", label: "Casual" },
@@ -25,11 +25,24 @@ export const CLOTHING_CATEGORIES = [
   { value: "dark", label: "Dark / Gothic" },
   { value: "vintage", label: "Vintage" },
   { value: "cultural", label: "Cultural" },
+  { value: "streetwear", label: "Streetwear" },
+  { value: "korean", label: "Korean" },
+  { value: "old_money", label: "Old Money" },
+  { value: "athleisure", label: "Athleisure" },
+] as const;
+
+export const PANTS_CATEGORIES = [
+  { value: "", label: "All" },
+  { value: "jeans", label: "Jeans" },
+  { value: "pants", label: "Pants" },
+  { value: "shorts", label: "Shorts" },
+  { value: "skirts", label: "Skirts" },
 ] as const;
 
 const CATEGORY_FILTERS: Record<string, readonly { value: string; label: string }[]> = {
   subject: SUBJECT_CATEGORIES,
-  clothing: CLOTHING_CATEGORIES,
+  top: TOP_CATEGORIES,
+  pants: PANTS_CATEGORIES,
   pose: [
     { value: "", label: "All" },
     { value: "general", label: "General" },

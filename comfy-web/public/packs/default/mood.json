@@ -260,11 +260,11 @@
   { "name": "Reverent", "weight": 3, "tags": ["default"] },
   { "name": "Defiant", "weight": 4, "tags": ["action"] },
   { "name": "Contemplative", "weight": 4, "tags": ["default"] },
-  { "name": "Euphoric", "weight": 3, "tags": ["default"] }
+  { "name": "Euphoric", "weight": 3, "tags": ["default"] },
   { "name": "Elegant", "weight": 6, "tags": ["default"] },
-{ "name": "Luxurious", "weight": 5, "tags": ["default"] },
-{ "name": "Minimalist", "weight": 5, "tags": ["modern"] },
-{ "name": "Moody", "weight": 6, "tags": ["cinematic"] },
-{ "name": "Heroic", "weight": 6, "tags": ["fantasy"] },
-{ "name": "Awe-inspiring", "weight": 5, "tags": ["fantasy"] }
+  { "name": "Luxurious", "weight": 5, "tags": ["default"] },
+  { "name": "Minimalist", "weight": 5, "tags": ["modern"] },
+  { "name": "Moody", "weight": 6, "tags": ["cinematic"] },
+  { "name": "Heroic", "weight": 6, "tags": ["fantasy"] },
+  { "name": "Awe-inspiring", "weight": 5, "tags": ["fantasy"] }
 ]

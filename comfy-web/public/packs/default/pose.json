@@ -84,7 +84,6 @@
   { "name": "Looking back at camera from behind", "weight": 6, "tags": ["seductive"], "category": "seductive" },
   { "name": "Playful hair flip", "weight": 5, "tags": ["seductive"], "category": "seductive" },
   { "name": "Seductive lean against doorframe", "weight": 5, "tags": ["seductive"], "category": "seductive" },
-  { "name": "Resting chin on hand", "weight": 4, "tags": ["seductive"], "category": "seductive" },
   { "name": "Reclining on couch", "weight": 5, "tags": ["seductive"], "category": "seductive" },
   { "name": "Legs up against wall", "weight": 4, "tags": ["seductive"], "category": "seductive" },
   { "name": "Sitting on floor leaning back", "weight": 4, "tags": ["seductive"], "category": "seductive" },
@@ -138,5 +137,19 @@
   { "name": "Shy hugging self", "weight": 4, "tags": ["anime"], "category": "anime" },
   { "name": "Power-up stance", "weight": 5, "tags": ["anime"], "category": "anime" },
   { "name": "Wall running", "weight": 3, "tags": ["action", "anime"], "category": "anime" },
-  { "name": "Floating cross-legged", "weight": 4, "tags": ["fantasy", "anime"], "category": "anime" }
+  { "name": "Floating cross-legged", "weight": 4, "tags": ["fantasy", "anime"], "category": "anime" },
+
+  { "name": "Weight shifted to one leg", "weight": 6, "tags": ["fashion"], "category": "fashion" },
+  { "name": "Hands in pockets", "weight": 6, "tags": ["fashion"], "category": "fashion" },
+  { "name": "Crossed legs while standing", "weight": 5, "tags": ["fashion"], "category": "fashion" },
+  { "name": "One hand in hair", "weight": 5, "tags": ["fashion"], "category": "fashion" },
+  { "name": "Holding jacket over shoulder", "weight": 5, "tags": ["fashion"], "category": "fashion" },
+  { "name": "Adjusting sunglasses", "weight": 5, "tags": ["fashion"], "category": "fashion" },
+  { "name": "Walking confidently", "weight": 6, "tags": ["fashion"], "category": "fashion" },
+  { "name": "Looking away from camera", "weight": 6, "tags": ["fashion"], "category": "fashion" },
+  { "name": "Hands behind back", "weight": 5, "tags": ["fashion"], "category": "fashion" },
+  { "name": "One foot slightly forward", "weight": 6, "tags": ["fashion"], "category": "fashion" },
+  { "name": "Leaning casually against wall", "weight": 6, "tags": ["fashion"], "category": "fashion" },
+  { "name": "Seated with legs crossed", "weight": 5, "tags": ["fashion"], "category": "fashion" },
+  { "name": "Resting chin on hand", "weight": 5, "tags": ["fashion"], "category": "fashion" }
 ]
