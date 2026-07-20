@@ -14,20 +14,19 @@ interface WanOptions {
   height?: number;
   imgWidth?: number;
   imgHeight?: number;
-  duration?: number;
+  frames?: number;
   fps?: number;
   turbo?: boolean;
   generationId?: string;
 }
 
 async function generateWanVideo(options: WanOptions): Promise<{ prompt_id: string; video_path: string; subfolder: string; frame_path?: string; frame_subfolder?: string }> {
-  const { image, prompt, negative_prompt, width, height, imgWidth, imgHeight, duration, fps, turbo, generationId } = options;
+  const { image, prompt, negative_prompt, width, height, imgWidth, imgHeight, frames, fps, turbo, generationId } = options;
 
   const videoWidth = width || 640;
   const videoHeight = height || 640;
   const videoFps = fps || 16;
-  const videoDuration = duration || 5;
-  const videoFrames = Math.floor(videoDuration * videoFps + 1);
+  const videoFrames = frames || 81;
   const origWidth = imgWidth || videoWidth;
   const origHeight = imgHeight || videoHeight;
 
@@ -404,7 +403,7 @@ export async function POST(request: NextRequest) {
     const height = body.get('height') ? parseInt(body.get('height') as string) : undefined;
     const imgWidth = body.get('imgWidth') ? parseInt(body.get('imgWidth') as string) : undefined;
     const imgHeight = body.get('imgHeight') ? parseInt(body.get('imgHeight') as string) : undefined;
-    const duration = body.get('duration') ? parseFloat(body.get('duration') as string) : undefined;
+    const frames = body.get('frames') ? parseInt(body.get('frames') as string) : undefined;
     const fps = body.get('fps') ? parseFloat(body.get('fps') as string) : undefined;
     const turbo = body.get('turbo') === 'true';
     const generationId = request.headers.get('x-generation-id') || undefined;
@@ -432,7 +431,7 @@ export async function POST(request: NextRequest) {
       height,
       imgWidth,
       imgHeight,
-      duration,
+      frames,
       fps,
       turbo,
       generationId,
